@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "deploy": "firebase deploy --only hosting:ai-based-training-by-ariba-2d081",
     "preview": "vite preview"
   },
   "dependencies": {

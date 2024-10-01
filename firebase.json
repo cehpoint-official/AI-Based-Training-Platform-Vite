@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "ai-based-training-by-ariba-2d081",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}
