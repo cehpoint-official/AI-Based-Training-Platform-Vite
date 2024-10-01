@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/reset.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { name, serverURL, websiteURL, company, logo } from "../constants";
+import { name, websiteURL, company, logo } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { useNavigate, useParams } from "react-router-dom";
@@ -59,7 +59,7 @@ const ResetPassword = () => {
       showToast("Password should be at least 9 characters");
       return;
     }
-    const postURL = serverURL + "/api/reset-password";
+    const postURL = "/api/reset-password";
 
     try {
       setProcessing(true);
@@ -117,7 +117,7 @@ const ResetPassword = () => {
                 
                 </html>`,
       };
-      const postURL = serverURL + "/api/data";
+      const postURL = "/api/data";
       await axios
         .post(postURL, dataToSend)
         .then((res) => {

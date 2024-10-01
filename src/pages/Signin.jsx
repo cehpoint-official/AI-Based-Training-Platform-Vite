@@ -2,7 +2,7 @@
 // import img from '../../src/res/img/signin.svg';
 // import { Flowbite, Navbar } from 'flowbite-react';
 // import { Button, Label } from 'flowbite-react';
-// import { name, serverURL, websiteURL } from '../constants';
+// import { name,  websiteURL } from '../constants';
 // import DarkModeToggle from '../components/DarkModeToggle';
 // import LogoComponent from '../components/LogoComponent';
 // import { useNavigate } from 'react-router-dom';
@@ -57,8 +57,8 @@
 //             showToast('Please fill in all required fields');
 //             return;
 //         }
-//         // const postURL = serverURL + '/api/signin';
-//         const postURL = `${serverURL}/api/profile`;
+//         // const postURL =  '/api/signin';
+//         const postURL = `/api/profile`;
 //         try {
 //             setProcessing(true);
 //             const response = await axios.post(postURL, { email, password });
@@ -146,7 +146,7 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/signin.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { name, serverURL, websiteURL } from "../constants";
+import { name, websiteURL } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { useNavigate } from "react-router-dom";
@@ -201,7 +201,7 @@ const SignIn = () => {
       showToast("Please fill in all required fields");
       return;
     }
-    const postURL = `${serverURL}/api/signin`;
+    const postURL = `/api/signin`;
 
     try {
       setProcessing(true);

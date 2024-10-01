@@ -1,5 +1,4 @@
 // import axios from 'axios';
-// import { serverURL } from '../../constants';
 // import { Button } from 'flowbite-react';
 // import React, { useState } from 'react';
 // import { toast } from 'react-toastify';
@@ -18,7 +17,6 @@
 //         element.style.height = (element.scrollHeight) + 'px';
 //     };
 
-
 //     const showToast = async (msg) => {
 //         toast(msg, {
 //             position: "bottom-center",
@@ -32,7 +30,7 @@
 //     }
 
 //     async function saveTerms() {
-//         const postURL = serverURL + '/api/saveadmin';
+//         const postURL = '/api/saveadmin';
 //         const response = await axios.post(postURL, { data: terms, type: 'cancel' });
 //         if (response.data.success) {
 //             sessionStorage.setItem('cancel', terms);

@@ -4,7 +4,6 @@ import Footers from "../components/Footers";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
-import { serverURL } from "../constants";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -60,7 +59,7 @@ const Topics = () => {
       prompt: prompt,
     };
     try {
-      const postURL = serverURL + "/api/generate";
+      const postURL = "/api/generate";
       const res = await axios.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -81,7 +80,7 @@ const Topics = () => {
       prompt: promptImage,
     };
     try {
-      const postURL = serverURL + "/api/image";
+      const postURL = "/api/image";
       const res = await axios.post(postURL, dataToSend);
       try {
         const generatedText = res.data.url;
@@ -101,7 +100,7 @@ const Topics = () => {
 
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
-    const postURL = serverURL + "/api/course";
+    const postURL = "/api/course";
     const response = await axios.post(postURL, {
       user,
       content,
@@ -134,7 +133,7 @@ const Topics = () => {
 
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
-    const postURL = serverURL + "/api/course";
+    const postURL = "/api/course";
     const response = await axios.post(postURL, {
       user,
       content,
@@ -166,7 +165,7 @@ const Topics = () => {
       prompt: query,
     };
     try {
-      const postURL = serverURL + "/api/yt";
+      const postURL = "/api/yt";
       const res = await axios.post(postURL, dataToSend);
 
       try {
@@ -185,7 +184,7 @@ const Topics = () => {
       prompt: url,
     };
     try {
-      const postURL = serverURL + "/api/transcript";
+      const postURL = "/api/transcript";
       const res = await axios.post(postURL, dataToSend);
 
       try {
@@ -209,7 +208,7 @@ const Topics = () => {
       prompt: prompt,
     };
     try {
-      const postURL = serverURL + "/api/generate";
+      const postURL = "/api/generate";
       const res = await axios.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;

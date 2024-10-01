@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { serverURL } from "../constants";
 import { Card, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import found from "@/assets/found.svg";
@@ -11,7 +10,7 @@ const UserCourses = ({ userId }) => {
 
   useEffect(() => {
     const fetchUserCourses = async () => {
-      const postURL = serverURL + `/api/courses?userId=${userId}`;
+      const postURL = `/api/courses?userId=${userId}`;
       try {
         const response = await axios.get(postURL);
         setCourses(response.data);

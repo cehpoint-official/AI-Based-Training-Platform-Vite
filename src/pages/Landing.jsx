@@ -7,7 +7,6 @@ import SlideThree from "../components/landing/SlideThree";
 // import SlideFour from '../components/landing/slideFour';
 import SlideFive from "../components/landing/SlideFive";
 import SlideSix from "../components/landing/SlideSix";
-// import { serverURL } from '../constants';
 // import axios from 'axios';
 
 const Landing = () => {

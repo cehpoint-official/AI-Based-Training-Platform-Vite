@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/signup.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { company, logo, name, serverURL, websiteURL } from "../constants";
+import { company, logo, name, websiteURL } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import axios from "axios";
@@ -62,7 +62,7 @@ const SignUp = () => {
       showToast("Password should be at least 9 characters");
       return;
     }
-    const postURL = serverURL + "/api/signup";
+    const postURL = "/api/signup";
     const type = "free";
     try {
       setProcessing(true);
@@ -131,7 +131,7 @@ const SignUp = () => {
                 
                 </html>`,
       };
-      const postURL = serverURL + "/api/data";
+      const postURL = "/api/data";
       await axios
         .post(postURL, dataToSend)
         .then((res) => {

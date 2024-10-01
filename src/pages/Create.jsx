@@ -7,7 +7,6 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { serverURL } from "../constants";
 
 const Create = () => {
   const maxSubtopics = 5;
@@ -100,7 +99,9 @@ const Create = () => {
     const subtopics = [];
     setProcessing(true);
     formValues.forEach((subtopic) => {
-      subtopics.push(subtopic.subtopic);
+      if (subtopic.subtopic) {
+        subtopics.push(subtopic.subtopic);
+      }
     });
 
     const mainTopic = document.getElementById("topic1").value;
@@ -186,8 +187,7 @@ const Create = () => {
     const dataToSend = {
       prompt: prompt,
     };
-
-    const postURL = serverURL + "/api/prompt";
+    const postURL = "/api/prompt";
     const res = await axios.post(postURL, dataToSend);
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
@@ -266,6 +266,7 @@ const Create = () => {
                       className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white mb-6"
                       id="subtopic"
                       type="text"
+                      name="subtopic"
                     />
                   </div>
                 ))}

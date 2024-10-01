@@ -1,7 +1,6 @@
 // import React, { useEffect, useState } from 'react';
 // import Header from '../components/header';
 // import Footers from '../components/footers';
-// import { serverURL } from '../constants';
 // import axios from 'axios';
 // import StyledText from '../components/styledText';
 
@@ -11,7 +10,7 @@
 
 //     useEffect(() => {
 //         async function dashboardData() {
-//             const postURL = serverURL + `/api/policies`;
+//             const postURL =  `/api/policies`;
 //             const response = await axios.get(postURL);
 //             setData(response.data[0])
 //         }

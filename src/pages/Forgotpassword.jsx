@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/forgot.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { name, serverURL, websiteURL, company, logo } from "../constants";
+import { name, websiteURL, company, logo } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { useNavigate } from "react-router-dom";
@@ -73,7 +73,7 @@ const ForgotPassword = () => {
       showToast("Please fill in all required fields");
       return;
     }
-    const postURL = serverURL + "/api/forgot";
+    const postURL = "/api/forgot";
     try {
       setProcessing(true);
       const response = await axios.post(postURL, {
