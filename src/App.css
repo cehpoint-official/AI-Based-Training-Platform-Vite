@@ -1,0 +1,76 @@
+/* @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"); */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @variants responsive {
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+  }
+}
+
+.toastBody {
+  font-family: "Roboto", sans-serif;
+  color: #000;
+}
+
+.toastProgress {
+  background: #000 !important;
+}
+
+.toastBodyDark {
+  font-family: "Roboto", sans-serif;
+  color: #fff;
+}
+
+.toastProgressDark {
+  background: #fff !important;
+}
+
+.textarea-container {
+  position: relative;
+}
+
+.textarea {
+  resize: none;
+  overflow-y: hidden;
+}
+
+.textarea::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+h2 {
+  font-size: 1.5rem /* 24px */;
+  line-height: 2rem /* 32px */;
+  padding-top: 1rem /* 16px */;
+  font-weight: 900;
+}
+/* --neutral-800: var(--secondary-5);
+--neutral-400: #b7b4c7;
+--neutral-100: white;
+--neutral-300: #d9d7e6;
+--secondary-5: #13111a;
+--secondary-1: #c831f0;
+--secondary-2: #285dad;
+--secondary-3: #2cc2e0;
+--secondary-4: var(--secondary-2);
+--neutral-700: #302c3f;
+--neutral-600: #5e5b71;
+--neutral-500: #ad24e7;
+--neutral-200: #f5f4fa;
+--shadow-card-default: #0000001a;
+--shadow-card-large: #00000059;
+--shadow-card-large-dark: #00000073; */
