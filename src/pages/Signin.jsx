@@ -260,7 +260,7 @@ const SignIn = () => {
                 Enter email & password to continue
               </p>
 
-              <div className="py-10">
+              <div className="py-5">
                 <div className="mb-6">
                   <div className="mb-2 block">
                     <Label
@@ -291,7 +291,7 @@ const SignIn = () => {
                     type="password"
                   />
                 </div>
-                <div className="flex items-center mb-10">
+                <div className="flex items-center mb-7">
                   <p
                     onClick={redirectForgot}
                     className="text-center font-normal text-black underline dark:text-white"

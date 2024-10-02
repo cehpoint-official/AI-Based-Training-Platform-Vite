@@ -18,7 +18,7 @@ const SlideOne = () => {
         AI Learning Made Easy: Get Certified, Get Hired, Get Ahead
       </h1>
 
-      <p className="text-center text-1xl text-black mt-6 max-w-1xl font-medium max-md:text-xs dark:text-white">
+      <p className="text-center text-1xl text-black mt-6 max-w-1xl font-medium max-md:text-xs dark:text-white mx-20">
         {/* Revolutionize your learning journey with our AI Course Generator SaaS
                 Effortlessly create engaging and personalized courses tailored to your needs */}
         learning experience with our AI-powered platform designed for students,
@@ -32,7 +32,7 @@ const SlideOne = () => {
         the evolving job market.
       </p>
 
-      <div className="flex space-x-4 mb-4 mt-6">
+      <div className="flex space-x-4 mb-8 mt-6">
         <button
           onClick={redirectSignIn}
           className="border-black text-black border px-3 py-2 font-medium dark:border-white dark:text-white"

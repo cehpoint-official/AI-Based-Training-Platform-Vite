@@ -204,7 +204,7 @@ const SignUp = () => {
                     type="email"
                   />
                 </div>
-                <div className="mb-14">
+                <div className="mb-7">
                   <div className="mb-2 block">
                     <Label
                       className="font-bold text-black dark:text-white"
@@ -220,12 +220,8 @@ const SignUp = () => {
                     type="password"
                   />
                 </div>
-                <GoogleSignUpButton
-                  text="Sign up with Google"
-                  showToast={showToast}
-                  navigate={navigate}
-                />
-                <div className="mt-4">
+
+                <div className="mb-4">
                   <Button
                     isProcessing={processing}
                     processingSpinner={
@@ -237,6 +233,11 @@ const SignUp = () => {
                     Submit
                   </Button>
                 </div>
+                <GoogleSignUpButton
+                  text="Sign up with Google"
+                  showToast={showToast}
+                  navigate={navigate}
+                />
 
                 <p
                   onClick={redirectSignIn}
