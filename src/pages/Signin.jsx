@@ -217,6 +217,7 @@ const SignIn = () => {
 
       if (response.ok && data.success) {
         showToast(data.message);
+        sessionStorage.setItem("user", JSON.stringify(data.userData));
         sessionStorage.setItem("email", data.userData.email);
         sessionStorage.setItem("mName", data.userData.mName);
         sessionStorage.setItem("auth", true);
