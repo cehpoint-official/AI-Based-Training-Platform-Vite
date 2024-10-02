@@ -128,50 +128,57 @@ const Create = () => {
       return;
     }
 
-    const prompt = `Generate a list of Strict ${selectedValue} topics and any number sub topic for each topic for main title ${mainTopic.toLowerCase()}, everything in single line. Those ${selectedValue} topics should Strictly include these topics :- ${subtopics
+    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}". Each topic should contain several related subtopics, starting with introductory concepts and moving towards more advanced ones
+
+Strictly include the following subtopics in the list: ${subtopics
       .join(", ")
-      .toLowerCase()}. Strictly Keep theory, youtube, image field empty. Generate in the form of JSON in this format {
-            "${mainTopic.toLowerCase()}": [
-       {
-       "title": "Topic Title",
-       "subtopics": [
+      .toLowerCase()}. Ensure the topics follow a logical progression, starting with the basics of React and gradually covering advanced concepts needed for internships. Keep the fields "theory", "youtube", and "image" empty. 
+
+Output the list in the following JSON format:
+{
+  "${mainTopic.toLowerCase()}": [
+    {
+      "title": "Topic Title",
+      "subtopics": [
         {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
         },
         {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
         }
-       ]
-       },
-       {
-       "title": "Topic Title",
-       "subtopics": [
-        {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
-        },
-        {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
-        }
-       ]
-       }
       ]
-      }`;
+    },
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        }
+      ]
+    }
+  ]
+}`;
+
+    // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
 
     await sendPrompt(prompt, mainTopic, selectedType);
 
