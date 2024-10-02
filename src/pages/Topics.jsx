@@ -106,6 +106,7 @@ const Topics = () => {
       content,
       type,
       mainTopic,
+      
     });
 
     if (response.data.success) {
@@ -139,6 +140,7 @@ const Topics = () => {
       content,
       type,
       mainTopic,
+      subtopic,
     });
 
     if (response.data.success) {
