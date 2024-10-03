@@ -7,8 +7,8 @@ import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { AiOutlineLoading } from "react-icons/ai";
+import axiosInstance from "../axios";
 
 const ResetPassword = () => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -63,7 +63,7 @@ const ResetPassword = () => {
 
     try {
       setProcessing(true);
-      const response = await axios.post(postURL, { password, token });
+      const response = await axiosInstance.post(postURL, { password, token });
       if (response.data.success) {
         showToast(response.data.message);
         sendEmail(response.data.email);
@@ -118,7 +118,7 @@ const ResetPassword = () => {
                 </html>`,
       };
       const postURL = "/api/data";
-      await axios
+      await axiosInstance
         .post(postURL, dataToSend)
         .then((res) => {
           redirectSignIn();

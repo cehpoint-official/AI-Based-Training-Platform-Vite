@@ -5,8 +5,8 @@ import Footers from "../components/footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axios";
 
 const Create = () => {
   const maxSubtopics = 5;
@@ -195,7 +195,7 @@ Output the list in the following JSON format:
       prompt: prompt,
     };
     const postURL = "/api/prompt";
-    const res = await axios.post(postURL, dataToSend);
+    const res = await axiosInstance.post(postURL, dataToSend);
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
       .replace(/```json/g, "")

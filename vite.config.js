@@ -42,14 +42,5 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve("./src"),
       },
     },
-
-    server: {
-      proxy: {
-        "/api": {
-          target: API_URL,
-          changeOrigin: false,
-        },
-      },
-    },
   };
 });

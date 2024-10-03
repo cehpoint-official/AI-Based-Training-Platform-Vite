@@ -154,6 +154,7 @@ import { toast } from "react-toastify";
 import { AiOutlineLoading } from "react-icons/ai";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
+import axiosInstance from "../axios";
 
 const SignIn = () => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -205,17 +206,9 @@ const SignIn = () => {
 
     try {
       setProcessing(true);
-      const response = await fetch(postURL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const { data } = await axiosInstance.post(postURL, { email, password });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (data.success) {
         showToast(data.message);
         sessionStorage.setItem("user", JSON.stringify(data.userData));
         sessionStorage.setItem("email", data.userData.email);

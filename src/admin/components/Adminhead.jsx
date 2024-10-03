@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { Navbar } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
+import axiosInstance from "../../axios";
 const AdminHead = () => {
   const navigate = useNavigate();
   function redirectHome() {
@@ -12,7 +11,7 @@ const AdminHead = () => {
   useEffect(() => {
     async function dashboardData() {
       const postURL = `/api/dashboard`;
-      const response = await axios.post(postURL);
+      const response = await axiosInstance.post(postURL);
       sessionStorage.setItem("adminEmail", response.data.admin.email);
       if (response.data.admin.email !== sessionStorage.getItem("email")) {
         redirectHome();
