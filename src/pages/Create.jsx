@@ -5,8 +5,8 @@ import Footers from "../components/footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axios";
 
 const Create = () => {
   const maxSubtopics = 5;
@@ -132,9 +132,9 @@ const Create = () => {
 
 Strictly include the following subtopics in the list: ${subtopics
       .join(", ")
-      .toLowerCase()}. Ensure the topics follow a logical progression, starting with the basics of React and gradually covering advanced concepts needed for internships. Keep the fields "theory", "youtube", and "image" empty. 
+      .toLowerCase()} starting with introductory concepts and moving towards more advanced ones. Ensure the topics follow a logical progression, starting with the basics  and gradually covering advanced concepts needed for internships or jobs. Keep the fields "theory", "youtube", and "image" empty. 
 
-Output the list in the following JSON format:
+Please output the list in the following JSON format strictly in English:
 {
   "${mainTopic.toLowerCase()}": [
     {
@@ -195,7 +195,7 @@ Output the list in the following JSON format:
       prompt: prompt,
     };
     const postURL = "/api/prompt";
-    const res = await axios.post(postURL, dataToSend);
+    const res = await axiosInstance.post(postURL, dataToSend);
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
       .replace(/```json/g, "")

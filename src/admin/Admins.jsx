@@ -4,8 +4,8 @@ import { FiMenu, FiX } from "react-icons/fi";
 import AdminSidebar from "./components/adminsidebar";
 import AdminHead from "./components/adminhead";
 import AdminSidebarMobile from "./components/adminsidebarmobile";
-import axios from "axios";
 import AdminTable from "./components/adminstable";
+import axiosInstance from "../axios";
 
 const Admins = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,7 +16,7 @@ const Admins = () => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
       const postURL = `/api/getadmins`;
-      const response = await axios.get(postURL);
+      const response = await axiosInstance.get(postURL);
       setAdmin(response.data.admins);
       setUser(response.data.users);
     }

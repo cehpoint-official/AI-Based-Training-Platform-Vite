@@ -4,8 +4,8 @@ import { FiMenu, FiX } from "react-icons/fi";
 import AdminSidebar from "./components/adminsidebar";
 import AdminHead from "./components/adminhead";
 import AdminSidebarMobile from "./components/adminsidebarmobile";
-import axios from "axios";
 import ContactTable from "./components/contacttable";
+import axiosInstance from "../axios";
 
 const Contacts = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -15,7 +15,7 @@ const Contacts = () => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
       const postURL = `/api/getcontact`;
-      const response = await axios.get(postURL);
+      const response = await axiosInstance.get(postURL);
       setData(response.data);
     }
     dashboardData();

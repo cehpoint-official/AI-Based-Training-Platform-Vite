@@ -1,7 +1,7 @@
-import axios from "axios";
 import { Button } from "flowbite-react";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "../axios";
 
 const TermsEdit = () => {
   const [terms, setTerms] = useState(sessionStorage.getItem("terms"));
@@ -30,7 +30,10 @@ const TermsEdit = () => {
 
   async function saveTerms() {
     const postURL = "/api/saveadmin";
-    const response = await axios.post(postURL, { data: terms, type: "terms" });
+    const response = await axiosInstance.post(postURL, {
+      data: terms,
+      type: "terms",
+    });
     if (response.data.success) {
       sessionStorage.setItem("terms", terms);
       showToast(response.data.message);
