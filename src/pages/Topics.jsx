@@ -48,7 +48,7 @@ const Topics = () => {
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-      const promptImage = `Example of ${firstSubtopic.title} in ${mainTopic}`;
+      const promptImage = `Provide a relevant example of "${firstSubtopic.title}" within the context of "${mainTopic}". The example should be clear and concise, directly illustrating the subtopic in relation to the main topic.`;
       setProcessing(true);
       sendPrompt(prompt, promptImage);
     }

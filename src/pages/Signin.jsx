@@ -206,19 +206,19 @@ const SignIn = () => {
 
     try {
       setProcessing(true);
-      const { data } = await axiosInstance.post(postURL, { email, password });
+      const res = await axiosInstance.post(postURL, { email, password });
 
-      if (data.success) {
-        showToast(data.message);
-        sessionStorage.setItem("user", JSON.stringify(data.userData));
-        sessionStorage.setItem("email", data.userData.email);
-        sessionStorage.setItem("mName", data.userData.mName);
+      if (res.data.success) {
+        showToast(res.data.message);
+        sessionStorage.setItem("user", JSON.stringify(res.data.userData));
+        sessionStorage.setItem("email", res.data.userData.email);
+        sessionStorage.setItem("mName", res.data.userData.mName);
         sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", data.userData._id);
-        sessionStorage.setItem("type", data.userData.type);
+        sessionStorage.setItem("uid", res.data.userData._id);
+        sessionStorage.setItem("type", res.data.userData.type);
         redirectHome();
       } else {
-        showToast(data.message);
+        showToast(res.data.message);
       }
     } catch (error) {
       console.error("Error:", error.message);
