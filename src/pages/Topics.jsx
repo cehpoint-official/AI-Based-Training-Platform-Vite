@@ -4,8 +4,8 @@ import Footers from "../components/Footers";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
-import axios from "axios";
 import { toast } from "react-toastify";
+import axiosInstance from "../axios";
 
 const Topics = () => {
   const { state } = useLocation();
@@ -48,7 +48,7 @@ const Topics = () => {
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-      const promptImage = `Example of ${firstSubtopic.title} in ${mainTopic}`;
+      const promptImage = `Provide a relevant example of "${firstSubtopic.title}" within the context of "${mainTopic}". The example should be clear and concise, directly illustrating the subtopic in relation to the main topic.`;
       setProcessing(true);
       sendPrompt(prompt, promptImage);
     }
@@ -60,7 +60,7 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/generate";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
 
@@ -81,7 +81,7 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/image";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       try {
         const generatedText = res.data.url;
         sendData(generatedText, parsedJson);
@@ -101,7 +101,7 @@ const Topics = () => {
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
     const postURL = "/api/course";
-    const response = await axios.post(postURL, {
+    const response = await axiosInstance.post(postURL, {
       user,
       content,
       type,
