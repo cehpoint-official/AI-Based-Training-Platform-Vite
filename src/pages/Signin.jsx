@@ -154,6 +154,7 @@ import { toast } from "react-toastify";
 import { AiOutlineLoading } from "react-icons/ai";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
+import axiosInstance from "../axios";
 
 const SignIn = () => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -205,26 +206,19 @@ const SignIn = () => {
 
     try {
       setProcessing(true);
-      const response = await fetch(postURL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await axiosInstance.post(postURL, { email, password });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        showToast(data.message);
-        sessionStorage.setItem("email", data.userData.email);
-        sessionStorage.setItem("mName", data.userData.mName);
+      if (res.data.success) {
+        showToast(res.data.message);
+        sessionStorage.setItem("user", JSON.stringify(res.data.userData));
+        sessionStorage.setItem("email", res.data.userData.email);
+        sessionStorage.setItem("mName", res.data.userData.mName);
         sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", data.userData._id);
-        sessionStorage.setItem("type", data.userData.type);
+        sessionStorage.setItem("uid", res.data.userData._id);
+        sessionStorage.setItem("type", res.data.userData.type);
         redirectHome();
       } else {
-        showToast(data.message);
+        showToast(res.data.message);
       }
     } catch (error) {
       console.error("Error:", error.message);
@@ -260,7 +254,7 @@ const SignIn = () => {
                 Enter email & password to continue
               </p>
 
-              <div className="py-10">
+              <div className="py-5">
                 <div className="mb-6">
                   <div className="mb-2 block">
                     <Label
@@ -291,7 +285,7 @@ const SignIn = () => {
                     type="password"
                   />
                 </div>
-                <div className="flex items-center mb-10">
+                <div className="flex items-center mb-7">
                   <p
                     onClick={redirectForgot}
                     className="text-center font-normal text-black underline dark:text-white"

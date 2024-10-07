@@ -5,13 +5,13 @@ import { Button, Label } from "flowbite-react";
 import { company, logo, name, websiteURL } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading } from "react-icons/ai";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleAuthProvider } from "firebase/auth";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
+import axiosInstance from "../axios";
 
 const SignUp = () => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -66,7 +66,7 @@ const SignUp = () => {
     const type = "free";
     try {
       setProcessing(true);
-      const response = await axios.post(postURL, {
+      const response = await axiosInstance.post(postURL, {
         email,
         mName,
         password,
@@ -132,7 +132,7 @@ const SignUp = () => {
                 </html>`,
       };
       const postURL = "/api/data";
-      await axios
+      await axiosInstance
         .post(postURL, dataToSend)
         .then((res) => {
           redirectHome();
@@ -204,7 +204,7 @@ const SignUp = () => {
                     type="email"
                   />
                 </div>
-                <div className="mb-14">
+                <div className="mb-7">
                   <div className="mb-2 block">
                     <Label
                       className="font-bold text-black dark:text-white"
@@ -220,12 +220,8 @@ const SignUp = () => {
                     type="password"
                   />
                 </div>
-                <GoogleSignUpButton
-                  text="Sign up with Google"
-                  showToast={showToast}
-                  navigate={navigate}
-                />
-                <div className="mt-4">
+
+                <div className="mb-4">
                   <Button
                     isProcessing={processing}
                     processingSpinner={
@@ -237,6 +233,11 @@ const SignUp = () => {
                     Submit
                   </Button>
                 </div>
+                <GoogleSignUpButton
+                  text="Sign up with Google"
+                  showToast={showToast}
+                  navigate={navigate}
+                />
 
                 <p
                   onClick={redirectSignIn}

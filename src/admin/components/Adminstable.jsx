@@ -1,12 +1,12 @@
-import axios from "axios";
 import { Table } from "flowbite-react";
 import React from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "@/axios";
 
 const AdminTable = ({ admin, user }) => {
   async function removeAdmin(email) {
     const postURL = "/api/removeadmin";
-    const response = await axios.post(postURL, { email });
+    const response = await axiosInstance.post(postURL, { email });
     if (response.data.success) {
       showToast(response.data.message);
     }
@@ -27,7 +27,7 @@ const AdminTable = ({ admin, user }) => {
 
   async function addAdmin(email) {
     const postURL = "/api/addadmin";
-    const response = await axios.post(postURL, { email });
+    const response = await axiosInstance.post(postURL, { email });
     if (response.data.success) {
       showToast(response.data.message);
     }
