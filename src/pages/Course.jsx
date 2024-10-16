@@ -1,5 +1,5 @@
 import { Drawer, Navbar, Sidebar } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import LogoComponent from "../components/LogoComponent";
 import { FiMenu, FiX } from "react-icons/fi";
 import DarkModeToggle from "../components/DarkModeToggle";
@@ -16,9 +16,14 @@ import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import emailjs from "@emailjs/browser";
+import { getAuth } from "firebase/auth";
 
 const Course = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const auth = getAuth();
+  const user = auth.currentUser;
+
   const [key, setkey] = useState("");
   const { state } = useLocation();
   const { mainTopic, type, courseId, end } = state || {};
@@ -36,6 +41,80 @@ const Course = () => {
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const [projectSuggestions, setProjectSuggestions] = useState(null);
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+
+  // ----------------------------------------------------------------------- //
+  // Fetch user email and name from Firebase on load
+  useEffect(() => {
+    if (user) {
+      const displayName = user.displayName;
+      setUserName(displayName || "User"); // Set default name if none exists
+      const emailFromGoogle = user.providerData[0]?.email;
+
+      // Check if email is available (either from Google or email/password login)
+      if (emailFromGoogle) {
+        setUserEmail(emailFromGoogle); // Google email
+      } else if (user.email) {
+        setUserEmail(user.email); // Email from email/password sign-in
+      } else {
+        setUserEmail(""); // No email found, reset state
+      }
+    } else {
+      setUserEmail(""); // If user is not signed in, reset email
+    }
+  }, [user]);
+
+  // ----------------------------------------------------------------------- //
+  // Email Sending Logic
+  const sendEmail = () => {
+    if (!userEmail) {
+      setEmailStatus("Email not available");
+      console.log("No user email found");
+      return;
+    }
+
+    setIsLoading(true); // Show loading state
+    setEmailStatus(""); // Reset email status before sending
+
+    const emailData = {
+      userName: userName, // Name of the user
+      userEmail: userEmail, // The email where the message will be sent
+      message: "Great Job, You finished the course!", // The email message
+    };
+
+    emailjs
+      .send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        emailData,
+        {
+          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+        }
+      )
+      .then(
+        () => {
+          setEmailStatus("SUCCESS! Email sent");
+          alert("SUCCESS! Email sent"); // Show success message
+          setIsLoading(false); // Reset loading state
+        },
+        (error) => {
+          setEmailStatus(`FAILED... ${error.text}`);
+          console.log("FAILED...", error.text);
+          setIsLoading(false); // Reset loading state on error
+        }
+      );
+  };
+
+  // ----------------------------------------------------------------------- //
+  // Button Handler
+  const handleSendEmail = () => {
+    sendEmail();
+  };
+  // --------------------------------------------------------------------------- //
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -55,6 +134,7 @@ const Course = () => {
     setPercentage(completionPercentage);
     if (completionPercentage >= "100") {
       setIsCompleted(true);
+      navigate("/quiz", { state: { courseTitle: mainTopic } });
     }
   };
 
@@ -113,120 +193,120 @@ const Course = () => {
     }
   };
 
-  async function sendEmail(formattedDate) {
-    const userName = sessionStorage.getItem("mName");
-    const email = sessionStorage.getItem("email");
-    const html = `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="initial-scale=1.0">
-            <title>Certificate of Completion</title>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
-            <style>
-            body {
-                font-family: 'Roboto', sans-serif;
-                text-align: center;
-                background-color: #fff;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-            }
-        
-            .certificate {
-                border: 10px solid #000;
-                max-width: 600px;
-                margin: 20px auto;
-                padding: 50px;
-                background-color: #fff;
-                position: relative;
-                color: #000;
-                text-align: center;
-            }
-        
-            h1 {
-                font-weight: 900;
-                font-size: 24px;
-                margin-bottom: 10px;
-            }
-        
-            h4 {
-                font-weight: 900;
-                text-align: center;
-                font-size: 20px;
-            }
-        
-            h2 {
-                font-weight: 700;
-                font-size: 18px;
-                margin-top: 10px;
-                margin-bottom: 5px;
-                text-decoration: underline;
-            }
-        
-            h3 {
-                font-weight: 700;
-                text-decoration: underline;
-                font-size: 16px;
-                margin-top: 5px;
-                margin-bottom: 10px;
-            }
-        
-            p {
-                font-weight: 400;
-                line-height: 1.5;
-            }
-        
-            img {
-                width: 40px;
-                height: 40px;
-                margin-right: 10px;
-                text-align: center;
-                align-self: center;
-            }
-            </style>
-        </head>
-        <body>
-        
-        <div class="certificate">
-        <h1>Certificate of Completion 🥇</h1>
-        <p>This is to certify that</p>
-        <h2>${userName}</h2>
-        <p>has successfully completed the course on</p>
-        <h3>${mainTopic}</h3>
-        <p>on ${formattedDate}.</p>
-    
-        <div class="signature">
-            <img src=${logo}>
-            <h4>${name}</h4>
-        </div>
-    </div>
-        
-        </body>
-        </html>`;
+  // async function sendEmail(formattedDate) {
+  //   const userName = sessionStorage.getItem("mName");
+  //   const email = sessionStorage.getItem("email");
+  //   const html = `<!DOCTYPE html>
+  //       <html lang="en">
+  //       <head>
+  //           <meta charset="UTF-8">
+  //           <meta name="viewport" content="initial-scale=1.0">
+  //           <title>Certificate of Completion</title>
+  //           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
+  //           <style>
+  //           body {
+  //               font-family: 'Roboto', sans-serif;
+  //               text-align: center;
+  //               background-color: #fff;
+  //               margin: 0;
+  //               display: flex;
+  //               justify-content: center;
+  //               align-items: center;
+  //               height: 100vh;
+  //           }
 
-    try {
-      const postURL = "/api/sendcertificate";
-      await axiosInstance
-        .post(postURL, { html, email })
-        .then((res) => {
-          navigate("/certificate", {
-            state: { courseTitle: mainTopic, end: formattedDate },
-          });
-        })
-        .catch((error) => {
-          navigate("/certificate", {
-            state: { courseTitle: mainTopic, end: formattedDate },
-          });
-        });
-    } catch (error) {
-      navigate("/certificate", {
-        state: { courseTitle: mainTopic, end: formattedDate },
-      });
-    }
-  }
+  //           .certificate {
+  //               border: 10px solid #000;
+  //               max-width: 600px;
+  //               margin: 20px auto;
+  //               padding: 50px;
+  //               background-color: #fff;
+  //               position: relative;
+  //               color: #000;
+  //               text-align: center;
+  //           }
+
+  //           h1 {
+  //               font-weight: 900;
+  //               font-size: 24px;
+  //               margin-bottom: 10px;
+  //           }
+
+  //           h4 {
+  //               font-weight: 900;
+  //               text-align: center;
+  //               font-size: 20px;
+  //           }
+
+  //           h2 {
+  //               font-weight: 700;
+  //               font-size: 18px;
+  //               margin-top: 10px;
+  //               margin-bottom: 5px;
+  //               text-decoration: underline;
+  //           }
+
+  //           h3 {
+  //               font-weight: 700;
+  //               text-decoration: underline;
+  //               font-size: 16px;
+  //               margin-top: 5px;
+  //               margin-bottom: 10px;
+  //           }
+
+  //           p {
+  //               font-weight: 400;
+  //               line-height: 1.5;
+  //           }
+
+  //           img {
+  //               width: 40px;
+  //               height: 40px;
+  //               margin-right: 10px;
+  //               text-align: center;
+  //               align-self: center;
+  //           }
+  //           </style>
+  //       </head>
+  //       <body>
+
+  //       <div class="certificate">
+  //       <h1>Certificate of Completion 🥇</h1>
+  //       <p>This is to certify that</p>
+  //       <h2>${userName}</h2>
+  //       <p>has successfully completed the course on</p>
+  //       <h3>${mainTopic}</h3>
+  //       <p>on ${formattedDate}.</p>
+
+  //       <div class="signature">
+  //           <img src=${logo}>
+  //           <h4>${name}</h4>
+  //       </div>
+  //   </div>
+
+  //       </body>
+  //       </html>`;
+
+  //   try {
+  //     const postURL = "/api/sendcertificate";
+  //     await axiosInstance
+  //       .post(postURL, { html, email })
+  //       .then((res) => {
+  //         navigate("/certificate", {
+  //           state: { courseTitle: mainTopic, end: formattedDate },
+  //         });
+  //       })
+  //       .catch((error) => {
+  //         navigate("/certificate", {
+  //           state: { courseTitle: mainTopic, end: formattedDate },
+  //         });
+  //       });
+  //   } catch (error) {
+  //     navigate("/certificate", {
+  //       state: { courseTitle: mainTopic, end: formattedDate },
+  //     });
+  //   }
+  // }
 
   useEffect(() => {
     loadMessages();
@@ -714,6 +794,20 @@ const Course = () => {
 
   return (
     <>
+      <button
+        className={`absolute right-[10rem] top-6 px-4 py-1 rounded text-white ${
+          isLoading || !userEmail
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-green-700"
+        }`}
+        onClick={handleSendEmail}
+        disabled={isLoading || !userEmail}
+      >
+        {isLoading ? "Sending..." : "Course Completion Email"}
+      </button>
+
+      {emailStatus && <p>{emailStatus}</p>}
+      {/* {userEmail && <p>Email will be sent to: {userEmail}</p>} */}
       {!mainTopic ? null : (
         <div>
           <div
