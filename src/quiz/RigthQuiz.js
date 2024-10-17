@@ -10,7 +10,6 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [hasFetchedQuiz, setHasFetchedQuiz] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false); // Track if quiz has started
-  const [answerSaved, setAnswerSaved] = useState(false); // Track if answer is saved
 
   // Function to fetch quiz data manually
   const fetchQuiz = async () => {
@@ -28,15 +27,14 @@ const Quiz = ({ courseTitle, onCompletion }) => {
           },
           body: JSON.stringify({
             contents: [
-              {
-                parts: [
-                  {
-                    text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
+                {
+                    parts: [
+                        {
+                            text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
                             - A question text.
                             - Four multiple-choice options.
                             - The correct answer labeled at the end.
                             
-
                             Format the response as an array of objects, with each object containing:
                             - "question": The question text.
                             - "options": An array of 4 options.
@@ -67,11 +65,11 @@ const Quiz = ({ courseTitle, onCompletion }) => {
                             ]
 
                             Please generate at least 10 questions in this format.`
-                  }
-                ]
-              }
+                        }
+                    ]
+                }
             ]
-          }),
+        }),
         }
       );
 
@@ -123,6 +121,7 @@ const Quiz = ({ courseTitle, onCompletion }) => {
           },
         });
       });
+      console.log(formattedQuizData)
       return formattedQuizData;
     } catch (error) {
       console.error("Error parsing quiz content:", error);
@@ -134,7 +133,7 @@ const Quiz = ({ courseTitle, onCompletion }) => {
     setSelectedAnswer(index);
   };
 
-  const handleSaveAnswer = () => {
+  const handleNext = () => {
     // Get the correct answer text for the current question
     const correctAnswer = questions[currentQuestion]?.answer.optionAns;
 
@@ -146,34 +145,32 @@ const Quiz = ({ courseTitle, onCompletion }) => {
       setScore((prevScore) => prevScore + 1);
     }
 
-    setAnswerSaved(true); // Mark answer as saved
-  };
+    // Set the styles for the options after the user answers
+    setSelectedAnswer(null); // Reset the selection for next question
 
-  const handleNext = () => {
-    setAnswerSaved(false); // Reset the saved answer flag
-    setSelectedAnswer(null); // Clear selection
+    // Move to the next question or finish the quiz
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prevQuestion) => prevQuestion + 1);
     } else {
       // Optionally, handle quiz completion
-      onCompletion(score); // Pass the final score
+      onCompletion(score + (isCorrect ? 1 : 0)); // Pass the final score
     }
   };
 
   const getOptionClassName = (index) => {
-    if (answerSaved) {
+    // Check if the option is selected
+    if (selectedAnswer === index) {
       // Check if the answer is correct or wrong
       const correctAnswer = questions[currentQuestion]?.answer.optionAns;
       if (questions[currentQuestion]?.options[index] === correctAnswer) {
         return "bg-green-500 text-white border-green-600"; // Green for correct answer
-      } else if (selectedAnswer === index) {
-        return "bg-red-500 text-white border-red-600"; // Red for selected wrong answer
+      } else {
+        return "bg-red-500 text-white border-red-600"; // Red for incorrect answer
       }
+    } else {
+      // Default style when not selected
+      return "bg-gray-50 text-black border-gray-300 hover:bg-gray-100";
     }
-    // Sky blue for selected option
-    return selectedAnswer === index
-      ? "bg-sky-500 text-white border-sky-600"
-      : "bg-gray-50 text-black border-gray-300 hover:bg-gray-100";
   };
 
   return (
@@ -188,9 +185,7 @@ const Quiz = ({ courseTitle, onCompletion }) => {
 
       {quizStarted && !loading && questions.length > 0 && (
         <div className="quiz-container">
-          <h2>{`Question ${currentQuestion + 1}: ${
-            questions[currentQuestion]?.question || "Loading question..."
-          }`}</h2>
+          <h2>{questions[currentQuestion]?.question || "Loading question..."}</h2>
           <div className="flex flex-col space-y-4 mt-6 mb-6">
             {questions[currentQuestion]?.options.map((option, index) => (
               <div key={index} className="flex items-center">
@@ -198,25 +193,15 @@ const Quiz = ({ courseTitle, onCompletion }) => {
                 <button
                   className={`flex-grow text-left p-3 border rounded-md transition-colors duration-300 ${getOptionClassName(index)}`}
                   onClick={() => handleAnswerSelection(index)}
-                  disabled={answerSaved} // Disable option button after saving answer
                 >
                   {option}
                 </button>
               </div>
             ))}
           </div>
-
-          <div className="flex space-x-4">
-            {!answerSaved && (
-              <Button onClick={handleSaveAnswer} disabled={selectedAnswer === null}>
-                Save Answer
-              </Button>
-            )}
-
-            {answerSaved && (
-              <Button onClick={handleNext}>Next</Button>
-            )}
-          </div>
+          <Button onClick={handleNext} disabled={selectedAnswer === null}>
+            Next
+          </Button>
         </div>
       )}
     </div>

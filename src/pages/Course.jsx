@@ -18,6 +18,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import emailjs from "@emailjs/browser";
 import { getAuth } from "firebase/auth";
+import Quiz from "../quiz/Quiz";
 
 const Course = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +46,9 @@ const Course = () => {
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailStatus, setEmailStatus] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
+  const [quizAvailable, setQuizAvailable] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  // const [emailSent, setEmailSent] = useState(false);
 
   // ----------------------------------------------------------------------- //
   // Fetch user email and name from Firebase on load
@@ -134,7 +137,7 @@ const Course = () => {
     setPercentage(completionPercentage);
     if (completionPercentage >= "100") {
       setIsCompleted(true);
-      navigate("/quiz", { state: { courseTitle: mainTopic } });
+      setQuizAvailable(true);
     }
   };
 
@@ -487,15 +490,38 @@ const Course = () => {
   async function updateCourse() {
     CountDoneTopics();
     sessionStorage.setItem("jsonData", JSON.stringify(jsonData));
-    const dataToSend = {
-      content: JSON.stringify(jsonData),
-      courseId: courseId,
-    };
-    try {
-      const postURL = "/api/update";
-      await axiosInstance.post(postURL, dataToSend);
-    } catch (error) {
-      updateCourse();
+    const content = JSON.stringify(jsonData);
+
+    const chunkSize = 1000000; // 1MB chunks
+    const contentChunks = [];
+
+    for (let i = 0; i < content.length; i += chunkSize) {
+      contentChunks.push(content.slice(i, i + chunkSize));
+    }
+
+    const postURL = "/api/update";
+
+    for (let i = 0; i < contentChunks.length; i++) {
+      const dataToSend = {
+        content: contentChunks[i],
+        courseId: courseId,
+        chunkIndex: i,
+        totalChunks: contentChunks.length,
+      };
+
+      try {
+        const response = await axiosInstance.post(postURL, dataToSend);
+
+        if (i === contentChunks.length - 1) {
+          console.log("Course updated successfully");
+          // Handle successful update (e.g., show a success message)
+        }
+      } catch (error) {
+        console.error("Error updating course chunk:", error);
+        // Instead of recursive call, you might want to implement a retry mechanism
+        // or handle the error more gracefully
+        throw error; // This will stop the update process if any chunk fails
+      }
     }
   }
 
@@ -714,6 +740,16 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
+          {/* {quizAvailable && ( */}
+          <Sidebar.ItemGroup>
+            <button
+              onClick={() => setShowQuiz(true)}
+              className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
+            >
+              Take Quiz
+            </button>
+          </Sidebar.ItemGroup>
+          {/* )} */}
         </div>
       );
     } catch (error) {
@@ -903,6 +939,7 @@ const Course = () => {
                     renderTopicsAndSubtopics(jsonData[mainTopic.toLowerCase()])}
                 </Sidebar.Items>
               </Sidebar>
+
               <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
                 <p className="font-black text-black dark:text-white text-lg">
                   {selected}
@@ -929,6 +966,22 @@ const Course = () => {
                     </div>
                   )}
                 </div>
+                {/* {isComplete && (
+                  <div className="mt-10 absolute bg-white w-screen h-20 z-50">
+                    <h2 className="text-xl font-bold text-black dark:text-white">
+                      Course Quiz
+                    </h2>
+                    <Quiz
+                      // courseTitle={mainTopic}
+                      // onCompletion={(score) => {
+                      //   // Handle quiz completion
+                      //   console.log(`Quiz completed with score: ${score}`);
+                      //   // You might want to update some state or show a completion message
+                      // }}
+                    />
+                  </div>
+                 // )} */}
+
                 {isComplete && projectSuggestions && (
                   <div className="mt-10">
                     <h2 className="text-xl font-bold text-black dark:text-white">
@@ -966,7 +1019,7 @@ const Course = () => {
                       onClick={finish}
                       className="mr-3 underline text-black dark:text-white font-normal cursor-pointer"
                     >
-                      Download Certificate
+                      {/* Download Certificate */}
                     </button>
                   ) : (
                     <div className="w-8 h-8 mr-3">
@@ -995,45 +1048,56 @@ const Course = () => {
                 </Navbar.Collapse>
               </Navbar>
               <div className="px-5 bg-white dark:bg-black pt-5">
-                <p className="font-black text-black dark:text-white text-xl">
-                  {selected}
-                </p>
-                <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
-                  {type === "video & text course" ? (
-                    <div>
-                      <YouTube
-                        key={media}
-                        className="mb-5"
-                        videoId={media}
-                        opts={{}}
-                      />
-                      <StyledText text={theory} />
+                {showQuiz ? (
+                    <Quiz courseTitle={mainTopic}
+                    onCompletion={(score) => {
+                      // Handle quiz completion
+                      console.log(`Quiz completed with score: ${score}`);
+                      // You might want to update some state or show a completion message
+                    }} />
+                ) : (
+                  <>
+                    <p className="font-black text-black dark:text-white text-xl">
+                      {selected}
+                    </p>
+                    <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
+                      {type === "video & text course" ? (
+                        <div>
+                          <YouTube
+                            key={media}
+                            className="mb-5"
+                            videoId={media}
+                            opts={{}}
+                          />
+                          <StyledText text={theory} />
+                        </div>
+                      ) : (
+                        <div>
+                          <StyledText text={theory} />
+                          <img
+                            className="overflow-hidden p-10"
+                            src={media}
+                            alt="Media"
+                          />
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div>
-                      <StyledText text={theory} />
-                      <img
-                        className="overflow-hidden p-10"
-                        src={media}
-                        alt="Media"
-                      />
-                    </div>
-                  )}
-                </div>
-                {isComplete && projectSuggestions && (
-                  <div className="mt-10">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Project Suggestions
-                    </h2>
-                    <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                      {projectSuggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                    <div className="mt-5 text-black dark:text-white">
-                      <p>{submissionInstructions}</p>
-                    </div>
-                  </div>
+                    {/* {isComplete && projectSuggestions && (
+                      <div className="mt-10">
+                        <h2 className="text-xl font-bold text-black dark:text-white">
+                          Project Suggestions
+                        </h2>
+                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
+                          {projectSuggestions.map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                        <div className="mt-5 text-black dark:text-white">
+                          <p>{submissionInstructions}</p>
+                        </div>
+                      </div>
+                    )} */}
+                  </>
                 )}
               </div>
             </div>
