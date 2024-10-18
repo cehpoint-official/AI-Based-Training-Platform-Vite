@@ -22,9 +22,6 @@ import Quiz from "../quiz/Quiz";
 
 const Course = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const auth = getAuth();
-  const user = auth.currentUser;
-
   const [key, setkey] = useState("");
   const { state } = useLocation();
   const { mainTopic, type, courseId, end } = state || {};
@@ -42,82 +39,8 @@ const Course = () => {
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const [projectSuggestions, setProjectSuggestions] = useState(null);
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
-  const [userEmail, setUserEmail] = useState("");
-  const [userName, setUserName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState("");
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
-  // const [emailSent, setEmailSent] = useState(false);
-
-  // ----------------------------------------------------------------------- //
-  // Fetch user email and name from Firebase on load
-  useEffect(() => {
-    if (user) {
-      const displayName = user.displayName;
-      setUserName(displayName || "User"); // Set default name if none exists
-      const emailFromGoogle = user.providerData[0]?.email;
-
-      // Check if email is available (either from Google or email/password login)
-      if (emailFromGoogle) {
-        setUserEmail(emailFromGoogle); // Google email
-      } else if (user.email) {
-        setUserEmail(user.email); // Email from email/password sign-in
-      } else {
-        setUserEmail(""); // No email found, reset state
-      }
-    } else {
-      setUserEmail(""); // If user is not signed in, reset email
-    }
-  }, [user]);
-
-  // ----------------------------------------------------------------------- //
-  // Email Sending Logic
-  const sendEmail = () => {
-    if (!userEmail) {
-      setEmailStatus("Email not available");
-      console.log("No user email found");
-      return;
-    }
-
-    setIsLoading(true); // Show loading state
-    setEmailStatus(""); // Reset email status before sending
-
-    const emailData = {
-      userName: userName, // Name of the user
-      userEmail: userEmail, // The email where the message will be sent
-      message: "Great Job, You finished the course!", // The email message
-    };
-
-    emailjs
-      .send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        emailData,
-        {
-          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-        }
-      )
-      .then(
-        () => {
-          setEmailStatus("SUCCESS! Email sent");
-          alert("SUCCESS! Email sent"); // Show success message
-          setIsLoading(false); // Reset loading state
-        },
-        (error) => {
-          setEmailStatus(`FAILED... ${error.text}`);
-          console.log("FAILED...", error.text);
-          setIsLoading(false); // Reset loading state on error
-        }
-      );
-  };
-
-  // ----------------------------------------------------------------------- //
-  // Button Handler
-  const handleSendEmail = () => {
-    sendEmail();
-  };
-  // --------------------------------------------------------------------------- //
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -718,11 +641,12 @@ const Course = () => {
                       aria-labelledby="options-menu"
                     >
                       {topic.subtopics.map((subtopic) => (
-                        <p
+                        <button
                           key={subtopic.title}
-                          onClick={() =>
-                            handleSelect(topic.title, subtopic.title)
-                          }
+                          onClick={() => {
+                            handleSelect(topic.title, subtopic.title);
+                            setShowQuiz(false);
+                          }}
                           className="flex py-2 text-sm flex-row items-center font-normal text-black dark:text-white  text-start"
                           role="menuitem"
                         >
@@ -732,7 +656,7 @@ const Course = () => {
                           ) : (
                             <></>
                           )}
-                        </p>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -740,16 +664,17 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {/* {quizAvailable && ( */}
-          <Sidebar.ItemGroup>
-            <button
-              onClick={() => setShowQuiz(true)}
-              className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
-            >
-              Take Quiz
-            </button>
-          </Sidebar.ItemGroup>
-          {/* )} */}
+          {quizAvailable ||
+            (isComplete && (
+              <Sidebar.ItemGroup>
+                <button
+                  onClick={() => setShowQuiz(true)}
+                  className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
+                >
+                  Take Quiz
+                </button>
+              </Sidebar.ItemGroup>
+            ))}
         </div>
       );
     } catch (error) {
@@ -830,20 +755,6 @@ const Course = () => {
 
   return (
     <>
-      <button
-        className={`absolute right-[10rem] top-6 px-4 py-1 rounded text-white ${
-          isLoading || !userEmail
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-green-700"
-        }`}
-        onClick={handleSendEmail}
-        disabled={isLoading || !userEmail}
-      >
-        {isLoading ? "Sending..." : "Course Completion Email"}
-      </button>
-
-      {emailStatus && <p>{emailStatus}</p>}
-      {/* {userEmail && <p>Email will be sent to: {userEmail}</p>} */}
       {!mainTopic ? null : (
         <div>
           <div
@@ -871,7 +782,7 @@ const Course = () => {
                         onClick={finish}
                         className="mr-3 underline text-black dark:text-white font-normal cursor-pointer"
                       >
-                        Download Certificate
+                        {/* Download Certificate */}
                       </button>
                     ) : (
                       <div className="w-7 h-7 mr-3">
@@ -941,32 +852,46 @@ const Course = () => {
               </Sidebar>
 
               <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                <p className="font-black text-black dark:text-white text-lg">
-                  {selected}
-                </p>
-                <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
-                  {type === "video & text course" ? (
-                    <div>
-                      <YouTube
-                        key={media}
-                        className="mb-5"
-                        videoId={media}
-                        opts={{}}
-                      />
-                      <StyledText text={theory} />
+                {/* sm & md  */}
+                {showQuiz ? (
+                  <div className="w-full min-h-[90vh] flex items-center justify-center">
+                    <Quiz
+                      courseTitle={mainTopic}
+                      onCompletion={() => {
+                        // Handle quiz completion
+                        console.log(`Quiz completed`);
+                        // You might want to update some state or show a completion message
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-black text-black dark:text-white text-lg">
+                      {selected}
+                    </p>
+                    <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
+                      {type === "video & text course" ? (
+                        <div>
+                          <YouTube
+                            key={media}
+                            className="mb-5"
+                            videoId={media}
+                            opts={{}}
+                          />
+                          <StyledText text={theory} />
+                        </div>
+                      ) : (
+                        <div>
+                          <StyledText text={theory} />
+                          <img
+                            className="overflow-hidden p-10"
+                            src={media}
+                            alt="Media"
+                          />
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div>
-                      <StyledText text={theory} />
-                      <img
-                        className="overflow-hidden p-10"
-                        src={media}
-                        alt="Media"
-                      />
-                    </div>
-                  )}
-                </div>
-                {/* {isComplete && (
+                    {/* {isComplete && (
                   <div className="mt-10 absolute bg-white w-screen h-20 z-50">
                     <h2 className="text-xl font-bold text-black dark:text-white">
                       Course Quiz
@@ -982,25 +907,27 @@ const Course = () => {
                   </div>
                  // )} */}
 
-                {isComplete && projectSuggestions && (
-                  <div className="mt-10">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Project Suggestions
-                    </h2>
-                    <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                      {projectSuggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                    <div className="mt-5 text-black dark:text-white">
-                      <p>{submissionInstructions}</p>
-                    </div>
-                  </div>
+                    {isComplete && projectSuggestions && (
+                      <div className="mt-10">
+                        <h2 className="text-xl font-bold text-black dark:text-white">
+                          Project Suggestions
+                        </h2>
+                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
+                          {projectSuggestions.map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                        <div className="mt-5 text-black dark:text-white">
+                          <p>{submissionInstructions}</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex flex-row overflow-y-auto h-screen max-md:hidden">
+          <div className="flex bg-black flex-row overflow-y-auto h-screen max-md:hidden">
             <Sidebar theme={storedTheme} aria-label="Default sidebar example">
               <LogoComponent isDarkMode={storedTheme} />
               <Sidebar.Items className="mt-6">
@@ -1047,14 +974,18 @@ const Course = () => {
                   </div>
                 </Navbar.Collapse>
               </Navbar>
-              <div className="px-5 bg-white dark:bg-black pt-5">
+              <div className="px-8 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                    <Quiz courseTitle={mainTopic}
-                    onCompletion={(score) => {
-                      // Handle quiz completion
-                      console.log(`Quiz completed with score: ${score}`);
-                      // You might want to update some state or show a completion message
-                    }} />
+                  <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
+                    <Quiz
+                      courseTitle={mainTopic}
+                      onCompletion={() => {
+                        // Handle quiz completion
+                        console.log(`Quiz completed`);
+                        // You might want to update some state or show a completion message
+                      }}
+                    />
+                  </div>
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">

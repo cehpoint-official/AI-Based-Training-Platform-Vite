@@ -1,16 +1,94 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
+import emailjs from "@emailjs/browser";
+import { getAuth } from "firebase/auth";
 
 const Quiz = ({ courseTitle, onCompletion }) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [hasFetchedQuiz, setHasFetchedQuiz] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false); // Track if quiz has started
-  const [answerSaved, setAnswerSaved] = useState(false); // Track if answer is saved
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [answerSaved, setAnswerSaved] = useState(false);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState("");
+
+  // ----------------------------------------------------------------------- //
+  // Fetch user email and name from Firebase on load
+  useEffect(() => {
+    if (user) {
+      const displayName = user.displayName;
+      setUserName(displayName || "User"); // Set default name if none exists
+      const emailFromGoogle = user.providerData[0]?.email;
+
+      // Check if email is available (either from Google or email/password login)
+      if (emailFromGoogle) {
+        setUserEmail(emailFromGoogle); // Google email
+      } else if (user.email) {
+        setUserEmail(user.email); // Email from email/password sign-in
+      } else {
+        setUserEmail(""); // No email found, reset state
+      }
+    } else {
+      setUserEmail(""); // If user is not signed in, reset email
+    }
+  }, [user]);
+
+  // ----------------------------------------------------------------------- //
+  // Email Sending Logic
+  const sendEmail = () => {
+    if (!userEmail) {
+      setEmailStatus("Email not available");
+      console.log("No user email found");
+      return;
+    }
+
+    setIsLoading(true); // Show loading state
+    setEmailStatus(""); // Reset email status before sending
+
+    const emailData = {
+      userName: userName, // Name of the user
+      userEmail: userEmail, // The email where the message will be sent
+      message: "Great Job, You finished the course!", // The email message
+    };
+
+    emailjs
+      .send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        emailData,
+        {
+          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+        }
+      )
+      .then(
+        () => {
+          setEmailStatus("SUCCESS! Email sent");
+          alert("SUCCESS! Email sent"); // Show success message
+          setIsLoading(false); // Reset loading state
+        },
+        (error) => {
+          setEmailStatus(`FAILED... ${error.text}`);
+          console.log("FAILED...", error.text);
+          setIsLoading(false); // Reset loading state on error
+        }
+      );
+  };
+
+  // ----------------------------------------------------------------------- //
+  // Button Handler
+  const handleSendEmail = () => {
+    sendEmail();
+  };
 
   // Function to fetch quiz data manually
   const fetchQuiz = async () => {
@@ -66,11 +144,11 @@ const Quiz = ({ courseTitle, onCompletion }) => {
                                 }
                             ]
 
-                            Please generate at least 10 questions in this format.`
-                  }
-                ]
-              }
-            ]
+                            Please generate at least 10 questions in this format.`,
+                  },
+                ],
+              },
+            ],
           }),
         }
       );
@@ -139,7 +217,8 @@ const Quiz = ({ courseTitle, onCompletion }) => {
     const correctAnswer = questions[currentQuestion]?.answer.optionAns;
 
     // Check if the selected answer is correct or incorrect
-    const isCorrect = questions[currentQuestion]?.options[selectedAnswer] === correctAnswer;
+    const isCorrect =
+      questions[currentQuestion]?.options[selectedAnswer] === correctAnswer;
 
     // Update score if answer is correct
     if (isCorrect) {
@@ -152,11 +231,19 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   const handleNext = () => {
     setAnswerSaved(false); // Reset the saved answer flag
     setSelectedAnswer(null); // Clear selection
+
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prevQuestion) => prevQuestion + 1);
     } else {
-      // Optionally, handle quiz completion
-      onCompletion(score); // Pass the final score
+      // Finish the quiz
+      setQuizFinished(true); // Mark the quiz as finished
+
+      // Send email if score is 5 or more
+      if (score >= 5) {
+        handleSendEmail(); // Send the email if the user scored 5 or more
+      }
+
+      onCompletion(score); // Optionally, pass the final score
     }
   };
 
@@ -177,44 +264,70 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   };
 
   return (
-    <div className="flex flex-col items-center text-white h-screen overflow-y-hidden">
-      {!quizStarted && !hasFetchedQuiz && (
+    <div className="flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative p-10">
+      {/* Floating Score Counter */}
+      <div className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${quizFinished && 'hidden'} `}>
+        <h3 className="text-lg font-semibold">Score: {score}</h3>
+      </div>
+      <h1 className="text-3xl font-bold mb-6">Quiz</h1>
+      {!quizStarted ? (
         <Button onClick={handleStartQuiz}>Start Quiz</Button>
-      )}
-
-      {quizStarted && loading && (
-        <AiOutlineLoading className="animate-spin" />
-      )}
-
-      {quizStarted && !loading && questions.length > 0 && (
-        <div className="quiz-container">
-          <h2>{`Question ${currentQuestion + 1}: ${
-            questions[currentQuestion]?.question || "Loading question..."
-          }`}</h2>
-          <div className="flex flex-col space-y-4 mt-6 mb-6">
-            {questions[currentQuestion]?.options.map((option, index) => (
-              <div key={index} className="flex items-center">
-                <span className="mr-3 font-bold">{index + 1}.</span>
-                <button
-                  className={`flex-grow text-left p-3 border rounded-md transition-colors duration-300 ${getOptionClassName(index)}`}
-                  onClick={() => handleAnswerSelection(index)}
-                  disabled={answerSaved} // Disable option button after saving answer
-                >
-                  {option}
-                </button>
-              </div>
-            ))}
+      ) : loading ? (
+        <div className="flex items-center justify-center">
+          <AiOutlineLoading size={50} className="animate-spin" />
+        </div>
+      ) : quizFinished ? (
+        score >= 5 ? (
+          <div className="flex items-center justify-center flex-col space-y-4">
+            <h2 className="text-3xl font-bold text-green-500">
+              Congratulations!
+            </h2>
+            <p className="text-xl">You have successfully completed the quiz.</p>
+            <p className="text-lg">
+              A certificate has been sent to your email:{" "}
+              <span className="font-semibold">{userEmail}</span>.
+            </p>
+            {emailStatus && <p>{emailStatus}</p>}
+            {/* <Button onClick={handleSendEmail}>Resend Certificate</Button> */}
           </div>
-
-          <div className="flex space-x-4">
-            {!answerSaved && (
-              <Button onClick={handleSaveAnswer} disabled={selectedAnswer === null}>
-                Save Answer
-              </Button>
-            )}
-
+        ) : (
+          <div className="flex items-center justify-center flex-col space-y-4">
+            <h2 className="text-3xl font-bold text-red-500">
+              Sorry, You Didn't Pass
+            </h2>
+            <p className="text-xl">
+              You scored {score} out of 10. We recommend you revise the course and try again.
+            </p>
+          </div>
+        )
+      ) : (
+        <div className="w-full max-w-3xl space-y-6 p-4">
+          <h2 className="text-xl font-bold">
+          {currentQuestion + 1}. {questions[currentQuestion]?.question}
+          </h2>
+          <ul className="space-y-3">
+            {questions[currentQuestion]?.options.map((option, index) => (
+              <li
+                key={index}
+                className={`border p-2 rounded-lg cursor-pointer transition-colors duration-300 ${getOptionClassName(
+                  index
+                )}`}
+                onClick={() => handleAnswerSelection(index)}
+              >
+                {option}
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-between mt-4">
+            <Button onClick={handleSaveAnswer} disabled={answerSaved}>
+              {answerSaved ? "Answer Saved" : "Save Answer"}
+            </Button>
             {answerSaved && (
-              <Button onClick={handleNext}>Next</Button>
+              <Button onClick={handleNext}>
+                {currentQuestion === questions.length - 1
+                  ? "Finish Quiz"
+                  : "Next Question"}
+              </Button>
             )}
           </div>
         </div>
