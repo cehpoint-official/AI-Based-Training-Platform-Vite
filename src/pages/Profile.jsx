@@ -33,7 +33,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    const storedApiKey = sessionStorage.getItem("currentApiKey");
+    const storedApiKey = sessionStorage.getItem("apiKey");
     if (storedApiKey) {
       setCurrentApiKey(storedApiKey);
     }
