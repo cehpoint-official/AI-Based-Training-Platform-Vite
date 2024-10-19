@@ -217,6 +217,8 @@ const Create = () => {
                 jsonData: parsedJson,
                 mainTopic: mainTopic.toLowerCase(),
                 type: selectedType.toLowerCase(),
+                useUserApiKey: useUserApiKey,
+                userApiKey: userApiKey,
             },
         });
     } catch (error) {
