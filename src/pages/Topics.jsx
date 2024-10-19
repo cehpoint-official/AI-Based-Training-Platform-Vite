@@ -55,26 +55,39 @@ const Topics = () => {
     }
   }
 
-  async function sendPrompt(prompt, promptImage) {
+  async function sendPrompt(prompt, promptImage, retryCount = 0, MAX_RETRIES = 3) {
     const dataToSend = {
       prompt: prompt,
     };
+  
     try {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
-      const htmlContent = generatedText;
-
+  
       try {
-        const parsedJson = htmlContent;
-        sendImage(parsedJson, promptImage);
+        const parsedJson = generatedText; 
+        sendImage(parsedJson, promptImage); 
       } catch (error) {
-        sendPrompt(prompt, promptImage);
+        console.error("Error parsing the generated text:", error);
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          sendPrompt(prompt, promptImage, retryCount + 1);
+        } else {
+          console.error("Max retries reached. Failed to parse the response.");
+        }
       }
     } catch (error) {
-      sendPrompt(prompt, promptImage);
+      console.error("Error sending prompt:", error);
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        sendPrompt(prompt, promptImage, retryCount + 1);
+      } else {
+        console.error("Max retries reached. Failed to send the prompt.");
+      }
     }
   }
+  
 
   async function sendImage(parsedJson, promptImage) {
     const dataToSend = {
