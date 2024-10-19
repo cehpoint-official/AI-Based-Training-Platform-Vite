@@ -21,6 +21,9 @@ import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
 
 const Course = () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  // console.log(user.uid)
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -99,12 +102,13 @@ const Course = () => {
       }
     }
   };
+  
   const getCertificateUrl = async () => {
     try {
       const response = await fetch("/api/get-certificate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: "your-user-id" }),
+        body: JSON.stringify({ userId: user.uid }),
       });
 
       if (!response.ok) {
@@ -669,9 +673,10 @@ const Course = () => {
               <Sidebar.ItemGroup>
                 <button
                   onClick={() => setShowQuiz(true)}
-                  className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
+                  className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
                 >
                   Take Quiz
+                  <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
               </Sidebar.ItemGroup>
             ))}
