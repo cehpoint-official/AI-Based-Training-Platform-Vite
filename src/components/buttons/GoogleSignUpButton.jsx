@@ -8,7 +8,7 @@ const GoogleSignUpButton = ({ text, navigate, showToast }) => {
     try {
       console.log("sign");
       const result = await signInWithPopup(auth, googleProvider);
-      const { _tokenResponse } = result;
+      
       const user = result.user;
       const token = await user.getIdToken(); // Get the user's token
 
@@ -16,8 +16,8 @@ const GoogleSignUpButton = ({ text, navigate, showToast }) => {
 
       const res = await axiosInstance.post(postURL, {
         token,
-        name: _tokenResponse.fullName,
-        email: _tokenResponse.email,
+        name: user.displayName,  // Changed from _tokenResponse.fullName
+        email: user.email,       // Changed from _tokenResponse.email
       });
 
       console.log(res);

@@ -15,7 +15,8 @@ import Profile from "./pages/Profile";
 import TermsPolicy from "./pages/Termspolicy";
 import Features from "./pages/Features";
 import About from "./pages/About";
-import Privacy from "./pages/Privacy";
+import APIKeyForm from "./pages/APIKeyForm";
+import PrivacyPolicy from "./pages/Privacy";
 // import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Contact from "./pages/Contact";
 import DashBoard from "./admin/Dashboard";
@@ -77,13 +78,14 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsPolicy />} />
-          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           {/* Admin Panel */}
           <Route path="/dashBoard" element={<DashBoard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />
           <Route path="/contacts" element={<Contacts />} />
+          <Route path="/apikeyform" element={<APIKeyForm />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>
