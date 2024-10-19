@@ -273,39 +273,39 @@ const Course = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleSelect = (topics, sub) => {
-    const mTopic = jsonData[mainTopic.toLowerCase()].find(
-      (topic) => topic.title === topics
+  const handleSelect = (selectedTopics, selectedSub) => {
+    const topicKey = mainTopic.toLowerCase();
+    const mTopic = jsonData[topicKey]?.find(
+      (topic) => topic.title === selectedTopics
     );
     const mSubTopic = mTopic?.subtopics.find(
-      (subtopic) => subtopic.title === sub
+      (subtopic) => subtopic.title === selectedSub
     );
 
-    if (
-      mSubTopic.theory === "" ||
-      mSubTopic.theory === undefined ||
-      mSubTopic.theory === null
-    ) {
-      if (type === "video & text course") {
-        const query = `${mSubTopic.title} ${mainTopic} in english`;
-        const id = toast.loading("Please wait...");
-        sendVideo(query, topics, sub, id, mSubTopic.title);
-      } else {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${mSubTopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-        const promptImage = `Example of ${mSubTopic.title} in ${mainTopic}`;
-        const id = toast.loading("Please wait...");
-        sendPrompt(prompt, promptImage, topics, sub, id);
-      }
-    } else {
-      setSelected(mSubTopic.title);
-
-      setTheory(mSubTopic.theory);
-      if (type === "video & text course") {
-        setMedia(mSubTopic.youtube);
-      } else {
-        setMedia(mSubTopic.image);
-      }
+    if (!mSubTopic) {
+      toast.error("Subtopic not found.");
+      return;
     }
+
+    const { theory, youtube, image } = mSubTopic;
+
+    if (!theory) {
+      const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      const id = toast.loading("Please wait...");
+
+      if (type === "video & text course") {
+        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+      } else {
+        const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
+        const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
+        sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
+      }
+      return;
+    }
+
+    setSelected(mSubTopic.title);
+    setTheory(theory);
+    setMedia(type === "video & text course" ? youtube : image);
   };
 
   async function sendPrompt(prompt, promptImage, topics, sub, id) {
