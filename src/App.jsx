@@ -28,6 +28,7 @@ import Contacts from "./admin/Contacts";
 import ErrorPage from "./pages/ErrorPage";
 
 import "./App.css";
+import Quiz from "./quiz/Quiz";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/quiz" element={<Quiz />} />
           <Route path="/create" element={<Create />} />
           <Route path="/topics" element={<Topics />} />
           <Route path="/course" element={<Course />} />
