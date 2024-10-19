@@ -3,7 +3,8 @@ import Header from "../components/header";
 import Footers from "../components/footers";
 import { Button, Label } from "flowbite-react";
 import { toast } from "react-toastify";
-import axios from "axios";
+import axiosInstance from "../axios";
+
 import { AiOutlineLoading } from "react-icons/ai";
 
 const Contact = () => {
@@ -41,7 +42,7 @@ const Contact = () => {
     const postURL = "/api/contact";
     try {
       setProcessing(true);
-      const response = await axios.post(postURL, {
+      const response = await axiosInstance.post(postURL, {
         fname,
         lname,
         email,

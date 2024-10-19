@@ -10,7 +10,7 @@ import StyledText from "../components/styledText";
 import YouTube from "react-youtube";
 import { toast } from "react-toastify";
 import { logo, name } from "../constants";
-import axios from "axios";
+import axiosInstance from "../axios";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
@@ -75,7 +75,7 @@ const Course = () => {
           prompt: `Suggest a mini project based on the topics covered in this course. Include the following details: project description, objectives, and key points.`,
         };
         const postURL = "/api/project-suggestions";
-        const res = await axios.post(postURL, dataToSend);
+        const res = await axiosInstance.post(postURL, dataToSend);
         setProjectSuggestions(res.data.suggestions);
 
         setSubmissionInstructions(
@@ -209,7 +209,7 @@ const Course = () => {
 
     try {
       const postURL = "/api/sendcertificate";
-      await axios
+      await axiosInstance
         .post(postURL, { html, email })
         .then((res) => {
           navigate("/certificate", {
@@ -273,39 +273,39 @@ const Course = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleSelect = (topics, sub) => {
-    const mTopic = jsonData[mainTopic.toLowerCase()].find(
-      (topic) => topic.title === topics
+  const handleSelect = (selectedTopics, selectedSub) => {
+    const topicKey = mainTopic.toLowerCase();
+    const mTopic = jsonData[topicKey]?.find(
+      (topic) => topic.title === selectedTopics
     );
     const mSubTopic = mTopic?.subtopics.find(
-      (subtopic) => subtopic.title === sub
+      (subtopic) => subtopic.title === selectedSub
     );
 
-    if (
-      mSubTopic.theory === "" ||
-      mSubTopic.theory === undefined ||
-      mSubTopic.theory === null
-    ) {
-      if (type === "video & text course") {
-        const query = `${mSubTopic.title} ${mainTopic} in english`;
-        const id = toast.loading("Please wait...");
-        sendVideo(query, topics, sub, id, mSubTopic.title);
-      } else {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${mSubTopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-        const promptImage = `Example of ${mSubTopic.title} in ${mainTopic}`;
-        const id = toast.loading("Please wait...");
-        sendPrompt(prompt, promptImage, topics, sub, id);
-      }
-    } else {
-      setSelected(mSubTopic.title);
-
-      setTheory(mSubTopic.theory);
-      if (type === "video & text course") {
-        setMedia(mSubTopic.youtube);
-      } else {
-        setMedia(mSubTopic.image);
-      }
+    if (!mSubTopic) {
+      toast.error("Subtopic not found.");
+      return;
     }
+
+    const { theory, youtube, image } = mSubTopic;
+
+    if (!theory) {
+      const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      const id = toast.loading("Please wait...");
+
+      if (type === "video & text course") {
+        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+      } else {
+        const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
+        const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
+        sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
+      }
+      return;
+    }
+
+    setSelected(mSubTopic.title);
+    setTheory(theory);
+    setMedia(type === "video & text course" ? youtube : image);
   };
 
   async function sendPrompt(prompt, promptImage, topics, sub, id) {
@@ -314,7 +314,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/generate";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
       try {
@@ -334,7 +334,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/image";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       try {
         const generatedText = res.data.url;
         sendData(generatedText, parsedJson, topics, sub, id);
@@ -413,7 +413,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/update";
-      await axios.post(postURL, dataToSend);
+      await axiosInstance.post(postURL, dataToSend);
     } catch (error) {
       updateCourse();
     }
@@ -425,7 +425,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/yt";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
 
       try {
         const generatedText = res.data.url;
@@ -444,7 +444,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/transcript";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
 
       try {
         const generatedText = res.data.url;
@@ -468,7 +468,7 @@ const Course = () => {
     };
     try {
       const postURL = "/api/generate";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
       try {
@@ -533,7 +533,7 @@ const Course = () => {
 
     while (attempts < maxRetries) {
       try {
-        const response = await axios.post(url, dataToSend);
+        const response = await axiosInstance.post(url, dataToSend);
 
         if (response.data.success === false) {
           console.warn("Request failed, retrying...");

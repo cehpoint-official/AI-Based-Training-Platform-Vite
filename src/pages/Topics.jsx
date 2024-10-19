@@ -4,8 +4,8 @@ import Footers from "../components/Footers";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
-import axios from "axios";
 import { toast } from "react-toastify";
+import axiosInstance from "../axios";
 
 const Topics = () => {
   const { state } = useLocation();
@@ -43,7 +43,8 @@ const Topics = () => {
     const firstSubtopic = mainTopicData.subtopics[0];
 
     if (type === "video & text course") {
-      const query = `${firstSubtopic.title} ${mainTopic} in english`;
+      const query = `Watch tutorials on ${firstSubtopic.title} related to ${mainTopic} in English. Learn the best practices and insights!`;
+
       sendVideo(query, firstSubtopic.title);
       setProcessing(true);
     } else {
@@ -60,7 +61,7 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/generate";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
 
@@ -81,7 +82,7 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/image";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       try {
         const generatedText = res.data.url;
         sendData(generatedText, parsedJson);
@@ -101,7 +102,7 @@ const Topics = () => {
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
     const postURL = "/api/course";
-    const response = await axios.post(postURL, {
+    const response = await axiosInstance.post(postURL, {
       user,
       content,
       type,
@@ -135,7 +136,7 @@ const Topics = () => {
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
     const postURL = "/api/course";
-    const response = await axios.post(postURL, {
+    const response = await axiosInstance.post(postURL, {
       user,
       content,
       type,
@@ -168,16 +169,12 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/yt";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
 
-      try {
-        const generatedText = res.data.url;
-        sendTranscript(generatedText, subtopic);
-      } catch (error) {
-        sendVideo(query, subtopic);
-      }
+      const generatedText = res.data.url;
+      sendTranscript(generatedText, subtopic);
     } catch (error) {
-      sendVideo(query, subtopic);
+      console.log(error);
     }
   }
 
@@ -187,43 +184,37 @@ const Topics = () => {
     };
     try {
       const postURL = "/api/transcript";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
 
-      try {
-        const generatedText = res.data.url;
-        const allText = generatedText.map((item) => item.text);
-        const concatenatedText = allText.join(" ");
-        const prompt = `Summarize this theory in a teaching way and :- ${concatenatedText}.`;
-        sendSummery(prompt, url);
-      } catch (error) {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtopic}. Please Strictly Don't Give Additional Resources And Images.`;
-        sendSummery(prompt, url);
-      }
+      const generatedText = res.data.url;
+      const allText = generatedText.map((item) => item.text);
+      const concatenatedText = allText.join(" ");
+      const prompt = `Summarize this theory in a teaching way and :- ${concatenatedText}.`;
+      sendSummery(prompt, url);
     } catch (error) {
-      const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtopic}. Please Strictly Don't Give Additional Resources And Images.`;
+      const mainTopicData = jsonData[mainTopic][0];
+      const firstSubtopic = mainTopicData.subtopics[0];
+      const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
       sendSummery(prompt, url);
     }
   }
 
   async function sendSummery(prompt, url) {
+    console.log(prompt, url);
     const dataToSend = {
       prompt: prompt,
     };
     try {
       const postURL = "/api/generate";
-      const res = await axios.post(postURL, dataToSend);
+      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
 
-      try {
-        const parsedJson = htmlContent;
-        setProcessing(false);
-        sendDataVideo(url, parsedJson);
-      } catch (error) {
-        sendSummery(prompt, url);
-      }
+      const parsedJson = htmlContent;
+      setProcessing(false);
+      sendDataVideo(url, parsedJson);
     } catch (error) {
-      sendSummery(prompt, url);
+      console.log(error);
     }
   }
 

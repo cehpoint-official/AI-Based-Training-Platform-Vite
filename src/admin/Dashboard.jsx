@@ -7,7 +7,7 @@ import AdminSidebar from "./components/adminsidebar";
 import AdminHead from "./components/adminhead";
 import AdminSidebarMobile from "./components/adminsidebarmobile";
 import DashboardCards from "./components/dashboardcards";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,7 +17,7 @@ const Dashboard = () => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
       const postURL = `/api/dashboard`;
-      const response = await axios.post(postURL);
+      const response = await axiosInstance.post(postURL);
       setData(response.data);
       //         // sessionStorage.setItem('terms', response.data.admin.terms)
       //         // sessionStorage.setItem('privacy', response.data.admin.privacy)

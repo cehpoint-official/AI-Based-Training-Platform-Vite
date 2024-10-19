@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Card, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import found from "@/assets/found.svg";
+import axiosInstance from "../axios";
 
 const UserCourses = ({ userId }) => {
   const [courses, setCourses] = useState([]);
@@ -12,7 +12,7 @@ const UserCourses = ({ userId }) => {
     const fetchUserCourses = async () => {
       const postURL = `/api/courses?userId=${userId}`;
       try {
-        const response = await axios.get(postURL);
+        const response = await axiosInstance.get(postURL);
         setCourses(response.data);
         setProcessing(false);
       } catch (error) {

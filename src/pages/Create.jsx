@@ -5,8 +5,8 @@ import Footers from "../components/footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axios";
 
 const Create = () => {
   const maxSubtopics = 5;
@@ -128,50 +128,55 @@ const Create = () => {
       return;
     }
 
-    const prompt = `Generate a list of Strict ${selectedValue} topics and any number sub topic for each topic for main title ${mainTopic.toLowerCase()}, everything in single line. Those ${selectedValue} topics should Strictly include these topics :- ${subtopics
+    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
       .join(", ")
-      .toLowerCase()}. Strictly Keep theory, youtube, image field empty. Generate in the form of JSON in this format {
-            "${mainTopic.toLowerCase()}": [
-       {
-       "title": "Topic Title",
-       "subtopics": [
+      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", and "image" empty. 
+
+Please output the list in the following JSON format strictly in English:
+{
+  "${mainTopic.toLowerCase()}": [
+    {
+      "title": "Topic Title",
+      "subtopics": [
         {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
         },
         {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
         }
-       ]
-       },
-       {
-       "title": "Topic Title",
-       "subtopics": [
-        {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
-        },
-        {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false
-        }
-       ]
-       }
       ]
-      }`;
+    },
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        }
+      ]
+    }
+  ]
+}`;
+
+    // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
 
     await sendPrompt(prompt, mainTopic, selectedType);
 
@@ -188,7 +193,7 @@ const Create = () => {
       prompt: prompt,
     };
     const postURL = "/api/prompt";
-    const res = await axios.post(postURL, dataToSend);
+    const res = await axiosInstance.post(postURL, dataToSend);
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
       .replace(/```json/g, "")

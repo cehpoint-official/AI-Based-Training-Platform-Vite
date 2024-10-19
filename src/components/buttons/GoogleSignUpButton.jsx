@@ -1,7 +1,7 @@
 import { Button } from "flowbite-react";
 import { auth, googleProvider } from "@/firebase/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
-import axios from "axios";
+import axiosInstance from "@/axios";
 
 const GoogleSignUpButton = ({ text, navigate, showToast }) => {
   const handleGoogleSignIn = async () => {
@@ -14,7 +14,7 @@ const GoogleSignUpButton = ({ text, navigate, showToast }) => {
 
       const postURL = `/api/google/auth`;
 
-      const res = await axios.post(postURL, {
+      const res = await axiosInstance.post(postURL, {
         token,
         name: user.displayName,  // Changed from _tokenResponse.fullName
         email: user.email,       // Changed from _tokenResponse.email

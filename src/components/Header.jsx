@@ -6,7 +6,7 @@ import DarkModeToggle from "./DarkModeToggle";
 import LogoComponent from "./LogoComponent";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const Header = ({ isHome }) => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -20,7 +20,8 @@ const Header = ({ isHome }) => {
     }
     async function dashboardData() {
       const postURL = `/api/dashboard`;
-      const response = await axios.post(postURL);
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      const response = await axiosInstance.post(postURL, user);
       sessionStorage.setItem("adminEmail", response.data.admin.email);
       if (response.data.admin.email === sessionStorage.getItem("email")) {
         setAdmin(true);
@@ -33,7 +34,7 @@ const Header = ({ isHome }) => {
         setAdmin(true);
       }
     } else {
-      dashboardData();
+      // dashboardData();
     }
   });
 

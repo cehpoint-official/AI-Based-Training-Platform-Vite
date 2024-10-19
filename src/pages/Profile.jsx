@@ -4,7 +4,7 @@ import Footers from "../components/footers";
 import { Button, Label } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const Profile = () => {
   const [mName, setName] = useState(sessionStorage.getItem("mName"));
@@ -49,7 +49,7 @@ const Profile = () => {
     const uid = sessionStorage.getItem("uid");
     const postURL = `/api/profile`;
     try {
-      const response = await axios.post(postURL, {
+      const response = await axiosInstance.post(postURL, {
         email,
         mName,
         password,
@@ -80,7 +80,7 @@ const Profile = () => {
     const uid = sessionStorage.getItem("uid");
     const postURL = `/api/profile`;
     try {
-      const response = await axios.post(postURL, {
+      const response = await axiosInstance.post(postURL, {
         email,
         mName,
         apiKey: newApiKey,

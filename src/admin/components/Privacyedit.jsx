@@ -1,7 +1,7 @@
-import axios from "axios";
 import { Button } from "flowbite-react";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "../axios";
 
 const PrivacyEdit = () => {
   const [terms, setTerms] = useState(sessionStorage.getItem("privacy"));
@@ -30,7 +30,7 @@ const PrivacyEdit = () => {
 
   async function saveTerms() {
     const postURL = "/api/saveadmin";
-    const response = await axios.post(postURL, {
+    const response = await axiosInstance.post(postURL, {
       data: terms,
       type: "privacy",
     });

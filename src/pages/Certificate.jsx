@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { toPng } from "html-to-image";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logos from "@/assets/logo.svg";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const Certificate = () => {
   const [processing, setProcessing] = useState(false);
@@ -42,7 +42,7 @@ const Certificate = () => {
       navigate("/create");
     } else {
       // Example axios call to fetch data related to the course or user
-      axios
+      axiosInstance
         .get("/api/course-details", { params: { title: courseTitle } })
         .then((response) => {
           const courseDetails = response.data;

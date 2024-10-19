@@ -7,8 +7,8 @@ import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { AiOutlineLoading } from "react-icons/ai";
+import axiosInstance from "../axios";
 
 const ForgotPassword = () => {
   const storedTheme = sessionStorage.getItem("darkMode");
@@ -76,7 +76,7 @@ const ForgotPassword = () => {
     const postURL = "/api/forgot";
     try {
       setProcessing(true);
-      const response = await axios.post(postURL, {
+      const response = await axiosInstance.post(postURL, {
         email,
         name,
         company,
