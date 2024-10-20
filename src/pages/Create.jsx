@@ -33,7 +33,7 @@ const Create = () => {
   //     }
 
   // }, []);
-
+  //checks and sets setCoursesCreatedToday
   useEffect(() => {
     const lastReset = sessionStorage.getItem("lastReset");
     if (
@@ -176,10 +176,26 @@ Please output the list in the following JSON format strictly in English:
   ]
 }`;
 
+
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
-
-    await sendPrompt(prompt, mainTopic, selectedType);
-
+    //update to use userprovided api keys after 5 courses.
+    const userApiKey = sessionStorage.getItem("apiKey");
+    if (coursesCreatedToday >= maxCoursesPerDay) {
+        if (userApiKey!==null) {
+          // Call sendPrompt with additional parameter indicating to use user API key
+          await sendPrompt(prompt, mainTopic, selectedType, true, userApiKey);
+        } else {
+          // in case both are not available navigate to /profile
+          setShowUpdateKeyPrompt(true);
+          setProcessing(false);
+          showToast("You have exceeded the daily limit of 5 courses. Please update your API key.");
+          navigate("/profile");
+      }
+    }
+    else{
+      await sendPrompt(prompt, mainTopic, selectedType, false);
+    }
+    // await sendPrompt(prompt, mainTopic, selectedType);
     setCoursesCreatedToday(coursesCreatedToday + 1);
     sessionStorage.setItem(
       "coursesCreatedToday",
@@ -188,30 +204,38 @@ Please output the list in the following JSON format strictly in English:
     setProcessing(false);
   };
 
-  async function sendPrompt(prompt, mainTopic, selectedType) {
+  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null) {
     const dataToSend = {
-      prompt: prompt,
+        prompt: prompt,
+        useUserApiKey: useUserApiKey, // Add this line to indicate whether to use the user API key
+        userApiKey: userApiKey, // Add the user API key if available
     };
+
     const postURL = "/api/prompt";
     const res = await axiosInstance.post(postURL, dataToSend);
+    
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
-      .replace(/```json/g, "")
-      .replace(/```/g, "");
+        .replace(/```json/g, "")
+        .replace(/```/g, "");
+        
     try {
-      const parsedJson = JSON.parse(cleanedJsonString);
-      setProcessing(false);
-      navigate("/topics", {
-        state: {
-          jsonData: parsedJson,
-          mainTopic: mainTopic.toLowerCase(),
-          type: selectedType.toLowerCase(),
-        },
-      });
+        const parsedJson = JSON.parse(cleanedJsonString);
+        setProcessing(false);
+        navigate("/topics", {
+            state: {
+                jsonData: parsedJson,
+                mainTopic: mainTopic.toLowerCase(),
+                type: selectedType.toLowerCase(),
+                useUserApiKey: useUserApiKey,
+                userApiKey: userApiKey,
+            },
+        });
     } catch (error) {
-      setTimeout(() => sendPrompt(prompt, mainTopic, selectedType), 5000);
+        setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey), 5000);
     }
-  }
+}
+
 
   // eslint-disable-next-line
   const handleRadioChange = (event) => {

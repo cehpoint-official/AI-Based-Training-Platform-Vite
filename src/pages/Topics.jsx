@@ -10,7 +10,7 @@ import axiosInstance from "../axios";
 const Topics = () => {
   const { state } = useLocation();
   const [processing, setProcessing] = useState(false);
-  const { jsonData, mainTopic, type } = state || {};
+  const { jsonData, mainTopic, type , useUserApiKey, userApiKey } = state || {};
 
   const navigate = useNavigate();
 
@@ -51,13 +51,15 @@ const Topics = () => {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
       const promptImage = `Example of ${firstSubtopic.title} in ${mainTopic}`;
       setProcessing(true);
-      sendPrompt(prompt, promptImage);
+      sendPrompt(prompt, promptImage,useUserApiKey, userApiKey);
     }
   }
 
-  async function sendPrompt(prompt, promptImage) {
+  async function sendPrompt(prompt, promptImage,useUserApiKey, userApiKey) {
     const dataToSend = {
       prompt: prompt,
+      useUserApiKey: useUserApiKey,
+      userApiKey: userApiKey,
     };
     try {
       const postURL = "/api/generate";
@@ -69,10 +71,10 @@ const Topics = () => {
         const parsedJson = htmlContent;
         sendImage(parsedJson, promptImage);
       } catch (error) {
-        sendPrompt(prompt, promptImage);
+        sendPrompt(prompt, promptImage,useUserApiKey, userApiKey);
       }
     } catch (error) {
-      sendPrompt(prompt, promptImage);
+      sendPrompt(prompt, promptImage,useUserApiKey, userApiKey);
     }
   }
 

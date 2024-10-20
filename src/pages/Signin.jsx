@@ -216,6 +216,7 @@ const SignIn = () => {
         sessionStorage.setItem("auth", true);
         sessionStorage.setItem("uid", res.data.userData._id);
         sessionStorage.setItem("type", res.data.userData.type);
+        sessionStorage.setItem("apiKey", res.data.userData.apiKey);
         redirectHome();
       } else {
         showToast(res.data.message);
