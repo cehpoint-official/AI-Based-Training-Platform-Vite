@@ -117,55 +117,65 @@ const Create = () => {
       showToast("Please fill in all required fields");
       return;
     }
-    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}". Each topic should contain several related subtopics, starting with introductory concepts and moving towards more advanced ones
 
-            Strictly include the following subtopics in the list: ${subtopics
-                  .join(", ")
-                  .toLowerCase()} starting with introductory concepts and moving towards more advanced ones. Ensure the topics follow a logical progression, starting with the basics  and gradually covering advanced concepts needed for internships or jobs. Keep the fields "theory", "youtube", and "image" empty. 
+    if (coursesCreatedToday >= maxCoursesPerDay) {
+      setShowUpdateKeyPrompt(true);
+      setProcessing(false);
+      showToast(
+        "You have exceeded the daily limit of 5 courses. Redirecting to update your API key."
+      );
 
-            Please output the list in the following JSON format strictly in English:
-            {
-              "${mainTopic.toLowerCase()}": [
-                {
-                  "title": "Topic Title",
-                  "subtopics": [
-                    {
-                      "title": "Sub Topic Title",
-                      "theory": "",
-                      "youtube": "",
-                      "image": "",
-                      "done": false
-                    },
-                    {
-                      "title": "Sub Topic Title",
-                      "theory": "",
-                      "youtube": "",
-                      "image": "",
-                      "done": false
-                    }
-                  ]
-                },
-                {
-                  "title": "Topic Title",
-                  "subtopics": [
-                    {
-                      "title": "Sub Topic Title",
-                      "theory": "",
-                      "youtube": "",
-                      "image": "",
-                      "done": false
-                    },
-                    {
-                      "title": "Sub Topic Title",
-                      "theory": "",
-                      "youtube": "",
-                      "image": "",
-                      "done": false
-                    }
-                  ]
-                }
-              ]
-            }`;
+      return;
+    }
+
+    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
+      .join(", ")
+      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", and "image" empty. 
+
+Please output the list in the following JSON format strictly in English:
+{
+  "${mainTopic.toLowerCase()}": [
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        }
+      ]
+    },
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false
+        }
+      ]
+    }
+  ]
+}`;
+
 
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
     //update to use userprovided api keys after 5 courses.

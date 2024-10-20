@@ -34,7 +34,7 @@ const Header = ({ isHome }) => {
         setAdmin(true);
       }
     } else {
-      dashboardData();
+      // dashboardData();
     }
   });
 
