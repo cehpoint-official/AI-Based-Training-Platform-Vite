@@ -3,6 +3,7 @@ import { Button } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import emailjs from "@emailjs/browser";
 import { getAuth } from "firebase/auth";
+import Certificate from "../pages/Certificate";
 
 const Quiz = ({ courseTitle, onCompletion }) => {
   const auth = getAuth();
@@ -27,68 +28,98 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   useEffect(() => {
     if (user) {
       const displayName = user.displayName;
-      setUserName(displayName || "User"); // Set default name if none exists
       const emailFromGoogle = user.providerData[0]?.email;
-
-      // Check if email is available (either from Google or email/password login)
-      if (emailFromGoogle) {
-        setUserEmail(emailFromGoogle); // Google email
-      } else if (user.email) {
-        setUserEmail(user.email); // Email from email/password sign-in
-      } else {
-        setUserEmail(""); // No email found, reset state
+  
+      // Only update if the value has actually changed
+      if (displayName !== userName) {
+        setUserName(displayName || "User");
+      }
+  
+      if (emailFromGoogle !== userEmail) {
+        setUserEmail(emailFromGoogle || user.email || "");
       }
     } else {
-      setUserEmail(""); // If user is not signed in, reset email
+      // If user is not signed in, reset email
+      if (userEmail !== "") setUserEmail(""); 
     }
-  }, [user]);
+  }, [user, userName, userEmail]);
 
   // ----------------------------------------------------------------------- //
   // Email Sending Logic
-  const sendEmail = () => {
-    if (!userEmail) {
-      setEmailStatus("Email not available");
-      console.log("No user email found");
-      return;
-    }
+  // const sendEmail = () => {
+  //   if (!userEmail) {
+  //     setEmailStatus("Email not available");
+  //     console.log("No user email found");
+  //     return;
+  //   }
 
-    setIsLoading(true); // Show loading state
-    setEmailStatus(""); // Reset email status before sending
+  //   setIsLoading(true); // Show loading state
+  //   setEmailStatus(""); // Reset email status before sending
 
-    const emailData = {
-      userName: userName, // Name of the user
-      userEmail: userEmail, // The email where the message will be sent
-      message: "Great Job, You finished the course!", // The email message
-    };
+  //   const emailData = {
+  //     userName: userName, // Name of the user
+  //     userEmail: userEmail, // The email where the message will be sent
+  //     message: "Great Job, You finished the course!", // The email message
+  //   };
 
-    emailjs
-      .send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        emailData,
-        {
-          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-        }
-      )
-      .then(
-        () => {
-          setEmailStatus("SUCCESS! Email sent");
-          alert("SUCCESS! Email sent"); // Show success message
-          setIsLoading(false); // Reset loading state
-        },
-        (error) => {
-          setEmailStatus(`FAILED... ${error.text}`);
-          console.log("FAILED...", error.text);
-          setIsLoading(false); // Reset loading state on error
-        }
-      );
-  };
+  //   emailjs
+  //     .send(
+  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+  //       emailData,
+  //       {
+  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  //       }
+  //     )
+  //     .then(
+  //       () => {
+  //         setEmailStatus("SUCCESS! Email sent");
+  //         alert("SUCCESS! Email sent"); // Show success message
+  //         setIsLoading(false); // Reset loading state
+  //       },
+  //       (error) => {
+  //         setEmailStatus(`FAILED... ${error.text}`);
+  //         console.log("FAILED...", error.text);
+  //         setIsLoading(false); // Reset loading state on error
+  //       }
+  //     );
+  // };
+
+  // const sendEmail = (download) => {
+  //   const emailData = {
+  //     userName: userName,
+  //     userEmail: userEmail, 
+  //     message: download 
+  //   };
+
+  //   emailjs
+  //     .send(
+  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+  //       emailData,
+  //       {
+  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  //       }
+  //     )
+  //     .then(
+  //       () => {
+
+  //         alert("SUCCESS! Email sent"); // Show success message
+          
+  //       },
+  //       (error) => {
+
+  //         console.log("FAILED...", error.text);
+          
+  //       }
+  //     );
+  // };
 
   // ----------------------------------------------------------------------- //
   // Button Handler
-  const handleSendEmail = () => {
-    sendEmail();
-  };
+  // const handleSendEmail = () => {
+  //   sendEmail();
+  // };
 
   // Function to fetch quiz data manually
   const fetchQuiz = async () => {
@@ -264,12 +295,16 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative p-10">
+    <div className={`flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative ${!quizStarted || !quizFinished ? 'p-10' : 'px-16' }`}>
       {/* Floating Score Counter */}
       <div className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${quizFinished && 'hidden'} `}>
         <h3 className="text-lg font-semibold">Score: {score}</h3>
       </div>
-      <h1 className="text-3xl font-bold mb-6">Quiz</h1>
+      {!quizStarted && (
+        !quizFinished && (
+        <h1 className={`text-3xl font-bold mb-6`}>Quiz</h1>
+      )
+      )}
       {!quizStarted ? (
         <Button onClick={handleStartQuiz}>Start Quiz</Button>
       ) : loading ? (
@@ -278,18 +313,7 @@ const Quiz = ({ courseTitle, onCompletion }) => {
         </div>
       ) : quizFinished ? (
         score >= 5 ? (
-          <div className="flex items-center justify-center flex-col space-y-4">
-            <h2 className="text-3xl font-bold text-green-500">
-              Congratulations!
-            </h2>
-            <p className="text-xl">You have successfully completed the quiz.</p>
-            <p className="text-lg">
-              A certificate has been sent to your email:{" "}
-              <span className="font-semibold">{userEmail}</span>.
-            </p>
-            {emailStatus && <p>{emailStatus}</p>}
-            {/* <Button onClick={handleSendEmail}>Resend Certificate</Button> */}
-          </div>
+          <Certificate userEmail={userEmail} userName={userName} courseTitle={courseTitle} userId={user.uid} />
         ) : (
           <div className="flex items-center justify-center flex-col space-y-4">
             <h2 className="text-3xl font-bold text-red-500">
