@@ -18,25 +18,24 @@ const Header = ({ isHome }) => {
     if (isHome && sessionStorage.getItem("uid") === null) {
       navigate("/signin");
     }
-    // async function dashboardData() {
-    //   const postURL = `/api/dashboard`;
-    //   const user = JSON.parse(sessionStorage.getItem("user"));
-    //   const response = await axiosInstance.post(postURL, user);
-    //   sessionStorage.setItem("adminEmail", response.data.admin.email);
-    //   if (response.data.admin.email === sessionStorage.getItem("email")) {
-    //     setAdmin(true);
-    //   }
-    // }
-    // if (sessionStorage.getItem("adminEmail")) {
-    //   if (
-    //     sessionStorage.getItem("adminEmail") === sessionStorage.getItem("email")
-    //   ) {
-    //     setAdmin(true);
-    //   }
-    // } else {
-    //   dashboardData();
-    // }
-    //{since it is only for admin useage and while testing it is throwing post errors , it has been commented, undo in case of merging in git}
+    async function dashboardData() {
+      const postURL = `/api/dashboard`;
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      const response = await axiosInstance.post(postURL, user);
+      sessionStorage.setItem("adminEmail", response.data.admin.email);
+      if (response.data.admin.email === sessionStorage.getItem("email")) {
+        setAdmin(true);
+      }
+    }
+    if (sessionStorage.getItem("adminEmail")) {
+      if (
+        sessionStorage.getItem("adminEmail") === sessionStorage.getItem("email")
+      ) {
+        setAdmin(true);
+      }
+    } else {
+      dashboardData();
+    }
   });
 
   function redirectSignIn() {
