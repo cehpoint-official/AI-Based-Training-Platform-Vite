@@ -1,5 +1,5 @@
 import { Drawer, Navbar, Sidebar } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import LogoComponent from "../components/LogoComponent";
 import { FiMenu, FiX } from "react-icons/fi";
 import DarkModeToggle from "../components/DarkModeToggle";
@@ -16,8 +16,14 @@ import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import emailjs from "@emailjs/browser";
+import { getAuth } from "firebase/auth";
+import Quiz from "../quiz/Quiz";
 
 const Course = () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  // console.log(user.uid)
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -36,6 +42,8 @@ const Course = () => {
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const [projectSuggestions, setProjectSuggestions] = useState(null);
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
+  const [quizAvailable, setQuizAvailable] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -55,6 +63,7 @@ const Course = () => {
     setPercentage(completionPercentage);
     if (completionPercentage >= "100") {
       setIsCompleted(true);
+      setQuizAvailable(true);
     }
   };
 
@@ -93,12 +102,13 @@ const Course = () => {
       }
     }
   };
+  
   const getCertificateUrl = async () => {
     try {
       const response = await fetch("/api/get-certificate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: "your-user-id" }),
+        body: JSON.stringify({ userId: user.uid }),
       });
 
       if (!response.ok) {
@@ -113,120 +123,120 @@ const Course = () => {
     }
   };
 
-  async function sendEmail(formattedDate) {
-    const userName = sessionStorage.getItem("mName");
-    const email = sessionStorage.getItem("email");
-    const html = `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="initial-scale=1.0">
-            <title>Certificate of Completion</title>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
-            <style>
-            body {
-                font-family: 'Roboto', sans-serif;
-                text-align: center;
-                background-color: #fff;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-            }
-        
-            .certificate {
-                border: 10px solid #000;
-                max-width: 600px;
-                margin: 20px auto;
-                padding: 50px;
-                background-color: #fff;
-                position: relative;
-                color: #000;
-                text-align: center;
-            }
-        
-            h1 {
-                font-weight: 900;
-                font-size: 24px;
-                margin-bottom: 10px;
-            }
-        
-            h4 {
-                font-weight: 900;
-                text-align: center;
-                font-size: 20px;
-            }
-        
-            h2 {
-                font-weight: 700;
-                font-size: 18px;
-                margin-top: 10px;
-                margin-bottom: 5px;
-                text-decoration: underline;
-            }
-        
-            h3 {
-                font-weight: 700;
-                text-decoration: underline;
-                font-size: 16px;
-                margin-top: 5px;
-                margin-bottom: 10px;
-            }
-        
-            p {
-                font-weight: 400;
-                line-height: 1.5;
-            }
-        
-            img {
-                width: 40px;
-                height: 40px;
-                margin-right: 10px;
-                text-align: center;
-                align-self: center;
-            }
-            </style>
-        </head>
-        <body>
-        
-        <div class="certificate">
-        <h1>Certificate of Completion 🥇</h1>
-        <p>This is to certify that</p>
-        <h2>${userName}</h2>
-        <p>has successfully completed the course on</p>
-        <h3>${mainTopic}</h3>
-        <p>on ${formattedDate}.</p>
-    
-        <div class="signature">
-            <img src=${logo}>
-            <h4>${name}</h4>
-        </div>
-    </div>
-        
-        </body>
-        </html>`;
+  // async function sendEmail(formattedDate) {
+  //   const userName = sessionStorage.getItem("mName");
+  //   const email = sessionStorage.getItem("email");
+  //   const html = `<!DOCTYPE html>
+  //       <html lang="en">
+  //       <head>
+  //           <meta charset="UTF-8">
+  //           <meta name="viewport" content="initial-scale=1.0">
+  //           <title>Certificate of Completion</title>
+  //           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
+  //           <style>
+  //           body {
+  //               font-family: 'Roboto', sans-serif;
+  //               text-align: center;
+  //               background-color: #fff;
+  //               margin: 0;
+  //               display: flex;
+  //               justify-content: center;
+  //               align-items: center;
+  //               height: 100vh;
+  //           }
 
-    try {
-      const postURL = "/api/sendcertificate";
-      await axiosInstance
-        .post(postURL, { html, email })
-        .then((res) => {
-          navigate("/certificate", {
-            state: { courseTitle: mainTopic, end: formattedDate },
-          });
-        })
-        .catch((error) => {
-          navigate("/certificate", {
-            state: { courseTitle: mainTopic, end: formattedDate },
-          });
-        });
-    } catch (error) {
-      navigate("/certificate", {
-        state: { courseTitle: mainTopic, end: formattedDate },
-      });
-    }
-  }
+  //           .certificate {
+  //               border: 10px solid #000;
+  //               max-width: 600px;
+  //               margin: 20px auto;
+  //               padding: 50px;
+  //               background-color: #fff;
+  //               position: relative;
+  //               color: #000;
+  //               text-align: center;
+  //           }
+
+  //           h1 {
+  //               font-weight: 900;
+  //               font-size: 24px;
+  //               margin-bottom: 10px;
+  //           }
+
+  //           h4 {
+  //               font-weight: 900;
+  //               text-align: center;
+  //               font-size: 20px;
+  //           }
+
+  //           h2 {
+  //               font-weight: 700;
+  //               font-size: 18px;
+  //               margin-top: 10px;
+  //               margin-bottom: 5px;
+  //               text-decoration: underline;
+  //           }
+
+  //           h3 {
+  //               font-weight: 700;
+  //               text-decoration: underline;
+  //               font-size: 16px;
+  //               margin-top: 5px;
+  //               margin-bottom: 10px;
+  //           }
+
+  //           p {
+  //               font-weight: 400;
+  //               line-height: 1.5;
+  //           }
+
+  //           img {
+  //               width: 40px;
+  //               height: 40px;
+  //               margin-right: 10px;
+  //               text-align: center;
+  //               align-self: center;
+  //           }
+  //           </style>
+  //       </head>
+  //       <body>
+
+  //       <div class="certificate">
+  //       <h1>Certificate of Completion 🥇</h1>
+  //       <p>This is to certify that</p>
+  //       <h2>${userName}</h2>
+  //       <p>has successfully completed the course on</p>
+  //       <h3>${mainTopic}</h3>
+  //       <p>on ${formattedDate}.</p>
+
+  //       <div class="signature">
+  //           <img src=${logo}>
+  //           <h4>${name}</h4>
+  //       </div>
+  //   </div>
+
+  //       </body>
+  //       </html>`;
+
+  //   try {
+  //     const postURL = "/api/sendcertificate";
+  //     await axiosInstance
+  //       .post(postURL, { html, email })
+  //       .then((res) => {
+  //         navigate("/certificate", {
+  //           state: { courseTitle: mainTopic, end: formattedDate },
+  //         });
+  //       })
+  //       .catch((error) => {
+  //         navigate("/certificate", {
+  //           state: { courseTitle: mainTopic, end: formattedDate },
+  //         });
+  //       });
+  //   } catch (error) {
+  //     navigate("/certificate", {
+  //       state: { courseTitle: mainTopic, end: formattedDate },
+  //     });
+  //   }
+  // }
 
   useEffect(() => {
     loadMessages();
@@ -407,15 +417,38 @@ const Course = () => {
   async function updateCourse() {
     CountDoneTopics();
     sessionStorage.setItem("jsonData", JSON.stringify(jsonData));
-    const dataToSend = {
-      content: JSON.stringify(jsonData),
-      courseId: courseId,
-    };
-    try {
-      const postURL = "/api/update";
-      await axiosInstance.post(postURL, dataToSend);
-    } catch (error) {
-      updateCourse();
+    const content = JSON.stringify(jsonData);
+
+    const chunkSize = 1000000; // 1MB chunks
+    const contentChunks = [];
+
+    for (let i = 0; i < content.length; i += chunkSize) {
+      contentChunks.push(content.slice(i, i + chunkSize));
+    }
+
+    const postURL = "/api/update";
+
+    for (let i = 0; i < contentChunks.length; i++) {
+      const dataToSend = {
+        content: contentChunks[i],
+        courseId: courseId,
+        chunkIndex: i,
+        totalChunks: contentChunks.length,
+      };
+
+      try {
+        const response = await axiosInstance.post(postURL, dataToSend);
+
+        if (i === contentChunks.length - 1) {
+          console.log("Course updated successfully");
+          // Handle successful update (e.g., show a success message)
+        }
+      } catch (error) {
+        console.error("Error updating course chunk:", error);
+        // Instead of recursive call, you might want to implement a retry mechanism
+        // or handle the error more gracefully
+        throw error; // This will stop the update process if any chunk fails
+      }
     }
   }
 
@@ -612,11 +645,12 @@ const Course = () => {
                       aria-labelledby="options-menu"
                     >
                       {topic.subtopics.map((subtopic) => (
-                        <p
+                        <button
                           key={subtopic.title}
-                          onClick={() =>
-                            handleSelect(topic.title, subtopic.title)
-                          }
+                          onClick={() => {
+                            handleSelect(topic.title, subtopic.title);
+                            setShowQuiz(false);
+                          }}
                           className="flex py-2 text-sm flex-row items-center font-normal text-black dark:text-white  text-start"
                           role="menuitem"
                         >
@@ -626,7 +660,7 @@ const Course = () => {
                           ) : (
                             <></>
                           )}
-                        </p>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -634,6 +668,18 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
+          {quizAvailable ||
+            (isComplete && (
+              <Sidebar.ItemGroup>
+                <button
+                  onClick={() => setShowQuiz(true)}
+                  className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
+                >
+                  Take Quiz
+                  <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
+                </button>
+              </Sidebar.ItemGroup>
+            ))}
         </div>
       );
     } catch (error) {
@@ -741,7 +787,7 @@ const Course = () => {
                         onClick={finish}
                         className="mr-3 underline text-black dark:text-white font-normal cursor-pointer"
                       >
-                        Download Certificate
+                        {/* Download Certificate */}
                       </button>
                     ) : (
                       <div className="w-7 h-7 mr-3">
@@ -809,51 +855,84 @@ const Course = () => {
                     renderTopicsAndSubtopics(jsonData[mainTopic.toLowerCase()])}
                 </Sidebar.Items>
               </Sidebar>
+
               <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                <p className="font-black text-black dark:text-white text-lg">
-                  {selected}
-                </p>
-                <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
-                  {type === "video & text course" ? (
-                    <div>
-                      <YouTube
-                        key={media}
-                        className="mb-5"
-                        videoId={media}
-                        opts={{}}
-                      />
-                      <StyledText text={theory} />
-                    </div>
-                  ) : (
-                    <div>
-                      <StyledText text={theory} />
-                      <img
-                        className="overflow-hidden p-10"
-                        src={media}
-                        alt="Media"
-                      />
-                    </div>
-                  )}
-                </div>
-                {isComplete && projectSuggestions && (
-                  <div className="mt-10">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Project Suggestions
-                    </h2>
-                    <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                      {projectSuggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                    <div className="mt-5 text-black dark:text-white">
-                      <p>{submissionInstructions}</p>
-                    </div>
+                {/* sm & md  */}
+                {showQuiz ? (
+                  <div className="w-full min-h-[90vh] flex items-center justify-center">
+                    <Quiz
+                      courseTitle={mainTopic}
+                      onCompletion={() => {
+                        // Handle quiz completion
+                        console.log(`Quiz completed`);
+                        // You might want to update some state or show a completion message
+                      }}
+                    />
                   </div>
+                ) : (
+                  <>
+                    <p className="font-black text-black dark:text-white text-lg">
+                      {selected}
+                    </p>
+                    <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
+                      {type === "video & text course" ? (
+                        <div>
+                          <YouTube
+                            key={media}
+                            className="mb-5"
+                            videoId={media}
+                            opts={{}}
+                          />
+                          <StyledText text={theory} />
+                        </div>
+                      ) : (
+                        <div>
+                          <StyledText text={theory} />
+                          <img
+                            className="overflow-hidden p-10"
+                            src={media}
+                            alt="Media"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {/* {isComplete && (
+                  <div className="mt-10 absolute bg-white w-screen h-20 z-50">
+                    <h2 className="text-xl font-bold text-black dark:text-white">
+                      Course Quiz
+                    </h2>
+                    <Quiz
+                      // courseTitle={mainTopic}
+                      // onCompletion={(score) => {
+                      //   // Handle quiz completion
+                      //   console.log(`Quiz completed with score: ${score}`);
+                      //   // You might want to update some state or show a completion message
+                      // }}
+                    />
+                  </div>
+                 // )} */}
+
+                    {isComplete && projectSuggestions && (
+                      <div className="mt-10">
+                        <h2 className="text-xl font-bold text-black dark:text-white">
+                          Project Suggestions
+                        </h2>
+                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
+                          {projectSuggestions.map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                        <div className="mt-5 text-black dark:text-white">
+                          <p>{submissionInstructions}</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex flex-row overflow-y-auto h-screen max-md:hidden">
+          <div className="flex bg-black flex-row overflow-y-auto h-screen max-md:hidden">
             <Sidebar theme={storedTheme} aria-label="Default sidebar example">
               <LogoComponent isDarkMode={storedTheme} />
               <Sidebar.Items className="mt-6">
@@ -872,7 +951,7 @@ const Course = () => {
                       onClick={finish}
                       className="mr-3 underline text-black dark:text-white font-normal cursor-pointer"
                     >
-                      Download Certificate
+                      {/* Download Certificate */}
                     </button>
                   ) : (
                     <div className="w-8 h-8 mr-3">
@@ -900,46 +979,61 @@ const Course = () => {
                   </div>
                 </Navbar.Collapse>
               </Navbar>
-              <div className="px-5 bg-white dark:bg-black pt-5">
-                <p className="font-black text-black dark:text-white text-xl">
-                  {selected}
-                </p>
-                <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
-                  {type === "video & text course" ? (
-                    <div>
-                      <YouTube
-                        key={media}
-                        className="mb-5"
-                        videoId={media}
-                        opts={{}}
-                      />
-                      <StyledText text={theory} />
-                    </div>
-                  ) : (
-                    <div>
-                      <StyledText text={theory} />
-                      <img
-                        className="overflow-hidden p-10"
-                        src={media}
-                        alt="Media"
-                      />
-                    </div>
-                  )}
-                </div>
-                {isComplete && projectSuggestions && (
-                  <div className="mt-10">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Project Suggestions
-                    </h2>
-                    <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                      {projectSuggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                    <div className="mt-5 text-black dark:text-white">
-                      <p>{submissionInstructions}</p>
-                    </div>
+              <div className="px-8 bg-white dark:bg-black pt-5">
+                {showQuiz ? (
+                  <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
+                    <Quiz
+                      courseTitle={mainTopic}
+                      onCompletion={() => {
+                        // Handle quiz completion
+                        console.log(`Quiz completed`);
+                        // You might want to update some state or show a completion message
+                      }}
+                    />
                   </div>
+                ) : (
+                  <>
+                    <p className="font-black text-black dark:text-white text-xl">
+                      {selected}
+                    </p>
+                    <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
+                      {type === "video & text course" ? (
+                        <div>
+                          <YouTube
+                            key={media}
+                            className="mb-5"
+                            videoId={media}
+                            opts={{}}
+                          />
+                          <StyledText text={theory} />
+                        </div>
+                      ) : (
+                        <div>
+                          <StyledText text={theory} />
+                          <img
+                            className="overflow-hidden p-10"
+                            src={media}
+                            alt="Media"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {/* {isComplete && projectSuggestions && (
+                      <div className="mt-10">
+                        <h2 className="text-xl font-bold text-black dark:text-white">
+                          Project Suggestions
+                        </h2>
+                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
+                          {projectSuggestions.map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                        <div className="mt-5 text-black dark:text-white">
+                          <p>{submissionInstructions}</p>
+                        </div>
+                      </div>
+                    )} */}
+                  </>
                 )}
               </div>
             </div>
