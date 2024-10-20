@@ -295,12 +295,16 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative p-10">
+    <div className={`flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative ${!quizStarted || !quizFinished ? 'p-10' : 'px-16' }`}>
       {/* Floating Score Counter */}
       <div className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${quizFinished && 'hidden'} `}>
         <h3 className="text-lg font-semibold">Score: {score}</h3>
       </div>
-      <h1 className="text-3xl font-bold mb-6">Quiz</h1>
+      {!quizStarted && (
+        !quizFinished && (
+        <h1 className={`text-3xl font-bold mb-6`}>Quiz</h1>
+      )
+      )}
       {!quizStarted ? (
         <Button onClick={handleStartQuiz}>Start Quiz</Button>
       ) : loading ? (
