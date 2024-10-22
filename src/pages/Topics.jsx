@@ -60,7 +60,7 @@ const Topics = () => {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "/api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -101,13 +101,12 @@ const Topics = () => {
 
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
-    const postURL = "/api/course";
+    const postURL = "/api/course/course";
     const response = await axiosInstance.post(postURL, {
       user,
       content,
       type,
       mainTopic,
-      
     });
 
     if (response.data.success) {
@@ -135,13 +134,12 @@ const Topics = () => {
 
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
-    const postURL = "/api/course";
+    const postURL = "/api/course/course";
     const response = await axiosInstance.post(postURL, {
       user,
       content,
       type,
       mainTopic,
-      subtopic,
     });
 
     if (response.data.success) {
@@ -200,12 +198,12 @@ const Topics = () => {
   }
 
   async function sendSummery(prompt, url) {
-    console.log(prompt, url);
+    //console.log(prompt, url);
     const dataToSend = {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "/api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;

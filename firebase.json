@@ -2,7 +2,6 @@
   "hosting": {
     "public": "dist",
     "site": "ai-based-training-by-ariba-2d081",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "/api/**", "function": "api" }]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }

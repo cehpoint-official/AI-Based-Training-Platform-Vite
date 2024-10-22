@@ -1,6 +1,6 @@
 import { Table } from "flowbite-react";
 import React from "react";
-import NothingFound from "@/components/nothingfound";
+import NothingFound from "@/components/Nothingfound";
 
 const ContactTable = ({ datas }) => {
   return (

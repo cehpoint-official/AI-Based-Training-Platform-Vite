@@ -202,7 +202,7 @@ const SignIn = () => {
       showToast("Please fill in all required fields");
       return;
     }
-    const postURL = `/api/signin`;
+    const postURL = `/api/user/signin`;
 
     try {
       setProcessing(true);

@@ -3,10 +3,10 @@ import { Navbar } from "flowbite-react";
 
 import React, { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
-import AdminSidebar from "./components/adminsidebar";
-import AdminHead from "./components/adminhead";
-import AdminSidebarMobile from "./components/adminsidebarmobile";
-import DashboardCards from "./components/dashboardcards";
+import AdminSidebar from "./components/Adminsidebar";
+import AdminHead from "./components/Adminhead";
+import AdminSidebarMobile from "./components/Adminsidebarmobile";
+import DashboardCards from "./components/Dashboardcards";
 import axiosInstance from "../axios";
 
 const Dashboard = () => {
@@ -16,7 +16,7 @@ const Dashboard = () => {
   useEffect(() => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
-      const postURL = `/api/dashboard`;
+      const postURL = `/api/user/dashboard`;
       const response = await axiosInstance.post(postURL);
       setData(response.data);
       //         // sessionStorage.setItem('terms', response.data.admin.terms)

@@ -12,7 +12,7 @@ const GoogleSignUpButton = ({ text, navigate, showToast }) => {
       const user = result.user;
       const token = await user.getIdToken(); // Get the user's token
 
-      const postURL = `/api/google/auth`;
+      const postURL = `/api/user/google/auth`;
 
       const res = await axiosInstance.post(postURL, {
         token,

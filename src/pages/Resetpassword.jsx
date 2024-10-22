@@ -117,7 +117,7 @@ const ResetPassword = () => {
                 
                 </html>`,
       };
-      const postURL = "/api/data";
+      const postURL = "/api/mail/data";
       await axiosInstance
         .post(postURL, dataToSend)
         .then((res) => {

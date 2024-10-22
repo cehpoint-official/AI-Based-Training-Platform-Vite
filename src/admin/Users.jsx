@@ -1,10 +1,10 @@
 import { Navbar } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
-import AdminSidebar from "./components/adminsidebar";
-import AdminHead from "./components/adminhead";
-import AdminSidebarMobile from "./components/adminsidebarmobile";
-import UserTable from "./components/usertable";
+import AdminSidebar from "./components/Adminsidebar";
+import AdminHead from "./components/Adminhead";
+import AdminSidebarMobile from "./components/Adminsidebarmobile";
+import UserTable from "./components/Usertable";
 import axiosInstance from "../axios";
 
 const Users = () => {

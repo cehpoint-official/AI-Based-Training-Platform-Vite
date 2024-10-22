@@ -1,6 +1,6 @@
 import React from "react";
-import Header from "../components/header";
-import Footers from "../components/footers";
+import Header from "../components/Header";
+import Footers from "../components/Footers";
 import Logo from "@/assets/errorday.gif";
 import LogoNight from "@/assets/errornight.gif";
 

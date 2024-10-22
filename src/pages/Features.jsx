@@ -1,6 +1,6 @@
 import React from 'react';
-import Header from '../components/header';
-import Footers from '../components/footers';
+import Header from '../components/Header';
+import Footers from '../components/Footers';
 import { Card } from 'flowbite-react';
 import { IoIosTimer } from "react-icons/io";
 import { BsSearch } from "react-icons/bs";

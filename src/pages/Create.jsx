@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import React, { useEffect, useState } from "react";
-import Header from "../components/header";
-import Footers from "../components/footers";
+import Header from "../components/Header";
+import Footers from "../components/Footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
@@ -192,7 +192,7 @@ Please output the list in the following JSON format strictly in English:
     const dataToSend = {
       prompt: prompt,
     };
-    const postURL = "/api/prompt";
+    const postURL = "/api/gemini/prompt";
     const res = await axiosInstance.post(postURL, dataToSend);
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText

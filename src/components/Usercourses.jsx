@@ -10,7 +10,7 @@ const UserCourses = ({ userId }) => {
 
   useEffect(() => {
     const fetchUserCourses = async () => {
-      const postURL = `/api/courses?userId=${userId}`;
+      const postURL = `/api/course/${userId}`;
       try {
         const response = await axiosInstance.get(postURL);
         setCourses(response.data);

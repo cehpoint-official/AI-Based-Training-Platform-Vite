@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Header from "../components/header";
-import Footers from "../components/footers";
+import Header from "../components/Header";
+import Footers from "../components/Footers";
 import { Button, Label } from "flowbite-react";
 import { toast } from "react-toastify";
 import axiosInstance from "../axios";

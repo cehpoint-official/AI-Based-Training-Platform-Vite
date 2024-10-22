@@ -6,18 +6,15 @@ import DarkModeToggle from "../components/DarkModeToggle";
 import TruncatedText from "../components/TruncatedText";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IoIosArrowDown } from "react-icons/io";
-import StyledText from "../components/styledText";
+import StyledText from "../components/StyledText";
 import YouTube from "react-youtube";
 import { toast } from "react-toastify";
-import { logo, name } from "../constants";
 import axiosInstance from "../axios";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import emailjs from "@emailjs/browser";
-import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
 
 const Course = () => {
@@ -319,7 +316,7 @@ const Course = () => {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "/api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -422,7 +419,7 @@ const Course = () => {
       contentChunks.push(content.slice(i, i + chunkSize));
     }
 
-    const postURL = "/api/update";
+    const postURL = "/api/course/update";
 
     for (let i = 0; i < contentChunks.length; i++) {
       const dataToSend = {
@@ -456,14 +453,10 @@ const Course = () => {
       const postURL = "/api/yt";
       const res = await axiosInstance.post(postURL, dataToSend);
 
-      try {
-        const generatedText = res.data.url;
-        sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
-      } catch (error) {
-        sendVideo(query, mTopic, mSubTopic, id, subtop);
-      }
+      const generatedText = res.data.url;
+      sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
     } catch (error) {
-      sendVideo(query, mTopic, mSubTopic, id, subtop);
+      console.log(error);
     }
   }
 
@@ -496,7 +489,7 @@ const Course = () => {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "/api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -552,7 +545,7 @@ const Course = () => {
 
     let mainPrompt = defaultPrompt + newMessage;
     const dataToSend = { prompt: mainPrompt };
-    const url = "/api/chat";
+    const url = "/api/gemini/chat";
 
     console.log("Sending request to:", url);
     console.log("Request data:", dataToSend);

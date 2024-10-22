@@ -10,7 +10,7 @@ const AdminHead = () => {
 
   useEffect(() => {
     async function dashboardData() {
-      const postURL = `/api/dashboard`;
+      const postURL = `/api/user/dashboard`;
       const response = await axiosInstance.post(postURL);
       sessionStorage.setItem("adminEmail", response.data.admin.email);
       if (response.data.admin.email !== sessionStorage.getItem("email")) {

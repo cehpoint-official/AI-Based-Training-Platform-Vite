@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import Header from "../components/header";
-import Footers from "../components/footers";
+import Header from "../components/Header";
+import Footers from "../components/Footers";
 import { Button } from "flowbite-react";
 import Quiz from "../quiz/Quiz";
 import { AiOutlineLoading } from "react-icons/ai";

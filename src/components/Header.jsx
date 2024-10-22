@@ -19,7 +19,7 @@ const Header = ({ isHome }) => {
       navigate("/signin");
     }
     async function dashboardData() {
-      const postURL = `/api/dashboard`;
+      const postURL = `/api/user/dashboard`;
       const user = JSON.parse(sessionStorage.getItem("user"));
       const response = await axiosInstance.post(postURL, user);
       sessionStorage.setItem("adminEmail", response.data.admin.email);

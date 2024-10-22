@@ -41,7 +41,6 @@ const Course = () => {
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
-  
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -320,7 +319,7 @@ const Course = () => {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "/api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -423,7 +422,7 @@ const Course = () => {
       contentChunks.push(content.slice(i, i + chunkSize));
     }
 
-    const postURL = "/api/update";
+    const postURL = "/api/course/update";
 
     for (let i = 0; i < contentChunks.length; i++) {
       const dataToSend = {
@@ -497,7 +496,7 @@ const Course = () => {
       prompt: prompt,
     };
     try {
-      const postURL = "/api/generate";
+      const postURL = "api/gemini/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
@@ -553,7 +552,7 @@ const Course = () => {
 
     let mainPrompt = defaultPrompt + newMessage;
     const dataToSend = { prompt: mainPrompt };
-    const url = "/api/chat";
+    const url = "/api/gemini/chat";
 
     console.log("Sending request to:", url);
     console.log("Request data:", dataToSend);
@@ -665,15 +664,15 @@ const Course = () => {
             </Sidebar.ItemGroup>
           ))}
           {quizAvailable && (
-          <Sidebar.ItemGroup>
-            <button
-              onClick={() => setShowQuiz(true)}
-              className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
-            >
-              Take Quiz
-            </button>
-          </Sidebar.ItemGroup>
-          )} 
+            <Sidebar.ItemGroup>
+              <button
+                onClick={() => setShowQuiz(true)}
+                className="inline-flex text-start text-base w-64 font-bold text-black dark:text-white"
+              >
+                Take Quiz
+              </button>
+            </Sidebar.ItemGroup>
+          )}
         </div>
       );
     } catch (error) {
@@ -959,14 +958,16 @@ const Course = () => {
               </Navbar>
               <div className="px-5 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                    <div className="w-full min-h-[80vh] flex items-center justify-center">
-                      <Quiz courseTitle={mainTopic}
-                    onCompletion={(score) => {
-                      // Handle quiz completion
-                      console.log(`Quiz completed with score: ${score}`);
-                      // You might want to update some state or show a completion message
-                    }} />
-                    </div>
+                  <div className="w-full min-h-[80vh] flex items-center justify-center">
+                    <Quiz
+                      courseTitle={mainTopic}
+                      onCompletion={(score) => {
+                        // Handle quiz completion
+                        console.log(`Quiz completed with score: ${score}`);
+                        // You might want to update some state or show a completion message
+                      }}
+                    />
+                  </div>
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">

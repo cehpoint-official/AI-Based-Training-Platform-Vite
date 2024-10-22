@@ -62,7 +62,7 @@ const SignUp = () => {
       showToast("Password should be at least 9 characters");
       return;
     }
-    const postURL = "/api/signup";
+    const postURL = "/api/user/signup";
     const type = "free";
     try {
       setProcessing(true);
@@ -131,7 +131,7 @@ const SignUp = () => {
                 
                 </html>`,
       };
-      const postURL = "/api/data";
+      const postURL = "/api/mail/data";
       await axiosInstance
         .post(postURL, dataToSend)
         .then((res) => {
