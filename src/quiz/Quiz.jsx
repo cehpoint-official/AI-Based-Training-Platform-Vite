@@ -1,190 +1,363 @@
-// import React, { useState, useEffect } from 'react';
-// import { toast } from 'react-toastify';
-// import { Button } from 'flowbite-react';
-// import { AiOutlineLoading } from 'react-icons/ai';
-
-// const Quiz = ({ courseTitle, onCompletion }) => {
-//     const [questions, setQuestions] = useState([]);
-//     const [currentQuestion, setCurrentQuestion] = useState(0);
-//     const [score, setScore] = useState(0);
-//     const [loading, setLoading] = useState(true);
-//     const [selectedAnswer, setSelectedAnswer] = useState(null);
-
-//     useEffect(() => {
-//         const fetchQuiz = async () => {
-//             setLoading(true);
-//             try {
-//                 const response = await fetch(
-//                      'a5ab2faec6e948bab280bc4bf6c50809',
-//                     {
-//                         method: 'POST',
-//                         headers: {
-//                             'Content-Type': 'application/json',
-//                             // 'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`, // Use the API key here
-//                         },
-//                         body: JSON.stringify({ courseTitle }),
-//                     }
-//                 );
-
-//                 if (!response.ok) {
-//                     throw new Error('Failed to fetch quiz');
-//                 }
-
-//                 const data = await response.json();
-//                 setQuestions(data.quiz); // Adjust this based on the API response structure
-//                 setLoading(false);
-//             } catch (error) {
-//                 console.error('Error fetching quiz:', error);
-//                 toast.error('Failed to load quiz. Please try again later.');
-//                 setLoading(false);
-//             }
-//         };
-
-//         fetchQuiz();
-//     }, [courseTitle]);
-
-//     const handleAnswerSelection = (index) => {
-//         setSelectedAnswer(index);
-//     };
-
-//     const handleNext = () => {
-//         if (selectedAnswer === questions[currentQuestion].answer) {
-//             setScore(score + 1);
-//             toast.success("Correct!");
-//         } else {
-//             toast.error("Wrong! Try again.");
-//         }
-
-//         setSelectedAnswer(null);
-//         if (currentQuestion < questions.length - 1) {
-//             setCurrentQuestion(currentQuestion + 1);
-//         } else {
-//             onCompletion(score + 1);
-//         }
-//     };
-
-//     return (
-//         <div className='flex flex-col items-center'>
-//             {loading ? (
-//                 <AiOutlineLoading className="animate-spin" />
-//             ) : (
-//                 <div className='quiz-container'>
-//                     <h2>{questions[currentQuestion]?.question}</h2>
-//                     <div className='options'>
-//                         {questions[currentQuestion]?.options.map((option, index) => (
-//                             <button
-//                                 key={index}
-//                                 className={`option-btn ${selectedAnswer === index ? 'selected' : ''}`}
-//                                 onClick={() => handleAnswerSelection(index)}
-//                             >
-//                                 {option}
-//                             </button>
-//                         ))}
-//                     </div>
-//                     <Button onClick={handleNext} disabled={selectedAnswer === null}>
-//                         Next
-//                     </Button>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default Quiz;
-
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { Button } from 'flowbite-react';
-import { AiOutlineLoading } from 'react-icons/ai';
+import React, { useEffect, useState } from "react";
+import { Button } from "flowbite-react";
+import { AiOutlineLoading } from "react-icons/ai";
+import emailjs from "@emailjs/browser";
+import { getAuth } from "firebase/auth";
+import Certificate from "../pages/Certificate";
 
 const Quiz = ({ courseTitle, onCompletion }) => {
-    const [questions, setQuestions] = useState([]);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [score, setScore] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [hasFetchedQuiz, setHasFetchedQuiz] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [answerSaved, setAnswerSaved] = useState(false);
+  const [quizFinished, setQuizFinished] = useState(false);
 
-    useEffect(() => {
-        const fetchQuiz = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(
-                    'https://api.aimlapi.com', 
-                
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer AIzaSyAnIN9pRtfPR0SUBnLJNk8nQWagrfYCnak`, // Use the provided API key
-                        },
-                        body: JSON.stringify({ courseTitle }),
-                    }
-                );
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState("");
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to fetch quiz: ${errorText}`);
-                }
+  // ----------------------------------------------------------------------- //
+  // Fetch user email and name from Firebase on load
+  useEffect(() => {
+    if (user) {
+      const displayName = user.displayName;
+      const emailFromGoogle = user.providerData[0]?.email;
+  
+      // Only update if the value has actually changed
+      if (displayName !== userName) {
+        setUserName(displayName || "User");
+      }
+  
+      if (emailFromGoogle !== userEmail) {
+        setUserEmail(emailFromGoogle || user.email || "");
+      }
+    } else {
+      // If user is not signed in, reset email
+      if (userEmail !== "") setUserEmail(""); 
+    }
+  }, [user, userName, userEmail]);
 
-                const data = await response.json();
-                setQuestions(data.quiz); // Adjust based on actual API response
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching quiz:', error);
-                toast.error('Failed to load quiz. Please try again later.');
-                setLoading(false);
-            }
-        };
+  // ----------------------------------------------------------------------- //
+  // Email Sending Logic
+  // const sendEmail = () => {
+  //   if (!userEmail) {
+  //     setEmailStatus("Email not available");
+  //     console.log("No user email found");
+  //     return;
+  //   }
 
-        fetchQuiz();
-    }, [courseTitle]);
+  //   setIsLoading(true); // Show loading state
+  //   setEmailStatus(""); // Reset email status before sending
 
-    const handleAnswerSelection = (index) => {
-        setSelectedAnswer(index);
-    };
+  //   const emailData = {
+  //     userName: userName, // Name of the user
+  //     userEmail: userEmail, // The email where the message will be sent
+  //     message: "Great Job, You finished the course!", // The email message
+  //   };
 
-    const handleNext = () => {
-        if (selectedAnswer === questions[currentQuestion]?.answer) {
-            setScore(prevScore => prevScore + 1);
-            toast.success("Correct!");
-        } else {
-            toast.error("Wrong! Try again.");
+  //   emailjs
+  //     .send(
+  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+  //       emailData,
+  //       {
+  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  //       }
+  //     )
+  //     .then(
+  //       () => {
+  //         setEmailStatus("SUCCESS! Email sent");
+  //         alert("SUCCESS! Email sent"); // Show success message
+  //         setIsLoading(false); // Reset loading state
+  //       },
+  //       (error) => {
+  //         setEmailStatus(`FAILED... ${error.text}`);
+  //         console.log("FAILED...", error.text);
+  //         setIsLoading(false); // Reset loading state on error
+  //       }
+  //     );
+  // };
+
+  // const sendEmail = (download) => {
+  //   const emailData = {
+  //     userName: userName,
+  //     userEmail: userEmail, 
+  //     message: download 
+  //   };
+
+  //   emailjs
+  //     .send(
+  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+  //       emailData,
+  //       {
+  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  //       }
+  //     )
+  //     .then(
+  //       () => {
+
+  //         alert("SUCCESS! Email sent"); // Show success message
+          
+  //       },
+  //       (error) => {
+
+  //         console.log("FAILED...", error.text);
+          
+  //       }
+  //     );
+  // };
+
+  // ----------------------------------------------------------------------- //
+  // Button Handler
+  // const handleSendEmail = () => {
+  //   sendEmail();
+  // };
+
+  // Function to fetch quiz data manually
+  const fetchQuiz = async () => {
+    if (hasFetchedQuiz) return; // Prevent refetch if already done
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": import.meta.env.VITE_API_KEY, // Use API Key from .env
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
+                            - A question text.
+                            - Four multiple-choice options.
+                            - The correct answer labeled at the end.
+                            
+
+                            Format the response as an array of objects, with each object containing:
+                            - "question": The question text.
+                            - "options": An array of 4 options.
+                            - "answer": The correct answer.
+
+                            Example format:
+                            [
+                                {
+                                    "question": "What is the syntax to define a function in Python?",
+                                    "options": [
+                                        "def function_name():",
+                                        "function_name = def:",
+                                        "def function_name",
+                                        "define function_name:"
+                                    ],
+                                    "answer": "def function_name():"
+                                },
+                                {
+                                    "question": "Which data type is used for decimals in Python?",
+                                    "options": [
+                                        "int",
+                                        "float",
+                                        "complex",
+                                        "str"
+                                    ],
+                                    "answer": "float"
+                                }
+                            ]
+
+                            Please generate at least 10 questions in this format.`,
+                  },
+                ],
+              },
+            ],
+          }),
         }
+      );
 
-        setSelectedAnswer(null);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch quiz: ${errorText}`);
+      }
 
-        if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(prevQuestion => prevQuestion + 1);
-        } else {
-            onCompletion(score + 1);
-        }
-    };
+      const rawResponse = await response.text();
+      const cleanedResponse = cleanResponse(rawResponse);
+      const parsedQuestions = parseQuizContent(cleanedResponse);
+      setQuestions(parsedQuestions);
+      setHasFetchedQuiz(true); // Mark quiz as fetched
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching quiz:", error);
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className='flex flex-col items-center'>
-            {loading ? (
-                <AiOutlineLoading className="animate-spin" />
-            ) : (
-                <div className='quiz-container'>
-                    <h2>{questions[currentQuestion]?.question || 'Loading question...'}</h2>
-                    <div className='options'>
-                        {questions[currentQuestion]?.options.map((option, index) => (
-                            <button
-                                key={index}
-                                className={`option-btn ${selectedAnswer === index ? 'selected' : ''}`}
-                                onClick={() => handleAnswerSelection(index)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                    <Button onClick={handleNext} disabled={selectedAnswer === null}>
-                        Next
-                    </Button>
-                </div>
-            )}
+  // Call this function when you want to load the quiz
+  const handleStartQuiz = () => {
+    fetchQuiz();
+    setQuizStarted(true); // Mark quiz as started
+  };
+
+  const cleanResponse = (response) => {
+    return response.replace(/`/g, ""); // Remove backticks from the response if needed
+  };
+
+  const parseQuizContent = (quizText) => {
+    try {
+      const responseObj = JSON.parse(quizText);
+      const quizTextData = responseObj.candidates[0]?.content?.parts[0]?.text;
+      const quizDataArr = JSON.parse(quizTextData);
+
+      const formattedQuizData = [];
+
+      quizDataArr.forEach((item) => {
+        const answerIndex = item.options.findIndex(
+          (option) => option === item.answer
+        );
+        formattedQuizData.push({
+          question: item.question,
+          options: item.options,
+          answer: {
+            optionNo: answerIndex + 1, // Store the option number (1-based index)
+            optionAns: item.answer, // Store the actual answer text
+          },
+        });
+      });
+      return formattedQuizData;
+    } catch (error) {
+      console.error("Error parsing quiz content:", error);
+      return [];
+    }
+  };
+
+  const handleAnswerSelection = (index) => {
+    setSelectedAnswer(index);
+  };
+
+  const handleSaveAnswer = () => {
+    // Get the correct answer text for the current question
+    const correctAnswer = questions[currentQuestion]?.answer.optionAns;
+
+    // Check if the selected answer is correct or incorrect
+    const isCorrect =
+      questions[currentQuestion]?.options[selectedAnswer] === correctAnswer;
+
+    // Update score if answer is correct
+    if (isCorrect) {
+      setScore((prevScore) => prevScore + 1);
+    }
+
+    setAnswerSaved(true); // Mark answer as saved
+  };
+
+  const handleNext = () => {
+    setAnswerSaved(false); // Reset the saved answer flag
+    setSelectedAnswer(null); // Clear selection
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion((prevQuestion) => prevQuestion + 1);
+    } else {
+      // Finish the quiz
+      setQuizFinished(true); // Mark the quiz as finished
+
+      // Send email if score is 5 or more
+      if (score >= 5) {
+        handleSendEmail(); // Send the email if the user scored 5 or more
+      }
+
+      onCompletion(score); // Optionally, pass the final score
+    }
+  };
+
+  const getOptionClassName = (index) => {
+    if (answerSaved) {
+      // Check if the answer is correct or wrong
+      const correctAnswer = questions[currentQuestion]?.answer.optionAns;
+      if (questions[currentQuestion]?.options[index] === correctAnswer) {
+        return "bg-green-500 text-white border-green-600"; // Green for correct answer
+      } else if (selectedAnswer === index) {
+        return "bg-red-500 text-white border-red-600"; // Red for selected wrong answer
+      }
+    }
+    // Sky blue for selected option
+    return selectedAnswer === index
+      ? "bg-sky-500 text-white border-sky-600"
+      : "bg-gray-50 text-black border-gray-300 hover:bg-gray-100";
+  };
+
+  return (
+    <div className={`flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative ${!quizStarted || !quizFinished ? 'p-10' : 'px-16' }`}>
+      {/* Floating Score Counter */}
+      <div className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${quizFinished && 'hidden'} `}>
+        <h3 className="text-lg font-semibold">Score: {score}</h3>
+      </div>
+      {!quizStarted && (
+        !quizFinished && (
+        <h1 className={`text-3xl font-bold mb-6`}>Quiz</h1>
+      )
+      )}
+      {!quizStarted ? (
+        <Button onClick={handleStartQuiz}>Start Quiz</Button>
+      ) : loading ? (
+        <div className="flex items-center justify-center">
+          <AiOutlineLoading size={50} className="animate-spin" />
         </div>
-    );
+      ) : quizFinished ? (
+        score >= 5 ? (
+          <Certificate userEmail={userEmail} userName={userName} courseTitle={courseTitle} userId={user.uid} />
+        ) : (
+          <div className="flex items-center justify-center flex-col space-y-4">
+            <h2 className="text-3xl font-bold text-red-500">
+              Sorry, You Didn't Pass
+            </h2>
+            <p className="text-xl">
+              You scored {score} out of 10. We recommend you revise the course and try again.
+            </p>
+          </div>
+        )
+      ) : (
+        <div className="w-full max-w-3xl space-y-6 p-4">
+          <h2 className="text-xl font-bold">
+          {currentQuestion + 1}. {questions[currentQuestion]?.question}
+          </h2>
+          <ul className="space-y-3">
+            {questions[currentQuestion]?.options.map((option, index) => (
+              <li
+                key={index}
+                className={`border p-2 rounded-lg cursor-pointer transition-colors duration-300 ${getOptionClassName(
+                  index
+                )}`}
+                onClick={() => handleAnswerSelection(index)}
+              >
+                {option}
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-between mt-4">
+            <Button onClick={handleSaveAnswer} disabled={answerSaved}>
+              {answerSaved ? "Answer Saved" : "Save Answer"}
+            </Button>
+            {answerSaved && (
+              <Button onClick={handleNext}>
+                {currentQuestion === questions.length - 1
+                  ? "Finish Quiz"
+                  : "Next Question"}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Quiz;
