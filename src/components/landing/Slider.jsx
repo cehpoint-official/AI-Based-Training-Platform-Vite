@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import urls from '../../assets/pictures';
+import { useNavigate } from 'react-router-dom';
 
 const Slider = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [theme, setTheme] = useState('dark');
     const text = ["Generate courses using AI", "Learn and Upskill yourself", "Land your Dream job"];
     const buttons=["Generate","Learn","more"]
+    const navigate=useNavigate();
     // const toggleTheme = () => {
     //     const newTheme = theme === 'dark' ? 'light' : 'dark';
     //     setTheme(newTheme);
@@ -26,6 +28,17 @@ const Slider = () => {
     const handlePrev = () => {
         setCurrentIndex((prevIndex) => (prevIndex - 1 + urls.length) % urls.length);
     };
+    const handleclick=()=>{
+        if(currentIndex==0){
+            navigate("/Create");
+        }
+        else if(currentIndex==1){
+            navigate("/Course")
+        }
+        else{
+            navigate("/About")
+        }
+    }
 
     return (
         <div className="">
@@ -42,7 +55,7 @@ const Slider = () => {
                                 <p className="mb-6 px-4 font-bold text-2xl sm:text-3xl text-black dark:text-white">
                                     {text[currentIndex]}
                                 </p>
-                                <button className="px-4 py-2 rounded-md hover:bg-opacity-80 transition duration-300 bg-black text-white dark:bg-white dark:text-black">
+                                <button className="px-4 py-2 rounded-md hover:bg-opacity-80 transition duration-300 bg-black text-white dark:bg-white dark:text-black" onClick={handleclick}>
                                     {buttons[currentIndex]}
                                 </button>
                             </div>
