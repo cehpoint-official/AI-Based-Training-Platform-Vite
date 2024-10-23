@@ -1,8 +1,14 @@
-import { Table } from 'flowbite-react';
+import { Spinner, Table } from 'flowbite-react';
 import React from 'react';
 
-const UserTable = ({ datas }) => {
-
+const UserTable = ({ datas, loading }) => {
+    if (loading) {
+        return (
+          <div className="flex justify-center items-center h-64">
+            <Spinner size="xl" color='gray' />
+          </div>
+        );
+      }
     return (
         <div className='flex flex-col py-4'>
             <div className="overflow-x-auto">

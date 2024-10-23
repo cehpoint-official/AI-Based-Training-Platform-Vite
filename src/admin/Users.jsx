@@ -10,13 +10,21 @@ import axiosInstance from "../axios";
 const Users = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
-      const postURL = `/api/getusers`;
+      try {
+        const postURL = `/api/getusers`;
       const response = await axiosInstance.get(postURL);
+      console.log("GGGG", response)
       setData(response.data);
+      } catch(error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
     }
     dashboardData();
   }, []);
@@ -79,7 +87,7 @@ const Users = () => {
           <AdminSidebar />
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
-            <UserTable datas={data} />
+            <UserTable datas={data} loading={loading} />
           </div>
         </div>
       </div>

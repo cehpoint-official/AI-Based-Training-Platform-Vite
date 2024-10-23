@@ -668,8 +668,8 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {quizAvailable ||
-            (isComplete && (
+          {/* {quizAvailable ||
+            (isComplete && ( */}
               <Sidebar.ItemGroup>
                 <button
                   onClick={() => setShowQuiz(true)}
@@ -679,7 +679,7 @@ const Course = () => {
                   <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
               </Sidebar.ItemGroup>
-            ))}
+            {/* ))} */}
         </div>
       );
     } catch (error) {
@@ -857,8 +857,8 @@ const Course = () => {
               </Sidebar>
 
               <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                {/* sm & md  */}
-                {showQuiz ? (
+                {/* sm & md -> For mobile view  */}
+                {showQuiz ? ( // -> Here as well
                   <div className="w-full min-h-[90vh] flex items-center justify-center">
                     <Quiz
                       courseTitle={mainTopic}
@@ -980,7 +980,7 @@ const Course = () => {
                 </Navbar.Collapse>
               </Navbar>
               <div className="px-8 bg-white dark:bg-black pt-5">
-                {showQuiz ? (
+                {showQuiz ? (  // -> remove this logic, showQuiz logic, remove it.
                   <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
                     <Quiz
                       courseTitle={mainTopic}
