@@ -668,8 +668,8 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {/* {quizAvailable ||
-            (isComplete && ( */}
+          {quizAvailable ||
+            (isComplete && (
               <Sidebar.ItemGroup>
                 <button
                   onClick={() => setShowQuiz(true)}
@@ -679,7 +679,7 @@ const Course = () => {
                   <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
               </Sidebar.ItemGroup>
-            {/* ))} */}
+            ))}
         </div>
       );
     } catch (error) {
