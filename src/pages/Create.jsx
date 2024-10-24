@@ -118,14 +118,13 @@ const Create = () => {
       return;
     }
 
-    if (coursesCreatedToday >= maxCoursesPerDay) {
+    if (coursesCreatedToday >= maxCoursesPerDay && sessionStorage.getItem("apiKey")==null) {
       setShowUpdateKeyPrompt(true);
       setProcessing(false);
       showToast(
         "You have exceeded the daily limit of 5 courses. Redirecting to update your API key."
       );
-
-      return;
+      navigate("/Profile");
     }
 
     const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
