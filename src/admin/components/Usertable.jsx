@@ -17,15 +17,17 @@ const UserTable = ({ datas, loading }) => {
                         <Table.HeadCell className='font-black'>Email</Table.HeadCell>
                         <Table.HeadCell className='font-black'>Name</Table.HeadCell>
                         <Table.HeadCell className='font-black'>Type</Table.HeadCell>
+                        <Table.HeadCell className='font-black'>ID</Table.HeadCell>
                     </Table.Head>
                     <Table.Body className="divide-y">
-                        {datas.map(user => (
+                        {datas?.map(user => (
                             <Table.Row key={user._id} className="bg-white dark:border-gray-700 dark:bg-gray-800 text-black">
                                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
                                     {user.email}
                                 </Table.Cell>
                                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white"> {user.mName}</Table.Cell>
                                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white"> {user.type}</Table.Cell>
+                                <Table.Cell className="whitespace-normal font-normal text-black dark:text-white"> {user._id}</Table.Cell>
                             </Table.Row>
                         ))}
                     </Table.Body>
