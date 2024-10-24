@@ -283,42 +283,42 @@ const Course = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleSelect = (topics, sub) => {
-    const mTopic = jsonData[mainTopic.toLowerCase()].find(
-      (topic) => topic.title === topics
+  const handleSelect = (selectedTopics, selectedSub) => {
+    const topicKey = mainTopic.toLowerCase();
+    const mTopic = jsonData[topicKey]?.find(
+      (topic) => topic.title === selectedTopics
     );
     const mSubTopic = mTopic?.subtopics.find(
-      (subtopic) => subtopic.title === sub
+      (subtopic) => subtopic.title === selectedSub
     );
 
-    if (
-      mSubTopic.theory === "" ||
-      mSubTopic.theory === undefined ||
-      mSubTopic.theory === null
-    ) {
-      if (type === "video & text course") {
-        const query = `${mSubTopic.title} ${mainTopic} in english`;
-        const id = toast.loading("Please wait...");
-        sendVideo(query, topics, sub, id, mSubTopic.title);
-      } else {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${mSubTopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-        const promptImage = `Example of ${mSubTopic.title} in ${mainTopic}`;
-        const id = toast.loading("Please wait...");
-        sendPrompt(prompt, promptImage, topics, sub, id);
-      }
-    } else {
-      setSelected(mSubTopic.title);
-
-      setTheory(mSubTopic.theory);
-      if (type === "video & text course") {
-        setMedia(mSubTopic.youtube);
-      } else {
-        setMedia(mSubTopic.image);
-      }
+    if (!mSubTopic) {
+      toast.error("Subtopic not found.");
+      return;
     }
+
+    const { theory, youtube, image } = mSubTopic;
+
+    if (!theory) {
+      const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      const id = toast.loading("Please wait...");
+
+      if (type === "video & text course") {
+        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+      } else {
+        const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
+        const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
+        sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
+      }
+      return;
+    }
+
+    setSelected(mSubTopic.title);
+    setTheory(theory);
+    setMedia(type === "video & text course" ? youtube : image);
   };
 
-  async function sendPrompt(prompt, promptImage, topics, sub, id) {
+  async function sendPrompt(prompt, promptImage, topics, sub, id, retries = 3, delay = 1000) {
     const dataToSend = {
       prompt: prompt,
     };
@@ -327,34 +327,60 @@ const Course = () => {
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
+  
+      // Attempt to parse and send image
       try {
         const parsedJson = htmlContent;
-        sendImage(parsedJson, promptImage, topics, sub, id);
+        await sendImage(parsedJson,promptImage,topics,sub,id);
+        
       } catch (error) {
-        sendPrompt(prompt, promptImage, topics, sub, id);
+        console.warn("Error in sendImage, retrying...",error);
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return sendPrompt(prompt,promptImage,topics,sub,id,retries-1,delay*2);
+        } else {
+          console.error("Failed to send prompt after multiple attempts:",error);
+          throw error;
+        }
       }
-    } catch (error) {
-      sendPrompt(prompt, promptImage, topics, sub, id);
+    } catch(error) {
+      console.warn("Error in sendPrompt, retrying...", error);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return sendPrompt(prompt, promptImage, topics, sub, id, retries - 1, delay * 2); 
+      } else {
+        console.error("Failed to send prompt after multiple attempts:", error);
+        throw error;
+      }
     }
   }
+  
 
-  async function sendImage(parsedJson, promptImage, topics, sub, id) {
+  async function sendImage(parsedJson, promptImage, topics, sub, id, retries = 3, delay = 1000) {
     const dataToSend = {
       prompt: promptImage,
     };
+  
     try {
       const postURL = "/api/image";
       const res = await axiosInstance.post(postURL, dataToSend);
-      try {
-        const generatedText = res.data.url;
-        sendData(generatedText, parsedJson, topics, sub, id);
-      } catch (error) {
-        sendImage(parsedJson, promptImage, topics, sub, id);
-      }
+  
+      const generatedText = res.data.url;
+      
+      await sendData(generatedText, parsedJson, topics, sub, id);
+      
     } catch (error) {
-      sendImage(parsedJson, promptImage, topics, sub, id);
+      if (retries > 0) {
+        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+        return sendImage(parsedJson,promptImage,topics,sub,id,retries-1,delay*2);
+      } else {
+        console.error('Failed to send image after multiple attempts:', error);
+        throw error; // If retries are over then throw the error
+      }
     }
   }
+  
 
   async function sendData(image, theory, topics, sub, id) {
     const mTopic = jsonData[mainTopic.toLowerCase()].find(
@@ -452,68 +478,105 @@ const Course = () => {
     }
   }
 
-  async function sendVideo(query, mTopic, mSubTopic, id, subtop) {
-    const dataToSend = {
-      prompt: query,
-    };
-    try {
-      const postURL = "/api/yt";
-      const res = await axiosInstance.post(postURL, dataToSend);
+async function sendVideo(query, mTopic, mSubTopic, id, subtop, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: query,
+  };
+  try {
+    const postURL = "/api/yt";
+    const res = await axiosInstance.post(postURL, dataToSend);
+    const generatedText = res.data.url;
 
-      try {
-        const generatedText = res.data.url;
-        sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
-      } catch (error) {
-        sendVideo(query, mTopic, mSubTopic, id, subtop);
-      }
-    } catch (error) {
-      sendVideo(query, mTopic, mSubTopic, id, subtop);
+    //sending the transcript
+    await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
+  
+  } catch (error) {
+    if (retries > 0) {
+      console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, delay)); // Waiting before retrying
+      return sendVideo(query, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2); // Exponential backoff
+    } else {
+      console.error('Failed to send video after multiple attempts:', error);
+      throw error; // If retries are over then throw the error
     }
   }
+}
 
-  async function sendTranscript(url, mTopic, mSubTopic, id, subtop) {
-    const dataToSend = {
-      prompt: url,
-    };
+async function sendTranscript(url, mTopic, mSubTopic, id, subtop, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: url,
+  };
+  try {
+    const postURL = "/api/transcript";
+    const res = await axiosInstance.post(postURL, dataToSend);
+
+    // Process the response data
     try {
-      const postURL = "/api/transcript";
-      const res = await axiosInstance.post(postURL, dataToSend);
-
-      try {
-        const generatedText = res.data.url;
-        const allText = generatedText.map((item) => item.text);
-        const concatenatedText = allText.join(" ");
-        const prompt = `Summarize this theory in a teaching way :- ${concatenatedText}.`;
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      } catch (error) {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtop}. Please Strictly Don't Give Additional Resources And Images.`;
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      }
+      const generatedText = res.data.url;
+      const allText = generatedText.map((item) => item.text);
+      const concatenatedText = allText.join(" ");
+      const prompt = `Summarize this theory in a teaching way: ${concatenatedText}.`;
+      await sendSummery(prompt,url,mTopic,mSubTopic,id);
     } catch (error) {
-      const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtop}.  Please Strictly Don't Give Additional Resources And Images.`;
-      sendSummery(prompt, url, mTopic, mSubTopic, id);
+      console.warn("Error processing transcript response, retrying with fallback...", error);
+      const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return sendTranscript(url,mTopic,mSubTopic,id,subtop,retries-1,delay*2);
+      } else {
+        await sendSummery(fallbackPrompt,url,mTopic,mSubTopic,id);
+      }
+    }
+  } catch (error) {
+    console.warn("Error fetching transcript, retrying with fallback...", error);
+    const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return sendTranscript(url,mTopic,mSubTopic,id,subtop,retries-1,delay*2); 
+    } else {
+      await sendSummery(fallbackPrompt,url,mTopic,mSubTopic,id);
     }
   }
+}
 
-  async function sendSummery(prompt, url, mTopic, mSubTopic, id) {
-    const dataToSend = {
-      prompt: prompt,
-    };
+
+async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: prompt,
+  };
+
+  try {
+    const postURL = "/api/generate";
+    const res = await axiosInstance.post(postURL, dataToSend);
+
+    // Process the generated summary text
     try {
-      const postURL = "/api/generate";
-      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
-      try {
-        const parsedJson = htmlContent;
-        sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
-      } catch (error) {
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      }
+      const parsedJson = htmlContent;  // Process the HTML content
+
+      await sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
+      
     } catch (error) {
-      sendSummery(prompt, url, mTopic, mSubTopic, id);
+      console.warn("Error processing summary response, retrying...", error);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));  
+        return sendSummery(prompt, url, mTopic, mSubTopic, id, retries - 1, delay * 2);
+      } else {
+        throw new Error("Failed to process summary after multiple retries."); 
+      }
+    }
+  } catch (error) {
+    console.warn("Error fetching summary, retrying...", error);
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));  
+      return sendSummery(prompt, url, mTopic, mSubTopic, id, retries - 1, delay * 2);  
+    } else {
+      throw new Error("Failed to generate summary after multiple retries.");  
     }
   }
+}
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
