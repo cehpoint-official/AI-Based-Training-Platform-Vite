@@ -42,7 +42,7 @@ const Projects = ({ courseTitle }) => {
         console.log("Response from API:", response.data);
   
         // Use .find() to locate the user by email
-        const user = response.data.find(user => user.email === 'test@gmail.com'); // Change this email to the one you're searching for
+        const user = response.data.find(user => user.email === userEmail);
   
         if (user && user._id) {
           console.log("User ID found:", user._id);
@@ -125,9 +125,9 @@ const Projects = ({ courseTitle }) => {
   };
 
   const saveProject = async () => {
-    if (!selectedProject || !userId) {
-      console.log("No project selected or userId not available.");
-      return; // Ensure a project is selected and userId is available
+    if (!selectedProject || !userId || !userEmail) {
+      console.log("No project selected, userId, or userEmail not available.");
+      return; // Ensure a project is selected and necessary data is available
     }
   
     console.log("Saving project:", selectedProject, "for user ID:", userId);
@@ -140,7 +140,10 @@ const Projects = ({ courseTitle }) => {
         },
         body: JSON.stringify({
           projectTitle: selectedProject,
-          userId: userId, // Send userId with the request
+          userId: userId,         // Send userId
+          email: userEmail,       // Send user's email
+          completed: false,       // Set default value for completed
+          github_url: ""          // Optionally send the GitHub URL if available
         }),
       });
   

@@ -10,6 +10,7 @@ import axiosInstance from "../axios";
 const Users = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState([]);
+  const [projects, setProjects] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,16 +18,30 @@ const Users = () => {
     async function dashboardData() {
       try {
         const postURL = `/api/getusers`;
-      const response = await axiosInstance.get(postURL);
-      console.log("GGGG", response)
-      setData(response.data);
-      } catch(error) {
+        const response = await axiosInstance.get(postURL);
+        // console.log("GGGG", response);
+        setData(response.data);
+      } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {
         setLoading(false);
       }
     }
     dashboardData();
+  }, []);
+
+  // Fetch projects
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const response = await axiosInstance.get(`/api/getprojects`);
+        console.log(response.data.data)
+        setProjects(response.data.data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    }
+    fetchProjects();
   }, []);
 
   const toggleSidebar = () => {
@@ -87,7 +102,7 @@ const Users = () => {
           <AdminSidebar />
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
-            <UserTable datas={data} loading={loading} />
+            <UserTable datas={data} loading={loading} projects={projects} />
           </div>
         </div>
       </div>
