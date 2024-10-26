@@ -29,6 +29,7 @@ import ErrorPage from "./pages/ErrorPage";
 
 import "./App.css";
 import Quiz from "./quiz/Quiz";
+import Project from "./admin/Project";
 
 function App() {
   return (
@@ -80,6 +81,7 @@ function App() {
           <Route path="/privacy" element={<Privacy />} />
           {/* Admin Panel */}
           <Route path="/dashBoard" element={<DashBoard />} />
+          <Route path="/project" element={<Project />} />
           <Route path="/users" element={<Users />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />

@@ -5,7 +5,7 @@ import { FaUsers } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
 // import { FaDollarSign } from "react-icons/fa";
 import { MdSettingsInputComponent } from "react-icons/md";
-import { AiFillMessage } from "react-icons/ai";
+import { AiFillMessage, AiFillProject } from "react-icons/ai";
 import { IoIosDocument } from "react-icons/io";
 import { Sidebar } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +26,9 @@ const AdminSidebar = () => {
   const navigate = useNavigate();
   function redirectDashBoard() {
     navigate("/dashBoard");
+  }
+  function redirectProject() {
+    navigate("/project");
   }
   function redirectUsers() {
     navigate("/users");
@@ -65,6 +68,13 @@ const AdminSidebar = () => {
         <div className="flex flex-row items-center" onClick={redirectDashBoard}>
           <MdSpaceDashboard size={18} />
           <p className="font-bold text-base ml-2 ">DashBoard</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
+          onClick={redirectProject}
+        >
+          <AiFillProject size={18} />
+          <p className="font-bold text-base ml-2">Projects</p>
         </div>
         <div
           className="flex flex-row items-center mt-6"
