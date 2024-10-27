@@ -157,7 +157,7 @@ const ProjectTable = ({ projects = [], loading }) => {
 
       {showIds && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-[40vw]">
             <h2 className="font-bold text-lg">Assigned User IDs</h2>
             {selectedId.map((item, index) => (
               <ProjectDetails ids={item} key={index} />
