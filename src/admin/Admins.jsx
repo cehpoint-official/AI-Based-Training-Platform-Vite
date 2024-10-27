@@ -1,4 +1,4 @@
-import { Navbar } from "flowbite-react";
+import { Navbar, Spinner } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import AdminSidebar from "./components/adminsidebar";
@@ -11,14 +11,22 @@ const Admins = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [admins, setAdmin] = useState([]);
   const [users, setUser] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
-      const postURL = `/api/getadmins`;
-      const response = await axiosInstance.get(postURL);
-      setAdmin(response.data.admins);
-      setUser(response.data.users);
+      try {
+        const postURL = `/api/getadmins`;
+        const response = await axiosInstance.get(postURL);
+        console.log(response.data.admins);
+        setAdmin(response.data.admins);
+        setUser(response.data.users);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
     }
     dashboardData();
   }, []);
@@ -32,7 +40,7 @@ const Admins = () => {
       <div>
         <div className="flex bg-white dark:bg-black md:hidden pb-10 overflow-y-auto">
           <div
-            className={`fixed inset-0 bg-black opacity-50 z-50 ${
+            className={`fixed  inset-0 bg-black opacity-50 z-50 ${
               isSidebarOpen ? "block" : "hidden"
             }`}
             onClick={toggleSidebar}

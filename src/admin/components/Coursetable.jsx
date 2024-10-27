@@ -1,8 +1,15 @@
-import { Table } from "flowbite-react";
+import { Spinner, Table } from "flowbite-react";
 import React from "react";
 import NothingFound from "@/components/nothingfound";
 
-const CourseTable = ({ datas }) => {
+const CourseTable = ({ datas, loading }) => {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner size="xl" color='gray' />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col py-4">
       {datas.length === 0 ? (

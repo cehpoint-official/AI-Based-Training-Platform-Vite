@@ -10,20 +10,29 @@ import axiosInstance from "../axios";
 const Courses = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     sessionStorage.setItem("darkMode", false);
-    async function dashboardData() {
-      const postURL = `/api/getcourses`;
-      const response = await axiosInstance.get(postURL);
-      setData(response.data);
+    async function fetchCourses() {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get('/api/getcourses');
+        console.log("Courses data:", response.data);
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-    dashboardData();
+    fetchCourses();
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
 
   return (
     <>
@@ -79,7 +88,7 @@ const Courses = () => {
           <AdminSidebar />
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
-            <CourseTable datas={data} />
+            <CourseTable datas={data} loading={loading} />
           </div>
         </div>
       </div>

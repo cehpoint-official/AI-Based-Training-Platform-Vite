@@ -19,11 +19,12 @@ import "react-circular-progressbar/dist/styles.css";
 import emailjs from "@emailjs/browser";
 import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
+import Projects from "../ProjectSuggestion/Projects";
 
 const Course = () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  // console.log(user.uid)
+  // console.log(user?.uid)
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -44,6 +45,7 @@ const Course = () => {
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -102,7 +104,7 @@ const Course = () => {
       }
     }
   };
-  
+
   const getCertificateUrl = async () => {
     try {
       const response = await fetch("/api/get-certificate-url", {
@@ -713,6 +715,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                           onClick={() => {
                             handleSelect(topic.title, subtopic.title);
                             setShowQuiz(false);
+                            setShowProjects(false);
                           }}
                           className="flex py-2 text-sm flex-row items-center font-normal text-black dark:text-white  text-start"
                           role="menuitem"
@@ -734,8 +737,13 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
           {quizAvailable ||
             (isComplete && (
               <Sidebar.ItemGroup>
+                <button 
+                onClick={() => {setShowProjects(true); setShowQuiz(false)}}
+                className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10">
+                  Projects
+                </button>
                 <button
-                  onClick={() => setShowQuiz(true)}
+                  onClick={() => {setShowQuiz(true); setShowProjects(false)}}
                   className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
                 >
                   Take Quiz
@@ -920,8 +928,8 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </Sidebar>
 
               <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                {/* sm & md  */}
-                {showQuiz ? (
+                {/* sm & md -> For mobile view  */}
+                {showQuiz ? ( // -> Here as well
                   <div className="w-full min-h-[90vh] flex items-center justify-center">
                     <Quiz
                       courseTitle={mainTopic}
@@ -975,7 +983,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                   </div>
                  // )} */}
 
-                    {isComplete && projectSuggestions && (
+                    {/* {isComplete && projectSuggestions && (
                       <div className="mt-10">
                         <h2 className="text-xl font-bold text-black dark:text-white">
                           Project Suggestions
@@ -989,7 +997,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                           <p>{submissionInstructions}</p>
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </>
                 )}
               </div>
@@ -1044,16 +1052,18 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </Navbar>
               <div className="px-8 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                  <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+                    <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={user?.uid} />
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">
