@@ -19,6 +19,14 @@ const Profile = () => {
   );
   const [showCurrentApiKey, setShowCurrentApiKey] = useState(false);
 
+  const [showUnsplashApiKeyForm, setShowUnsplashApiKeyForm] = useState(false);
+  const [newUnsplashApiKey, setNewUnsplashApiKey] = useState("");
+  const [currentUnsplashApiKey, setCurrentUnsplashApiKey] = useState(
+    sessionStorage.getItem("currentUnsplashApiKey") || ""
+  );
+  const [showCurrentUnsplashApiKey, setShowCurrentUnsplashApiKey] =
+    useState(false);
+
   const showToast = (msg) => {
     setProcessing(false);
     toast(msg, {
@@ -36,6 +44,11 @@ const Profile = () => {
     const storedApiKey = sessionStorage.getItem("apiKey");
     if (storedApiKey) {
       setCurrentApiKey(storedApiKey);
+    }
+
+    const storedUnsplashApiKey = sessionStorage.getItem("unsplashApiKey");
+    if (storedUnsplashApiKey) {
+      setCurrentUnsplashApiKey(storedUnsplashApiKey);
     }
   }, []);
 
@@ -102,9 +115,46 @@ const Profile = () => {
     }
   };
 
+  const handleSubmitUnsplashApiKey = async (event) => {
+    event.preventDefault();
+    if (!newUnsplashApiKey) {
+      showToast("Please enter the new Unsplash API key");
+      return;
+    }
+    setProcessing(true);
+    const uid = sessionStorage.getItem("uid");
+    const postURL = `/api/profile`;
+    try {
+      const response = await axiosInstance.post(postURL, {
+        email,
+        mName,
+        unsplashApiKey: newUnsplashApiKey,
+        uid,
+      });
+      if (response.data.success) {
+        setCurrentUnsplashApiKey(newUnsplashApiKey);
+        sessionStorage.setItem("currentUnsplashApiKey", newUnsplashApiKey);
+        showToast(response.data.message);
+        setProcessing(false);
+        setNewUnsplashApiKey("");
+        setShowUnsplashApiKeyForm(false);
+      } else {
+        showToast(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.response || error.message);
+      showToast("Internal Server Error");
+    }
+  };
+
   const handleChangeApiKey = () => {
     setNewApiKey("");
     setShowApiKeyForm(true);
+  };
+
+  const handleChangeUnsplashApiKey = () => {
+    setNewUnsplashApiKey("");
+    setShowUnsplashApiKeyForm(true);
   };
 
   return (
@@ -122,6 +172,7 @@ const Profile = () => {
                 onClick={() => {
                   setShowPasswordForm(true);
                   setShowApiKeyForm(false);
+                  setShowUnsplashApiKeyForm(false);
                 }}
                 className="mb-4 w-full dark:bg-white dark:text-black bg-black text-white font-bold rounded-none"
               >
@@ -132,6 +183,12 @@ const Profile = () => {
                 className="mb-4 w-full dark:bg-white dark:text-black bg-black text-white font-bold rounded-none"
               >
                 Manage Gemini API Key
+              </Button>
+              <Button
+                onClick={handleChangeUnsplashApiKey}
+                className="mb-4 w-full dark:bg-white dark:text-black bg-black text-white font-bold rounded-none"
+              >
+                Manage Unsplash API Key
               </Button>
 
               {showPasswordForm && (
@@ -169,7 +226,7 @@ const Profile = () => {
                 <div>
                   <div className="mb-6">
                     <p className="font-bold text-black dark:text-white">
-                      Current API Key:
+                      Current Gemini API Key:
                     </p>
                     <div className="flex items-center">
                       <input
@@ -214,6 +271,62 @@ const Profile = () => {
                       type="submit"
                     >
                       Submit New Key
+                    </Button>
+                  </form>
+                </div>
+              )}
+
+              {showUnsplashApiKeyForm && (
+                <div>
+                  <div className="mb-6">
+                    <p className="font-bold text-black dark:text-white">
+                      Current Unsplash API Key:
+                    </p>
+                    <div className="flex items-center">
+                      <input
+                        type={showCurrentUnsplashApiKey ? "text" : "password"}
+                        value={currentUnsplashApiKey}
+                        readOnly
+                        className="focus:ring-black focus:border-black border border-black bg-white dark:bg-black dark:border-white dark:text-white rounded-none w-full"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowCurrentUnsplashApiKey(!showCurrentUnsplashApiKey)
+                        }
+                        className="ml-2 text-blue-500 underline"
+                      >
+                        {showCurrentUnsplashApiKey ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSubmitUnsplashApiKey}>
+                    <div className="mb-6">
+                      <div className="mb-2 block">
+                        <Label
+                          className="font-bold text-black dark:text-white"
+                          htmlFor="newUnsplashApiKey"
+                          value="New Unsplash API Key"
+                        />
+                      </div>
+                      <input
+                        value={newUnsplashApiKey}
+                        onChange={(e) => setNewUnsplashApiKey(e.target.value)}
+                        className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
+                        id="newUnsplashApiKey"
+                        type="text"
+                      />
+                    </div>
+                    <Button
+                      isProcessing={processing}
+                      processingSpinner={
+                        <AiOutlineLoading className="h-6 w-6 animate-spin" />
+                      }
+                      className="items-center justify-center text-center dark:bg-white dark:text-black bg-black text-white font-bold rounded-none w-full"
+                      type="submit"
+                    >
+                      Submit New Unsplash Key
                     </Button>
                   </form>
                 </div>
