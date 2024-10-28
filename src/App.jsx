@@ -15,7 +15,7 @@ import Profile from "./pages/Profile";
 import TermsPolicy from "./pages/Termspolicy";
 import Features from "./pages/Features";
 import About from "./pages/About";
-import APIKeyForm from "./pages/APIKeyForm";
+// import APIKeyForm from "./pages/APIKeyForm";
 import PrivacyPolicy from "./pages/Privacy";
 // import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Contact from "./pages/Contact";
@@ -87,7 +87,7 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />
           <Route path="/contacts" element={<Contacts />} />
-          <Route path="/apikeyform" element={<APIKeyForm />} />
+          
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>

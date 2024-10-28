@@ -734,23 +734,25 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {quizAvailable ||
-            (isComplete && (
+          {isComplete && (
               <Sidebar.ItemGroup>
-                <button 
-                onClick={() => {setShowProjects(true); setShowQuiz(false)}}
-                className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10">
-                  Projects
-                </button>
+                
                 <button
                   onClick={() => {setShowQuiz(true); setShowProjects(false)}}
-                  className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
+                  className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between"
                 >
                   Take Quiz
                   <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
+
+                <div className="w-full bg-black/70 dark:bg-white/70 h-[1px]"></div>
+                <button 
+                onClick={() => {setShowProjects(true); setShowQuiz(false)}}
+                className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10">
+                  Projects
+                </button>
               </Sidebar.ItemGroup>
-            ))}
+            )}
         </div>
       );
     } catch (error) {
