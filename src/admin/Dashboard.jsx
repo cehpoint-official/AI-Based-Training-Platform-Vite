@@ -20,7 +20,7 @@ const Dashboard = () => {
       try {
         const postURL = `/api/dashboard`;
         const response = await axiosInstance.post(postURL);
-        console.log(response.data);
+        // console.log(response.data);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
