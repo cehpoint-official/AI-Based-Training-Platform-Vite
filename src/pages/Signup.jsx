@@ -12,8 +12,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleAuthProvider } from "firebase/auth";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
 import axiosInstance from "../axios";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 
 const SignUp = () => {
+  const auth = getAuth();
   const storedTheme = sessionStorage.getItem("darkMode");
   const [mName, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -66,25 +68,37 @@ const SignUp = () => {
     const type = "free";
     try {
       setProcessing(true);
+      
+      // Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const uid = user.uid;
+  
+      // Send user data to your backend
       const response = await axiosInstance.post(postURL, {
         email,
         mName,
         password,
         type,
+        uid, // Include the Firebase UID
       });
+      
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
         sessionStorage.setItem("mName", mName);
         sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", response.data.userId);
+        sessionStorage.setItem("uid", uid);
         sessionStorage.setItem("type", "free");
         sendEmail(email, mName);
       } else {
         showToast(response.data.message);
       }
     } catch (error) {
-      showToast("Internal Server Error!");
+      console.error("Signup error:", error);
+      showToast("Signup failed. Please try again.");
+    } finally {
+      setProcessing(false);
     }
   };
 

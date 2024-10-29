@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../axios";
 import { Button } from "flowbite-react";
 
-const ProjectDetails = ({ ids }) => {
+const ProjectDetails = ({ ids, selectedTitle }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null); // State to track the expanded user ID
@@ -10,12 +10,12 @@ const ProjectDetails = ({ ids }) => {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const response = await axiosInstance.get(`/api/getprojects`);
+        const response = await axiosInstance.get(`/api/getprojectsAdmin`);
         console.log(response.data.data);
         
-        // Filter projects where userId matches any of the ids
+        // Filter projects by userId and selectedTitle
         const filteredProjects = response.data.data.filter(project => 
-          ids.includes(project.userId)
+          ids.includes(project.userId) && project.title === selectedTitle
         );
         
         setProjects(filteredProjects); // Set the filtered projects
@@ -27,7 +27,7 @@ const ProjectDetails = ({ ids }) => {
     }
 
     fetchProjects();
-  }, [ids]); // Add ids to the dependency array
+  }, [ids, selectedTitle]); // Add selectedTitle to the dependency array
 
   const handleSendEmail = (project) => {
     alert(`Sending email about project "${project.title}" to ${project.email}`);
@@ -90,7 +90,7 @@ const ProjectDetails = ({ ids }) => {
           </div>
         ))
       ) : (
-        <p>No projects found for the given IDs.</p>
+        <p>No projects found for the given IDs and title.</p>
       )}
     </div>
   );

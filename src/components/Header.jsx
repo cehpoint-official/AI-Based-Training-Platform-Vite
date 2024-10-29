@@ -61,6 +61,9 @@ const Header = ({ isHome }) => {
   function redirectProfile() {
     navigate("/profile");
   }
+  function redirectMyProject() {
+    navigate("/myproject");
+  }
   function Logout() {
     sessionStorage.clear();
     showToast("Logout Successful");
@@ -189,6 +192,18 @@ const Header = ({ isHome }) => {
                 onClick={redirectProfile}
               >
                 Profile
+              </Navbar.Link>
+              <Navbar.Link
+                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                style={{
+                  paddingLeft: "0px",
+                  paddingRight: "0px",
+                  paddingBottom: "10px",
+                  paddingTop: "10px",
+                }}
+                onClick={redirectMyProject}
+              >
+                My Project
               </Navbar.Link>
               <Navbar.Link
                 className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"

@@ -24,7 +24,7 @@ const ProjectTable = ({ projects = [], loading }) => {
   const [projectDetails, setProjectDetails] = useState(null); // Change to single project details
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false); // For the modal that shows project details
   const [showIds, setShowIds] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // Function to handle input changes
   const handleInputChange = (e) => {
@@ -35,7 +35,7 @@ const ProjectTable = ({ projects = [], loading }) => {
   const handleSaveProject = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/saveProject`,
+        `${import.meta.env.VITE_API_URL}/api/saveProject`,
         newProject
       );
       alert(response.data.message);
@@ -99,7 +99,8 @@ const ProjectTable = ({ projects = [], loading }) => {
                   <p>{project.assignedTo.length}</p>
                   <button
                     onClick={() => {
-                        setSelectedId(project.assignedTo); // Store assigned IDs
+                        setSelectedItem(project.assignedTo); // Store assigned IDs
+                        console.log(project.assignedTo)
                         setShowIds(true);
                       }}
                     className="bg-gray-500 p-1 rounded-md"
@@ -159,8 +160,8 @@ const ProjectTable = ({ projects = [], loading }) => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded-lg shadow-lg w-[40vw]">
             <h2 className="font-bold text-lg">Assigned User IDs</h2>
-            {selectedId.map((item, index) => (
-              <ProjectDetails ids={item} key={index} />
+            {selectedItem.map((item, index) => (
+              <ProjectDetails ids={item.userid} key={index} selectedTitle={item.title} />
             ))}
             <button
               onClick={() => setShowIds(false)} // Close the modal

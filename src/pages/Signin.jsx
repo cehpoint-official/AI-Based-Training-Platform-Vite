@@ -155,8 +155,10 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
 import axiosInstance from "../axios";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const SignIn = () => {
+  const auth = getAuth();
   const storedTheme = sessionStorage.getItem("darkMode");
   const [email, setEmail] = useState("");
   const [processing, setProcessing] = useState(false);
@@ -206,7 +208,14 @@ const SignIn = () => {
 
     try {
       setProcessing(true);
-      const res = await axiosInstance.post(postURL, { email, password });
+      
+      // Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const firebaseUid = user.uid;
+
+      // Send sign-in request to your server
+      const res = await axiosInstance.post(postURL, { email, password, firebaseUid });
 
       if (res.data.success) {
         showToast(res.data.message);
@@ -214,8 +223,8 @@ const SignIn = () => {
         sessionStorage.setItem("email", res.data.userData.email);
         sessionStorage.setItem("mName", res.data.userData.mName);
         sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", res.data.userData._id);
         sessionStorage.setItem("type", res.data.userData.type);
+        sessionStorage.setItem("uid", res.data.userData.uid); // Use the updated uid
         sessionStorage.setItem("apiKey", res.data.userData.apiKey);
         redirectHome();
       } else {
@@ -223,7 +232,7 @@ const SignIn = () => {
       }
     } catch (error) {
       console.error("Error:", error.message);
-      showToast("Try again");
+      showToast("Sign-in failed. Please try again.");
     } finally {
       setProcessing(false);
     }

@@ -34,7 +34,7 @@ const Users = () => {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const response = await axiosInstance.get(`/api/getprojects`);
+        const response = await axiosInstance.get(`/api/getprojectsAdmin`);
         console.log(response.data.data)
         setProjects(response.data.data);
       } catch (error) {

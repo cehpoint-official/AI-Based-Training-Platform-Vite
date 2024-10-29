@@ -929,22 +929,23 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                 </Sidebar.Items>
               </Sidebar>
 
-              <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                {/* sm & md -> For mobile view  */}
-                {showQuiz ? ( // -> Here as well
-                  <div className="w-full min-h-[90vh] flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+              <div className="px-8 bg-black dark:bg-black pt-5">
+                {showQuiz ? (
+                    <div className="w-full min-h-[90vh] bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={user?.uid} />
                 ) : (
                   <>
-                    <p className="font-black text-black dark:text-white text-lg">
+                    <p className="font-black text-black dark:text-white text-xl">
                       {selected}
                     </p>
                     <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
@@ -969,37 +970,6 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && (
-                  <div className="mt-10 absolute bg-white w-screen h-20 z-50">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Course Quiz
-                    </h2>
-                    <Quiz
-                      // courseTitle={mainTopic}
-                      // onCompletion={(score) => {
-                      //   // Handle quiz completion
-                      //   console.log(`Quiz completed with score: ${score}`);
-                      //   // You might want to update some state or show a completion message
-                      // }}
-                    />
-                  </div>
-                 // )} */}
-
-                    {/* {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )} */}
                   </>
                 )}
               </div>
@@ -1093,21 +1063,6 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )} */}
                   </>
                 )}
               </div>
