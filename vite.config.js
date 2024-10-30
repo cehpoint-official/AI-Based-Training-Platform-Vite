@@ -42,5 +42,9 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve("./src"),
       },
     },
+    optimizeDeps: {
+      exclude: ['pdfjs-dist']
+    }
+    
   };
 });

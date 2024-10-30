@@ -31,10 +31,15 @@ import ErrorPage from "./pages/ErrorPage";
 import "./App.css";
 import Quiz from "./quiz/Quiz";
 import Project from "./admin/Project";
+import TestPage from "./components/Interview/TestPage";
+import ExpectationPage from "./components/Interview/ExpectationPage";
+import MyProject from "./pages/Myproject";
+import TopcandidateTable from "./admin/components/TopcandidateTable";
+import { SkillsProvider } from "./Context/skills";
 
 function App() {
   return (
-    <div>
+    <SkillsProvider>
       <Router>
         <ToastContainer
           limit={3}
@@ -69,6 +74,7 @@ function App() {
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/myproject" element={<MyProject />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/create" element={<Create />} />
           <Route path="/topics" element={<Topics />} />
@@ -80,9 +86,15 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsPolicy />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+
+          {/* Interview */}
+          <Route path="/testpage" element={<TestPage />} />
+          <Route path="/expectation" element={<ExpectationPage />} />
+
           {/* Admin Panel */}
           <Route path="/dashBoard" element={<DashBoard />} />
           <Route path="/project" element={<Project />} />
+          <Route path="/topcandidate" element={<TopcandidateTable />} />
           <Route path="/users" element={<Users />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />
@@ -91,7 +103,7 @@ function App() {
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>
-    </div>
+      </SkillsProvider>
   );
 }
 
