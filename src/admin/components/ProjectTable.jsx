@@ -11,6 +11,7 @@ import React from "react";
 import axios from "axios"; // Assuming axios is installed
 import axiosInstance from "../../axios";
 import ProjectDetails from "./ProjectDetails";
+import { IoClose, IoEye } from "react-icons/io5";
 
 const ProjectTable = ({ projects = [], loading }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +26,8 @@ const ProjectTable = ({ projects = [], loading }) => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false); // For the modal that shows project details
   const [showIds, setShowIds] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [openDescription, setOpenDescription] = useState(false);
+  const [projectDesc, setProjectDesc] = useState(null);
 
   // Function to handle input changes
   const handleInputChange = (e) => {
@@ -50,6 +53,11 @@ const ProjectTable = ({ projects = [], loading }) => {
     setProjectDetails(null); // Reset project details
   };
 
+  const showDesc = (desc) => {
+    setOpenDescription(true);
+    setProjectDesc(desc);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -72,6 +80,7 @@ const ProjectTable = ({ projects = [], loading }) => {
         <Table>
           <Table.Head className="border-b text-black">
             <Table.HeadCell className="font-black">Title</Table.HeadCell>
+            <Table.HeadCell className="font-black">Descriptopn</Table.HeadCell>
             <Table.HeadCell className="font-black">Category</Table.HeadCell>
             <Table.HeadCell className="font-black">Difficulty</Table.HeadCell>
             <Table.HeadCell className="font-black">Time</Table.HeadCell>
@@ -87,6 +96,14 @@ const ProjectTable = ({ projects = [], loading }) => {
                   {project.title}
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
+                  <button
+                    onClick={() => showDesc(project.description)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Show Description
+                  </button>
+                </Table.Cell>
+                <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
                   {project.category}
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
@@ -96,16 +113,16 @@ const ProjectTable = ({ projects = [], loading }) => {
                   {project.time}
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white flex items-center justify-start gap-x-3">
-                  <p>{project.assignedTo.length}</p>
                   <button
                     onClick={() => {
-                        setSelectedItem(project.assignedTo); // Store assigned IDs
-                        console.log(project.assignedTo)
-                        setShowIds(true);
-                      }}
-                    className="bg-gray-500 p-1 rounded-md"
+                      setSelectedItem(project.assignedTo);
+                      console.log(project.assignedTo);
+                      setShowIds(true);
+                    }}
+                    className="bg-black text-white p-1 rounded-md flex items-center justify-center w-[5rem] gap-x-3"
                   >
-                    👁️
+                    <p className="font-bold">{project.assignedTo.length}</p>
+                    <IoEye size={20} />
                   </button>
                 </Table.Cell>
               </Table.Row>
@@ -113,6 +130,48 @@ const ProjectTable = ({ projects = [], loading }) => {
           </Table.Body>
         </Table>
       </div>
+
+      {openDescription && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl w-full mx-4 relative">
+            <button
+              onClick={() => setOpenDescription(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              ✕
+            </button>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+              Project Description
+            </h3>
+            <div className="text-gray-600 dark:text-gray-300 max-h-[60vh] overflow-y-auto">
+              {projectDesc ? (
+                projectDesc
+                  .split(/\n{2,}/) // Split on two or more newlines for paragraphs
+                  .filter((para) => para.trim() !== "")
+                  .map((paragraph, index) => (
+                    <p
+                      key={`para-${index}`}
+                      className="mb-4 last:mb-0 leading-relaxed"
+                    >
+                      {paragraph.split("\n").map((line, lineIndex) => (
+                        <React.Fragment key={`line-${index}-${lineIndex}`}>
+                          {line}
+                          {lineIndex < paragraph.split("\n").length - 1 && (
+                            <br />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </p>
+                  ))
+              ) : (
+                <p className="text-gray-500 italic">
+                  No description available.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal to Add New Project */}
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -157,17 +216,21 @@ const ProjectTable = ({ projects = [], loading }) => {
       </Modal>
 
       {showIds && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-[40vw]">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 ">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-[90%] relative overflow-hidden ">
             <h2 className="font-bold text-lg">Assigned User IDs</h2>
             {selectedItem.map((item, index) => (
-              <ProjectDetails ids={item.userid} key={index} selectedTitle={item.title} />
+              <ProjectDetails
+                ids={item.userid}
+                key={index}
+                selectedTitle={item.title}
+              />
             ))}
             <button
               onClick={() => setShowIds(false)} // Close the modal
-              className="mt-2 bg-red-500 text-white rounded-md p-2"
+              className="bg-red-600 text-white rounded-es-md p-2 absolute right-0 top-0"
             >
-              Close
+              <IoClose size={23} />
             </button>
           </div>
         </div>

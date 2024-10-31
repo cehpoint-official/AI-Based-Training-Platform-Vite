@@ -52,7 +52,7 @@ const Course = () => {
   const CountDoneTopics = () => {
     let doneCount = 0;
     let totalTopics = 0;
-
+  
     jsonData[mainTopic.toLowerCase()].forEach((topic) => {
       topic.subtopics.forEach((subtopic) => {
         if (subtopic.done) {
@@ -63,9 +63,30 @@ const Course = () => {
     });
     const completionPercentage = Math.round((doneCount / totalTopics) * 100);
     setPercentage(completionPercentage);
-    if (completionPercentage >= "100") {
+    if (completionPercentage >= 100) {
       setIsCompleted(true);
       setQuizAvailable(true);
+    }
+  
+    // Add this: Update progress in the database
+    updateProgressInDatabase(completionPercentage);
+  };
+  
+  // New function to update progress in the database
+  const updateProgressInDatabase = async (progress) => {
+    try {
+      const response = await axiosInstance.post('/api/updateProgress', {
+        courseId: courseId,
+        progress: progress,
+        completed: progress >= 100 // Add this line to send completion status
+      });
+      if (response.data.success) {
+        console.log('Progress updated in database');
+      } else {
+        console.error('Failed to update progress in database');
+      }
+    } catch (error) {
+      console.error('Error updating progress in database:', error);
     }
   };
 

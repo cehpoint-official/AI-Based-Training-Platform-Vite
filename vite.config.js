@@ -8,7 +8,12 @@ export default defineConfig(({ mode }) => {
   const API_URL = `${env.VITE_API_URL ?? "http://localhost:5000"}`;
   return {
     plugins: [
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       VitePWA({
         manifest: {
           short_name: "CehpointE-LearningSolutions",
@@ -42,5 +47,8 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve("./src"),
       },
     },
+    optimizeDeps: {
+      exclude: ['pdfjs-dist']
+    }
   };
 });

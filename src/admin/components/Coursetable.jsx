@@ -23,6 +23,7 @@ const CourseTable = ({ datas, loading }) => {
               <Table.HeadCell className="font-black">Title</Table.HeadCell>
               <Table.HeadCell className="font-black">Type</Table.HeadCell>
               <Table.HeadCell className="font-black">UserId</Table.HeadCell>
+              <Table.HeadCell className="font-black">Progress</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               {datas.map((courses) => (
@@ -40,6 +41,11 @@ const CourseTable = ({ datas, loading }) => {
                   <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
                     {" "}
                     {courses.user}
+                  </Table.Cell>
+
+                  <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
+                    {" "}
+                    {courses.progress || 0}
                   </Table.Cell>
                 </Table.Row>
               ))}

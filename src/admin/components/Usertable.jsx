@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Spinner, Table, Button } from "flowbite-react";
 import React from "react";
 import axiosInstance from "../../axios";
+import UserTableProjectDetails from "./userTableProjectDetails";
 
 const UserTable = ({ datas, loading, projects = [] }) => {
   const [selectedUser, setSelectedUser] = useState(null); // State to manage which user's projects are being viewed
@@ -20,11 +21,11 @@ const UserTable = ({ datas, loading, projects = [] }) => {
       const completedProjects = projects.filter(
         (project) => project.completed === true
       );
-      setCompletedUsers(completedProjects.map((project) => project.userId)); // Store user IDs with completed projects
+      setCompletedUsers(completedProjects.map((project) => project.userId));
 
       // Store user IDs with any projects
       const allUserIdsWithProjects = projects.map((project) => project.userId);
-      setUsersWithProjects([...new Set(allUserIdsWithProjects)]); // Store unique user IDs
+      setUsersWithProjects([...new Set(allUserIdsWithProjects)]);
     } catch (error) {
       console.error("Error fetching projects:", error);
     }
@@ -37,6 +38,22 @@ const UserTable = ({ datas, loading, projects = [] }) => {
   // Function to change filter state
   const changeFilter = (newFilter) => {
     setFilter(newFilter);
+  };
+
+  const calculateTimeLeft = (dateCreated, duration) => {
+    const createdDate = new Date(dateCreated);
+    const dueDate = new Date(
+      createdDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000
+    ); // duration in weeks
+    const today = new Date();
+    const timeLeft = dueDate - today;
+
+    if (timeLeft <= 0) {
+      return "Time's up!";
+    }
+
+    const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+    return `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`;
   };
 
   if (loading) {
@@ -87,6 +104,8 @@ const UserTable = ({ datas, loading, projects = [] }) => {
     }
     return true; // Default: show all users
   });
+
+  
 
   return (
     <div className="flex flex-col py-4 relative">
@@ -167,72 +186,13 @@ const UserTable = ({ datas, loading, projects = [] }) => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-md shadow-md relative w-1/2">
-            <button
-              className="absolute top-2 right-2 text-xl font-bold"
-              onClick={handleCloseModal}
-            >
-              &times;
-            </button>
-            <h2 className="text-2xl font-bold mb-4">Project Details</h2>
-            <div className="flex flex-col">
-              {getUserProjects(selectedUser).length > 0 ? (
-                getUserProjects(selectedUser).map((project) => (
-                  <div key={project._id} className="border-b py-2">
-                    <p className="text-lg font-semibold">
-                      Title: {project.title}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Email: {project.email}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Completed:{" "}
-                      <span
-                        className={`font-bold ${
-                          project.completed ? "text-green-500" : "text-red-500"
-                        }`}
-                      >
-                        {project.completed ? "Yes" : "No"}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      GitHub URL:{" "}
-                      {project.github_url ? (
-                        <a
-                          href={project.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500"
-                        >
-                          {project.github_url}
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Date Created:{" "}
-                      {new Date(project.dateCreated).toLocaleDateString()}
-                    </p>
-
-                    {/* Send Email button */}
-                    <Button
-                      onClick={() => handleSendEmail(project)}
-                      className={`mt-2 ${
-                        project.completed ? "bg-green-500" : "bg-red-500"
-                      } text-white`}
-                    >
-                      Send Email
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <p>No projects found for this user.</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <UserTableProjectDetails
+          selectedUser={selectedUser}
+          getUserProjects={getUserProjects}
+          handleCloseModal={handleCloseModal}
+          calculateTimeLeft={calculateTimeLeft}
+          handleSendEmail={handleSendEmail}
+        />
       )}
     </div>
   );

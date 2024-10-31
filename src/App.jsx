@@ -32,10 +32,17 @@ import "./App.css";
 import Quiz from "./quiz/Quiz";
 import Project from "./admin/Project";
 import Myproject from "./pages/Myproject";
+import TestPage from "./components/Interview/TestPage";
+import ExpectationPage from "./components/Interview/ExpectationPage";
+import Final from "./components/Interview/Final";
+import { SkillsProvider } from "./Context/skills";
+import Topcandidate from "./admin/Topcandidate";
+
+
 
 function App() {
   return (
-    <div>
+    <SkillsProvider>
       <Router>
         <ToastContainer
           limit={3}
@@ -82,9 +89,17 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsPolicy />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          
+          {/* Interview */}
+
+          <Route path="/testpage" element={<TestPage />} />
+          <Route path="/:uid/expectation" element={<ExpectationPage />} />
+          <Route path="/:uid/final" element={<Final />} />
+
           {/* Admin Panel */}
           <Route path="/dashBoard" element={<DashBoard />} />
           <Route path="/project" element={<Project />} />
+          <Route path="/topcandidate" element={<Topcandidate />} />
           <Route path="/users" element={<Users />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />
@@ -93,7 +108,7 @@ function App() {
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>
-    </div>
+      </SkillsProvider>
   );
 }
 

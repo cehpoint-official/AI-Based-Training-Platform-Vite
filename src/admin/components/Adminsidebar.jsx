@@ -29,6 +29,8 @@ const AdminSidebar = () => {
   }
   function redirectProject() {
     navigate("/project");
+  } function redirectTopCandidate() {
+    navigate("/topcandidate");
   }
   function redirectUsers() {
     navigate("/users");
@@ -75,6 +77,13 @@ const AdminSidebar = () => {
         >
           <AiFillProject size={18} />
           <p className="font-bold text-base ml-2">Projects</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
+          onClick={redirectTopCandidate}
+        >
+          <AiFillProject size={18} />
+          <p className="font-bold text-base ml-2">Top Candidate</p>
         </div>
         <div
           className="flex flex-row items-center mt-6"

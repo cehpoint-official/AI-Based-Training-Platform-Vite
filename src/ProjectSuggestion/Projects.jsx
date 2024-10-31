@@ -52,6 +52,7 @@ const Projects = ({ courseTitle }) => {
       try {
         const response = await axiosInstance.get(`/api/getmainprojects`);
         const projects = response.data.data || [];
+        // console.log(projects)
         setProjectPages(projects); // Store the fetched projects directly
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -110,12 +111,16 @@ const Projects = ({ courseTitle }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            projectTitle: selectedProject,
+            projectTitle: selectedProject.title,
+            description: selectedProject.description,
+            difficulty: selectedProject.difficulty,
+            time: selectedProject.time,
             userId,
             email: userEmail,
             completed: false,
-            github_url: "", // Optionally send the GitHub URL if available
-            firebaseUId, // Send the firebaseUId
+            github_url: "",
+            video_url: "", 
+            firebaseUId, 
           }),
         }
       );
@@ -130,7 +135,7 @@ const Projects = ({ courseTitle }) => {
       alert("Project saved successfully");
 
       // Update the project to add userId and title to assignedTo array
-      await updateProjectAssignedTo(selectedProject, userId);
+      await updateProjectAssignedTo(selectedProject.title, userId);
     } catch (error) {
       console.error("Error saving project:", error);
     }
@@ -168,7 +173,7 @@ const Projects = ({ courseTitle }) => {
 
   // Handle project selection
   const handleProjectSelection = (project) => {
-    setSelectedProject(project.title); // Assuming project is an object with a 'title' field
+    setSelectedProject(project); // Assuming project is an object with a 'title' field
   };
 
   // Handle the Next button click
@@ -209,7 +214,7 @@ const Projects = ({ courseTitle }) => {
             <li
               key={index}
               className={`cursor-pointer p-2 mb-2 border ${
-                selectedProject === project.title
+                selectedProject?.title === project.title
                   ? "bg-green-200"
                   : "bg-gray-100"
               }`}
@@ -249,7 +254,7 @@ const Projects = ({ courseTitle }) => {
             Save Project
           </button>
           <h3 className="text-xl font-semibold mt-2">Selected Project:</h3>
-          <p>{selectedProject}</p>
+          <p>{selectedProject.title}</p>
         </div>
       )}
     </div>
