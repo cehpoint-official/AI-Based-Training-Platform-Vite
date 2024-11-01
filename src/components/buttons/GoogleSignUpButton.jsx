@@ -1,60 +1,98 @@
 import { Button } from "flowbite-react";
 import { auth, googleProvider } from "@/firebase/firebaseConfig";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 import axiosInstance from "@/axios";
+import { useEffect } from "react";
 
 const GoogleSignUpButton = ({ text, navigate, showToast }) => {
   const handleGoogleSignIn = async () => {
     try {
-      // Ensure the scope for email is added here
-      googleProvider.addScope('email');
+      console.log("Starting Google Sign In process");
+      console.log("Auth object:", auth);
+      console.log("Google Provider object:", googleProvider);
 
-      // Perform sign-in with Google
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // console.log("User object:", user); // Log the entire user object to see its structure
-
-      // Get the email from providerData
-      const emailFromGoogle = user.providerData[0]?.email || user.email;
-
-      if (!emailFromGoogle) {
-        showToast("Unable to retrieve email from Google. Please try again or use a different sign-in method.");
-        return;
-      }
-
-      // Proceed with your logic after successful sign-in
-      // console.log("User signed in with email:", emailFromGoogle);
-
-      const token = await user.getIdToken(); // Get the user's token
-      const postURL = `/api/google/auth`;
-
-      const res = await axiosInstance.post(postURL, {
-        token,
-        name: user.displayName,
-        email: emailFromGoogle, // Use email from Google
+      // Ensure the provider is correctly set up
+      googleProvider.setCustomParameters({
+        prompt: 'select_account'
       });
 
-      if (res.data.success) {
-        // Save user data in session storage
-        sessionStorage.setItem("email", res.data.userData.email);
-        sessionStorage.setItem("mName", res.data.userData.mName);
-        sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", res.data.userData.id);
-        sessionStorage.setItem("type", res.data.userData.type);
-        
-        // Navigate to home after successful sign-in
-        navigate("/home");
-        showToast(res.data.message);
-      } else {
-        showToast(res.data.message);
-      }
-      
+      // Redirect to Google sign-in page
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      // console.error("Google Sign In Error:", error);
-      showToast("Error signing in with Google. Please try again.");
+      console.error("Google Sign In Error:", error);
+      showToast(
+        error.message || "Error signing in with Google. Please try again."
+      );
     }
   };
+
+  // Handle the result of the redirect
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+
+          // Validate essential user data
+          if (!user) {
+            showToast("Failed to get user data from Google");
+            return;
+          }
+
+          const emailFromGoogle = user.email;
+          const displayName = user.displayName;
+          const photoURL = user.photoURL;
+          const uid = user.uid;
+
+          // Validate required fields
+          if (!emailFromGoogle || !displayName || !uid) {
+            showToast("Missing required user information from Google");
+            return;
+          }
+
+          const token = await user.getIdToken();
+          const postURL = "/api/google/auth";
+
+          const res = await axiosInstance.post(postURL, {
+            token,
+            name: displayName,
+            email: emailFromGoogle,
+            googleProfileImage: photoURL || "",
+            uid: uid,
+          });
+
+          if (res.data.success && res.data.userData) {
+            const userData = res.data.userData;
+            if (!userData.email || !userData.mName || !userData.id) {
+              showToast("Incomplete user data received from server");
+              return;
+            }
+
+            // Store user data in session
+            sessionStorage.setItem("email", userData.email);
+            sessionStorage.setItem("mName", userData.mName);
+            sessionStorage.setItem("profile", userData.profile || photoURL || "");
+            sessionStorage.setItem("auth", "true");
+            sessionStorage.setItem("uid", userData.id);
+            sessionStorage.setItem("type", userData.type || "user");
+
+            navigate("/home");
+            showToast(res.data.message || "Successfully signed in!");
+          } else {
+            showToast(res.data.message || "Sign in failed. Please try again.");
+          }
+        }
+      } catch (error) {
+        console.error("Redirect result error:", error);
+        showToast(
+          error.message || "Error handling redirect result. Please try again."
+        );
+      }
+    };
+
+    handleRedirectResult();
+  }, [navigate, showToast]);
 
   return (
     <Button

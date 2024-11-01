@@ -318,7 +318,7 @@ const SignIn = () => {
                   <GoogleSignUpButton
                     text="Sign in with Google"
                     showToast={showToast}
-                    navigate={navigate}
+                    // navigate={navigate}
                   />
                 </div>
 

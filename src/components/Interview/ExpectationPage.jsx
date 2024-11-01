@@ -66,7 +66,8 @@ const ExpectationPage = () => {
       setError(null);
       try {
         const fetchedReport = await getTestReportsFromFirebase(uid);
-        setReport(fetchedReport);
+        // console.log("dfhdyfyus", fetchedReport.data.reportData.questions)
+        setReport(fetchedReport.data);
 
         const fetchedResumeData = await getResumeDataFromFirebase(uid);
         setResumeData(fetchedResumeData);

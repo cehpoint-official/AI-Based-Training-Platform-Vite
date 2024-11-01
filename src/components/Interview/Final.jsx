@@ -27,8 +27,9 @@ const Final = () => {
       }
 
       try {
-        const Data = await getTestReportsFromFirebase(uid);
-
+        const fetchedData = await getTestReportsFromFirebase(uid);
+        const Data = fetchedData.data
+        // console.log(Data)
         if (Data && Data.reportData) {
           setQuestionsData(Data.reportData.questions || []);
           setReportData(Data)
@@ -199,6 +200,7 @@ const Final = () => {
         >
           View Report
         </Button>
+        
       </div>
 
       {/* Report Modal */}
@@ -207,7 +209,7 @@ const Final = () => {
         onClose={closeReportModal}
         report={report}
         questionsData={questionsData}
-        namee={reportData.name}
+        namee={reportData.name || "unknown"}
         email={reportData.email}
       />
     </div>

@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { startRecording, stopRecording } from './recorder';
-import { fetchQuestionsBySkills } from './fetchQuestions';
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { startRecording, stopRecording } from "./recorder";
+import { fetchQuestionsBySkills } from "./fetchQuestions";
 
 import {
   AiOutlineLoading3Quarters,
   AiOutlineStop,
   AiOutlinePlayCircle,
-} from 'react-icons/ai';
-import { saveTestReportToFirebase } from '../../../firebaseUtils';
-import UserDetailsModal from './UserDetailsModal';
-import skillsContext from '../../Context/skills';
+} from "react-icons/ai";
+import { saveTestReportToFirebase } from "../../../firebaseUtils";
+import UserDetailsModal from "./UserDetailsModal";
+import skillsContext from "../../Context/skills";
+import { Bounce, toast, ToastContainer } from "react-toastify";
 
 const TestPage = () => {
   const auth = getAuth();
@@ -33,30 +34,46 @@ const TestPage = () => {
   const navigate = useNavigate();
   const { skills } = useContext(skillsContext);
 
+  const errorToast = (error) => {
+    toast.error(error, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+      transition: Bounce,
+    });
+  };
+
   // Fetch questions based on resume skills
   useEffect(() => {
     const fetchQuestions = async () => {
       // console.log("Starting fetchQuestions with resumeData:", resumeData);
       if (resumeData && resumeData.skills) {
         try {
-          const combinedSkills = Array.from(new Set([...resumeData.skills, 'Corporate']));
-          console.log("Combined skills array:", combinedSkills);
-          
+          const combinedSkills = Array.from(
+            new Set([...resumeData.skills, "Corporate"])
+          );
+          // console.log("Combined skills array:", combinedSkills);
+
           const fetchedQuestions = await fetchQuestionsBySkills(combinedSkills);
-          console.log("Fetched questions:", fetchedQuestions);
-          
+          // console.log("Fetched questions:", fetchedQuestions);
+
           const initializedQuestions = fetchedQuestions.map((question) => ({
             ...question,
-            userAnswer: '',
-            userTextAnswer: '',
+            userAnswer: "",
+            userTextAnswer: "",
           }));
-          console.log("Initialized questions:", initializedQuestions);
-          
+          // console.log("Initialized questions:", initializedQuestions);
+
           setQuestions(initializedQuestions);
         } catch (error) {
-          console.error('Error in fetchQuestions useEffect:', error);
+          errorToast("Sorry! Questions are not available right now")
         }
-      } 
+      }
       // else {
       //   console.log("No resumeData or skills available:", resumeData);
       // }
@@ -145,10 +162,10 @@ const TestPage = () => {
         user.email,
         user.uid
       );
-      console.log('Saved report:', savedReport);
+      // console.log("Saved report:", savedReport);
       navigate(`/${user.uid}/expectation`);
     } catch (error) {
-      console.error('Error submitting test:', error);
+      errorToast("Error submitting test")
       // Handle error (e.g., show an error message to the user)
     } finally {
       setIsSubmitting(false);
@@ -158,7 +175,7 @@ const TestPage = () => {
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
   const handleStartTest = () => {
@@ -188,10 +205,11 @@ const TestPage = () => {
         <div className="bg-red-700 text-white rounded-lg p-8 max-w-md w-full text-center shadow-lg">
           <h2 className="text-3xl font-semibold mb-6">Permission Denied</h2>
           <p className="mb-6">
-            Please ensure all required permissions are granted to continue the test.
+            Please ensure all required permissions are granted to continue the
+            test.
           </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium"
           >
             Return Home
@@ -216,7 +234,7 @@ const TestPage = () => {
             <div className="flex items-center space-x-4">
               {isRecording ? (
                 <button
-                  onClick={()=>navigate('/')}
+                  onClick={() => navigate("/")}
                   className="flex items-center bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition text-lg font-medium"
                   aria-label="Stop Recording and Submit Test"
                 >
@@ -246,42 +264,54 @@ const TestPage = () => {
                 <h3 className="font-semibold text-2xl mb-6">
                   Question {currentQuestionIndex + 1} of {questions.length}
                 </h3>
-                <p className="text-xl mb-6 font-medium">{questions[currentQuestionIndex]?.question}</p>
+                <p className="text-xl mb-6 font-medium">
+                  {questions[currentQuestionIndex]?.question}
+                </p>
 
                 {/* Render based on question type */}
-                {questions[currentQuestionIndex]?.type !== 'mcq' ? (
+                {questions[currentQuestionIndex]?.type !== "mcq" ? (
                   // Render Textarea for Non-MCQ Questions
                   <div>
-                    <label htmlFor="textAnswer" className="block text-lg font-medium text-gray-900 mb-2">
+                    <label
+                      htmlFor="textAnswer"
+                      className="block text-lg font-medium text-gray-900 mb-2"
+                    >
                       Your Answer:
                     </label>
                     <textarea
                       id="textAnswer"
                       className="w-full p-4 border bg-gray-100 border-gray-400 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900 outline-0"
                       placeholder="Type your answer here..."
-                      value={questions[currentQuestionIndex]?.userTextAnswer || ''}
+                      value={
+                        questions[currentQuestionIndex]?.userTextAnswer || ""
+                      }
                       onChange={handleTextAnswerChange}
                     />
                   </div>
                 ) : (
                   // Render MCQ Options
                   <ul className="space-y-4">
-                    {questions[currentQuestionIndex]?.choices?.map((choice, index) => (
-                      <li key={index}>
-                        <button
-                          className={`w-full flex items-center px-6 py-4 border rounded-lg hover:bg-blue-200 transition  
+                    {questions[currentQuestionIndex]?.choices?.map(
+                      (choice, index) => (
+                        <li key={index}>
+                          <button
+                            className={`w-full flex items-center px-6 py-4 border rounded-lg hover:bg-blue-200 transition  
                             ${
-                              questions[currentQuestionIndex]?.userAnswer === choice
-                                ? 'bg-blue-200 text-gray-900 border-blue-700'
-                                : 'bg-white text-gray-900 border-gray-700'
+                              questions[currentQuestionIndex]?.userAnswer ===
+                              choice
+                                ? "bg-blue-200 text-gray-900 border-blue-700"
+                                : "bg-white text-gray-900 border-gray-700"
                             } text-lg font-medium`}
-                          onClick={() => handleSelectAnswer(choice)}
-                        >
-                          <span className="mr-4">{String.fromCharCode(65 + index)}.</span>
-                          {choice}
-                        </button>
-                      </li>
-                    ))}
+                            onClick={() => handleSelectAnswer(choice)}
+                          >
+                            <span className="mr-4">
+                              {String.fromCharCode(65 + index)}.
+                            </span>
+                            {choice}
+                          </button>
+                        </li>
+                      )
+                    )}
                   </ul>
                 )}
               </div>
@@ -291,7 +321,11 @@ const TestPage = () => {
                 <button
                   onClick={handleNextQuestion}
                   className={`flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium 
-                    ${currentQuestionIndex === questions.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    ${
+                      currentQuestionIndex === questions.length - 1
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   disabled={currentQuestionIndex === questions.length - 1}
                   aria-label="Next Question"
                 >
@@ -310,7 +344,7 @@ const TestPage = () => {
                         Submitting...
                       </div>
                     ) : (
-                      'Submit Test'
+                      "Submit Test"
                     )}
                   </button>
                 )}
@@ -323,32 +357,42 @@ const TestPage = () => {
       ) : (
         // Pre-Test Instructions Screen
         <div className="relative bg-gradient-to-tr from-slate-50 to-white text-gray-900 rounded-xl shadow-lg p-12 max-w-xl w-full mx-auto overflow-hidden shadow-gray-600">
-  {/* Background Animation */}
-  <div className="absolute inset-0 z-0 opacity-30 pointer-events-none" id="vanta-bg"></div>
+          {/* Background Animation */}
+          <div
+            className="absolute inset-0 z-0 opacity-30 pointer-events-none"
+            id="vanta-bg"
+          ></div>
 
-  {/* Content */}
-  <h2 className="text-4xl font-extrabold mb-8 text-center relative z-10">Important Guidelines</h2>
-  <ul className="list-disc list-inside space-y-4 text-lg leading-relaxed relative z-10 ">
-    <li>Ensure a stable internet connection throughout the test.</li>
-    <li>Avoid refreshing the page or closing the browser during the test.</li>
-    <li>Your screen, camera, and microphone will be actively recorded , And capture entire screen throughout the test.</li>
-    <li>Complete the test within the given time limit.</li>
-    <li>Attempt the test fairly and All the Best !</li>
-  </ul>
-  <div className="mt-10 flex justify-center relative z-10">
-    <button
-      onClick={handleStartTest}
-      className={`border border-gray-600 bg-blue-200 text-gray-900 px-10 py-3 rounded-lg hover:bg-blue-300 hover:text-black transition-colors duration-300 text-lg font-medium
-        ${!userDetails || !resumeData ? 'opacity-60 cursor-not-allowed' : ''}`}
-      disabled={!resumeData}
-      aria-label="Start Test">
-      Start Test
-    </button>
-  </div>
-</div>
-
-
+          {/* Content */}
+          <h2 className="text-4xl font-extrabold mb-8 text-center relative z-10">
+            Important Guidelines
+          </h2>
+          <ul className="list-disc list-inside space-y-4 text-lg leading-relaxed relative z-10 ">
+            <li>Ensure a stable internet connection throughout the test.</li>
+            <li>
+              Avoid refreshing the page or closing the browser during the test.
+            </li>
+            <li>
+              Your screen, camera, and microphone will be actively recorded ,
+              And capture entire screen throughout the test.
+            </li>
+            <li>Complete the test within the given time limit.</li>
+            <li>Attempt the test fairly and All the Best !</li>
+          </ul>
+          <div className="mt-10 flex justify-center relative z-10">
+            <button
+              onClick={handleStartTest}
+              className={`border border-gray-600 bg-blue-200 text-gray-900 px-10 py-3 rounded-lg hover:bg-blue-300 hover:text-black transition-colors duration-300 text-lg font-medium
+        ${!userDetails || !resumeData ? "opacity-60 cursor-not-allowed" : ""}`}
+              disabled={!resumeData}
+              aria-label="Start Test"
+            >
+              Start Test
+            </button>
+          </div>
+        </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

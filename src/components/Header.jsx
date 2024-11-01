@@ -12,29 +12,15 @@ const Header = ({ isHome }) => {
   const storedTheme = sessionStorage.getItem("darkMode");
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(false);
+  const [firebase_id, setFirebase_id] = useState(sessionStorage.getItem("uid"));
+  const [profileImg, setProfileImg] = useState(
+    "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=9c07ad9f-2390-4717-b83e-8af33a5da8d2"
+  );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isHome && sessionStorage.getItem("uid") === null) {
       navigate("/signin");
-    }
-    async function dashboardData() {
-      const postURL = `/api/dashboard`;
-      const user = JSON.parse(sessionStorage.getItem("user"));
-      const response = await axiosInstance.post(postURL, user);
-      sessionStorage.setItem("adminEmail", response.data.admin.email);
-      if (response.data.admin.email === sessionStorage.getItem("email")) {
-        setAdmin(true);
-      }
-    }
-    if (sessionStorage.getItem("adminEmail")) {
-      if (
-        sessionStorage.getItem("adminEmail") === sessionStorage.getItem("email")
-      ) {
-        setAdmin(true);
-      }
-    } else {
-      // dashboardData();
     }
   });
 
@@ -43,8 +29,7 @@ const Header = ({ isHome }) => {
   }
   function redirectAdmin() {
     sessionStorage.setItem("darkMode", false);
-    const webURL = websiteURL;
-    window.location.href = webURL + "/dashboard";
+    navigate("/dashBoard");
   }
   function redirectFeatures() {
     navigate("/features");
@@ -63,7 +48,8 @@ const Header = ({ isHome }) => {
   }
   function redirectMyProject() {
     navigate("/myproject");
-  } function redirectTest() {
+  }
+  function redirectTest() {
     navigate("/testpage");
   }
   function Logout() {
@@ -77,6 +63,33 @@ const Header = ({ isHome }) => {
   // function redirectPricingTwo() {
   //   navigate('/pricing', { state: { header: false } });
   // }
+
+  const fetchProfile = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/api/user/getProfile?uid=${firebase_id}`
+      );
+
+      if (response.data.success) {
+        setProfileImg(response.data.userProfile.profile);
+        if (response.data.userProfile.role === "admin") {
+          setAdmin(true);
+        } else {
+          setAdmin(false);
+        }
+      } else {
+        console.error("Failed to fetch profile:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (firebase_id) {
+      fetchProfile();
+    }
+  }, [firebase_id]);
 
   const showToast = async (msg) => {
     toast(msg, {
@@ -110,9 +123,9 @@ const Header = ({ isHome }) => {
               <div className="hidden md:flex justify-center items-center">
                 <DarkModeToggle />
               </div>
-              {/* <Navbar.Link className='border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white  hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white' style={{ paddingLeft: '0px', paddingRight: '0px', paddingBottom: '10px', paddingTop: '10px' }} onClick={redirectPricingTwo}>Pricing</Navbar.Link> */}
+              {/* <Navbar.Link className='border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white  hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white' style={{ paddingLeft: '0px', paddingRight: '0px', paddingBottom: '10px', paddingTop: '10px' }} onClick={redirectPricingTwo}>Pricing</Navbar.Link> */}
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white cursor-pointer"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -123,31 +136,57 @@ const Header = ({ isHome }) => {
               >
                 Features
               </Navbar.Link>
-              <Navbar.Link
-                onClick={redirectSignIn}
-                className="border-b-0 text-black  font-normal mb-2 mt-2 border-black dark:text-white dark:border-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
-                style={{
-                  borderWidth: "1px",
-                  paddingLeft: "15px",
-                  paddingRight: "15px",
-                  paddingBottom: "10px",
-                  paddingTop: "10px",
-                }}
-              >
-                SignIn
-              </Navbar.Link>
-              <Navbar.Link
-                onClick={redirectSignUp}
-                className="border-b-0 text-white  font-normal mb-2 mt-2 bg-black dark:text-black dark:bg-white  hover:bg-black dark:hover:bg-white md:dark:hover:bg-white md:hover:bg-black hover:text-white md:hover:text-white dark:hover:text-black dark:md:hover:text-black"
-                style={{
-                  paddingLeft: "15px",
-                  paddingRight: "15px",
-                  paddingBottom: "10px",
-                  paddingTop: "10px",
-                }}
-              >
-                SignUp
-              </Navbar.Link>
+
+              {firebase_id ? (
+                <>
+                  <div className="flex items-center justify-center">
+                    <Navbar.Link
+                      onClick={redirectHome}
+                      className="border-b-0 text-black cursor-pointer
+                  font-normal mb-2 mt-2 border-black dark:text-white dark:border-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white !border border-solid !px-3 !py-1" 
+                    >
+                      Get Started
+                    </Navbar.Link>
+                  </div>
+
+                  <div className="w-8 aspect-square flex items-center justify-center">
+                    <span className="w-8 aspect-square rounded-full bg-black dark:bg-white flex items-center justify-center">
+                      <img
+                        src={profileImg}
+                        className="w-6 h-6 invert dark:invert-0"
+                      />
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Navbar.Link
+                    onClick={redirectSignIn}
+                    className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 border-black dark:text-white dark:border-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                    style={{
+                      borderWidth: "1px",
+                      paddingLeft: "15px",
+                      paddingRight: "15px",
+                      paddingBottom: "10px",
+                      paddingTop: "10px",
+                    }}
+                  >
+                    SignIn
+                  </Navbar.Link>
+                  <Navbar.Link
+                    onClick={redirectSignUp}
+                    className="border-b-0 text-white cursor-pointer  font-normal mb-2 mt-2 bg-black dark:text-black dark:bg-white  hover:bg-black dark:hover:bg-white md:dark:hover:bg-white md:hover:bg-black hover:text-white md:hover:text-white dark:hover:text-black dark:md:hover:text-black"
+                    style={{
+                      paddingLeft: "15px",
+                      paddingRight: "15px",
+                      paddingBottom: "10px",
+                      paddingTop: "10px",
+                    }}
+                  >
+                    SignUp
+                  </Navbar.Link>
+                </>
+              )}
             </Navbar.Collapse>
           </Navbar>
         </>
@@ -172,7 +211,7 @@ const Header = ({ isHome }) => {
                 <DarkModeToggle />
               </div>
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white  hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white  hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -184,7 +223,7 @@ const Header = ({ isHome }) => {
                 Home
               </Navbar.Link>
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -196,7 +235,7 @@ const Header = ({ isHome }) => {
                 Profile
               </Navbar.Link>
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -208,7 +247,7 @@ const Header = ({ isHome }) => {
                 My Project
               </Navbar.Link>
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -220,7 +259,7 @@ const Header = ({ isHome }) => {
                 Give Test
               </Navbar.Link>
               <Navbar.Link
-                className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                className="border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                 style={{
                   paddingLeft: "0px",
                   paddingRight: "0px",
@@ -231,10 +270,10 @@ const Header = ({ isHome }) => {
               >
                 Logout
               </Navbar.Link>
-              {/* <Navbar.Link className='border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white' style={{ paddingLeft: '0px', paddingRight: '0px', paddingBottom: '10px', paddingTop: '10px' }} onClick={redirectPricing}>Pricing</Navbar.Link> */}
+              {/* <Navbar.Link className='border-b-0 text-black cursor-pointer font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white' style={{ paddingLeft: '0px', paddingRight: '0px', paddingBottom: '10px', paddingTop: '10px' }} onClick={redirectPricing}>Pricing</Navbar.Link> */}
               {admin ? (
                 <Navbar.Link
-                  className="border-b-0 text-black  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
+                  className="border-b-0 text-black cursor-pointer  font-normal mb-2 mt-2 dark:text-white hover:bg-white dark:hover:bg-black hover:text-black md:hover:text-black dark:hover:text-white dark:md:hover:text-white"
                   style={{
                     paddingLeft: "0px",
                     paddingRight: "0px",
@@ -250,7 +289,7 @@ const Header = ({ isHome }) => {
               )}
               <Navbar.Link
                 onClick={redirectGenerate}
-                className="border-b-0 text-white  font-normal mb-2 mt-2 bg-black dark:text-black dark:bg-white  hover:bg-black dark:hover:bg-white md:dark:hover:bg-white md:hover:bg-black hover:text-white md:hover:text-white dark:hover:text-black dark:md:hover:text-black"
+                className="border-b-0 text-white cursor-pointer font-normal mb-2 mt-2 bg-black dark:text-black dark:bg-white  hover:bg-black dark:hover:bg-white md:dark:hover:bg-white md:hover:bg-black hover:text-white md:hover:text-white dark:hover:text-black dark:md:hover:text-black"
                 style={{
                   paddingLeft: "15px",
                   paddingRight: "15px",
