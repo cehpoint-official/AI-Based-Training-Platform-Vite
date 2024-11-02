@@ -46,7 +46,9 @@ const Profile = () => {
       setCurrentApiKey(storedApiKey);
     }
 
-    const storedUnsplashApiKey = sessionStorage.getItem("unsplashApiKey");
+    const userJsonString =sessionStorage.getItem("user");
+    const user = JSON.parse(userJsonString);
+    const storedUnsplashApiKey = user.unsplashApiKey;
     if (storedUnsplashApiKey) {
       setCurrentUnsplashApiKey(storedUnsplashApiKey);
     }
