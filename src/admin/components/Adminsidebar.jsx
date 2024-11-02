@@ -5,7 +5,7 @@ import { FaUsers } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
 // import { FaDollarSign } from "react-icons/fa";
 import { MdSettingsInputComponent } from "react-icons/md";
-import { AiFillMessage } from "react-icons/ai";
+import { AiFillMessage, AiFillProject } from "react-icons/ai";
 import { IoIosDocument } from "react-icons/io";
 import { Sidebar } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,11 @@ const AdminSidebar = () => {
   function redirectDashBoard() {
     navigate("/dashBoard");
   }
+  function redirectProject() {
+    navigate("/project");
+  } function redirectTopCandidate() {
+    navigate("/topcandidate");
+  }
   function redirectUsers() {
     navigate("/users");
   }
@@ -41,6 +46,9 @@ const AdminSidebar = () => {
   }
   function redirectAdmins() {
     navigate("/admins");
+  }
+  function redirectTestrecord() {
+    navigate("/testrecord");
   }
   function redirectTerms() {
     navigate("/editterms");
@@ -68,6 +76,20 @@ const AdminSidebar = () => {
         </div>
         <div
           className="flex flex-row items-center mt-6"
+          onClick={redirectProject}
+        >
+          <AiFillProject size={18} />
+          <p className="font-bold text-base ml-2">Projects</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
+          onClick={redirectTopCandidate}
+        >
+          <AiFillProject size={18} />
+          <p className="font-bold text-base ml-2">Top Candidate</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
           onClick={redirectUsers}
         >
           <FaUsers size={18} />
@@ -79,6 +101,13 @@ const AdminSidebar = () => {
         >
           <PiVideoFill size={18} />
           <p className="font-bold text-base ml-2">Courses</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
+          onClick={redirectTestrecord}
+        >
+          <PiVideoFill size={18} />
+          <p className="font-bold text-base ml-2">Test Record</p>
         </div>
         {/* <div className='flex flex-row items-center mt-6' onClick={redirectPaid}>
                     <FaDollarSign size={18} />

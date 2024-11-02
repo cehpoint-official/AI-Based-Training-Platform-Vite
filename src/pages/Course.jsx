@@ -19,11 +19,12 @@ import "react-circular-progressbar/dist/styles.css";
 import emailjs from "@emailjs/browser";
 import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
+import Projects from "../ProjectSuggestion/Projects";
 
 const Course = () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  // console.log(user.uid)
+  // console.log(user?.uid)
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -44,13 +45,14 @@ const Course = () => {
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
   const CountDoneTopics = () => {
     let doneCount = 0;
     let totalTopics = 0;
-
+  
     jsonData[mainTopic.toLowerCase()].forEach((topic) => {
       topic.subtopics.forEach((subtopic) => {
         if (subtopic.done) {
@@ -61,9 +63,30 @@ const Course = () => {
     });
     const completionPercentage = Math.round((doneCount / totalTopics) * 100);
     setPercentage(completionPercentage);
-    if (completionPercentage >= "100") {
+    if (completionPercentage >= 100) {
       setIsCompleted(true);
       setQuizAvailable(true);
+    }
+  
+    // Add this: Update progress in the database
+    updateProgressInDatabase(completionPercentage);
+  };
+  
+  // New function to update progress in the database
+  const updateProgressInDatabase = async (progress) => {
+    try {
+      const response = await axiosInstance.post('/api/updateProgress', {
+        courseId: courseId,
+        progress: progress,
+        completed: progress >= 100 // Add this line to send completion status
+      });
+      if (response.data.success) {
+        console.log('Progress updated in database');
+      } else {
+        console.error('Failed to update progress in database');
+      }
+    } catch (error) {
+      console.error('Error updating progress in database:', error);
     }
   };
 
@@ -102,7 +125,7 @@ const Course = () => {
       }
     }
   };
-  
+
   const getCertificateUrl = async () => {
     try {
       const response = await fetch("/api/get-certificate-url", {
@@ -283,42 +306,42 @@ const Course = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleSelect = (topics, sub) => {
-    const mTopic = jsonData[mainTopic.toLowerCase()].find(
-      (topic) => topic.title === topics
+  const handleSelect = (selectedTopics, selectedSub) => {
+    const topicKey = mainTopic.toLowerCase();
+    const mTopic = jsonData[topicKey]?.find(
+      (topic) => topic.title === selectedTopics
     );
     const mSubTopic = mTopic?.subtopics.find(
-      (subtopic) => subtopic.title === sub
+      (subtopic) => subtopic.title === selectedSub
     );
 
-    if (
-      mSubTopic.theory === "" ||
-      mSubTopic.theory === undefined ||
-      mSubTopic.theory === null
-    ) {
-      if (type === "video & text course") {
-        const query = `${mSubTopic.title} ${mainTopic} in english`;
-        const id = toast.loading("Please wait...");
-        sendVideo(query, topics, sub, id, mSubTopic.title);
-      } else {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${mSubTopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-        const promptImage = `Example of ${mSubTopic.title} in ${mainTopic}`;
-        const id = toast.loading("Please wait...");
-        sendPrompt(prompt, promptImage, topics, sub, id);
-      }
-    } else {
-      setSelected(mSubTopic.title);
-
-      setTheory(mSubTopic.theory);
-      if (type === "video & text course") {
-        setMedia(mSubTopic.youtube);
-      } else {
-        setMedia(mSubTopic.image);
-      }
+    if (!mSubTopic) {
+      toast.error("Subtopic not found.");
+      return;
     }
+
+    const { theory, youtube, image } = mSubTopic;
+
+    if (!theory) {
+      const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      const id = toast.loading("Please wait...");
+
+      if (type === "video & text course") {
+        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+      } else {
+        const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
+        const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
+        sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
+      }
+      return;
+    }
+
+    setSelected(mSubTopic.title);
+    setTheory(theory);
+    setMedia(type === "video & text course" ? youtube : image);
   };
 
-  async function sendPrompt(prompt, promptImage, topics, sub, id) {
+  async function sendPrompt(prompt, promptImage, topics, sub, id, retries = 3, delay = 1000) {
     const dataToSend = {
       prompt: prompt,
     };
@@ -327,34 +350,60 @@ const Course = () => {
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
+  
+      // Attempt to parse and send image
       try {
         const parsedJson = htmlContent;
-        sendImage(parsedJson, promptImage, topics, sub, id);
+        await sendImage(parsedJson,promptImage,topics,sub,id);
+        
       } catch (error) {
-        sendPrompt(prompt, promptImage, topics, sub, id);
+        console.warn("Error in sendImage, retrying...",error);
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return sendPrompt(prompt,promptImage,topics,sub,id,retries-1,delay*2);
+        } else {
+          console.error("Failed to send prompt after multiple attempts:",error);
+          throw error;
+        }
       }
-    } catch (error) {
-      sendPrompt(prompt, promptImage, topics, sub, id);
+    } catch(error) {
+      console.warn("Error in sendPrompt, retrying...", error);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return sendPrompt(prompt, promptImage, topics, sub, id, retries - 1, delay * 2); 
+      } else {
+        console.error("Failed to send prompt after multiple attempts:", error);
+        throw error;
+      }
     }
   }
+  
 
-  async function sendImage(parsedJson, promptImage, topics, sub, id) {
+  async function sendImage(parsedJson, promptImage, topics, sub, id, retries = 3, delay = 1000) {
     const dataToSend = {
       prompt: promptImage,
     };
+  
     try {
       const postURL = "/api/image";
       const res = await axiosInstance.post(postURL, dataToSend);
-      try {
-        const generatedText = res.data.url;
-        sendData(generatedText, parsedJson, topics, sub, id);
-      } catch (error) {
-        sendImage(parsedJson, promptImage, topics, sub, id);
-      }
+  
+      const generatedText = res.data.url;
+      
+      await sendData(generatedText, parsedJson, topics, sub, id);
+      
     } catch (error) {
-      sendImage(parsedJson, promptImage, topics, sub, id);
+      if (retries > 0) {
+        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+        return sendImage(parsedJson,promptImage,topics,sub,id,retries-1,delay*2);
+      } else {
+        console.error('Failed to send image after multiple attempts:', error);
+        throw error; // If retries are over then throw the error
+      }
     }
   }
+  
 
   async function sendData(image, theory, topics, sub, id) {
     const mTopic = jsonData[mainTopic.toLowerCase()].find(
@@ -452,68 +501,105 @@ const Course = () => {
     }
   }
 
-  async function sendVideo(query, mTopic, mSubTopic, id, subtop) {
-    const dataToSend = {
-      prompt: query,
-    };
-    try {
-      const postURL = "/api/yt";
-      const res = await axiosInstance.post(postURL, dataToSend);
+async function sendVideo(query, mTopic, mSubTopic, id, subtop, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: query,
+  };
+  try {
+    const postURL = "/api/yt";
+    const res = await axiosInstance.post(postURL, dataToSend);
+    const generatedText = res.data.url;
 
-      try {
-        const generatedText = res.data.url;
-        sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
-      } catch (error) {
-        sendVideo(query, mTopic, mSubTopic, id, subtop);
-      }
-    } catch (error) {
-      sendVideo(query, mTopic, mSubTopic, id, subtop);
+    //sending the transcript
+    await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
+  
+  } catch (error) {
+    if (retries > 0) {
+      console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, delay)); // Waiting before retrying
+      return sendVideo(query, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2); // Exponential backoff
+    } else {
+      console.error('Failed to send video after multiple attempts:', error);
+      throw error; // If retries are over then throw the error
     }
   }
+}
 
-  async function sendTranscript(url, mTopic, mSubTopic, id, subtop) {
-    const dataToSend = {
-      prompt: url,
-    };
+async function sendTranscript(url, mTopic, mSubTopic, id, subtop, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: url,
+  };
+  try {
+    const postURL = "/api/transcript";
+    const res = await axiosInstance.post(postURL, dataToSend);
+
+    // Process the response data
     try {
-      const postURL = "/api/transcript";
-      const res = await axiosInstance.post(postURL, dataToSend);
-
-      try {
-        const generatedText = res.data.url;
-        const allText = generatedText.map((item) => item.text);
-        const concatenatedText = allText.join(" ");
-        const prompt = `Summarize this theory in a teaching way :- ${concatenatedText}.`;
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      } catch (error) {
-        const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtop}. Please Strictly Don't Give Additional Resources And Images.`;
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      }
+      const generatedText = res.data.url;
+      const allText = generatedText.map((item) => item.text);
+      const concatenatedText = allText.join(" ");
+      const prompt = `Summarize this theory in a teaching way: ${concatenatedText}.`;
+      await sendSummery(prompt,url,mTopic,mSubTopic,id);
     } catch (error) {
-      const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${subtop}.  Please Strictly Don't Give Additional Resources And Images.`;
-      sendSummery(prompt, url, mTopic, mSubTopic, id);
+      console.warn("Error processing transcript response, retrying with fallback...", error);
+      const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return sendTranscript(url,mTopic,mSubTopic,id,subtop,retries-1,delay*2);
+      } else {
+        await sendSummery(fallbackPrompt,url,mTopic,mSubTopic,id);
+      }
+    }
+  } catch (error) {
+    console.warn("Error fetching transcript, retrying with fallback...", error);
+    const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return sendTranscript(url,mTopic,mSubTopic,id,subtop,retries-1,delay*2); 
+    } else {
+      await sendSummery(fallbackPrompt,url,mTopic,mSubTopic,id);
     }
   }
+}
 
-  async function sendSummery(prompt, url, mTopic, mSubTopic, id) {
-    const dataToSend = {
-      prompt: prompt,
-    };
+
+async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, delay = 1000) {
+  const dataToSend = {
+    prompt: prompt,
+  };
+
+  try {
+    const postURL = "/api/generate";
+    const res = await axiosInstance.post(postURL, dataToSend);
+
+    // Process the generated summary text
     try {
-      const postURL = "/api/generate";
-      const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
-      try {
-        const parsedJson = htmlContent;
-        sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
-      } catch (error) {
-        sendSummery(prompt, url, mTopic, mSubTopic, id);
-      }
+      const parsedJson = htmlContent;  // Process the HTML content
+
+      await sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
+      
     } catch (error) {
-      sendSummery(prompt, url, mTopic, mSubTopic, id);
+      console.warn("Error processing summary response, retrying...", error);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));  
+        return sendSummery(prompt, url, mTopic, mSubTopic, id, retries - 1, delay * 2);
+      } else {
+        throw new Error("Failed to process summary after multiple retries."); 
+      }
+    }
+  } catch (error) {
+    console.warn("Error fetching summary, retrying...", error);
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));  
+      return sendSummery(prompt, url, mTopic, mSubTopic, id, retries - 1, delay * 2);  
+    } else {
+      throw new Error("Failed to generate summary after multiple retries.");  
     }
   }
+}
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -650,6 +736,7 @@ const Course = () => {
                           onClick={() => {
                             handleSelect(topic.title, subtopic.title);
                             setShowQuiz(false);
+                            setShowProjects(false);
                           }}
                           className="flex py-2 text-sm flex-row items-center font-normal text-black dark:text-white  text-start"
                           role="menuitem"
@@ -668,18 +755,25 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {quizAvailable ||
-            (isComplete && (
+          {isComplete && (
               <Sidebar.ItemGroup>
+                
                 <button
-                  onClick={() => setShowQuiz(true)}
-                  className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
+                  onClick={() => {setShowQuiz(true); setShowProjects(false)}}
+                  className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between"
                 >
                   Take Quiz
                   <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
+
+                <div className="w-full bg-black/70 dark:bg-white/70 h-[1px]"></div>
+                <button 
+                onClick={() => {setShowProjects(true); setShowQuiz(false)}}
+                className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10">
+                  Projects
+                </button>
               </Sidebar.ItemGroup>
-            ))}
+            )}
         </div>
       );
     } catch (error) {
@@ -856,22 +950,23 @@ const Course = () => {
                 </Sidebar.Items>
               </Sidebar>
 
-              <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                {/* sm & md  */}
+              <div className="px-8 bg-black dark:bg-black pt-5">
                 {showQuiz ? (
-                  <div className="w-full min-h-[90vh] flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+                    <div className="w-full min-h-[90vh] bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={user?.uid} />
                 ) : (
                   <>
-                    <p className="font-black text-black dark:text-white text-lg">
+                    <p className="font-black text-black dark:text-white text-xl">
                       {selected}
                     </p>
                     <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
@@ -896,37 +991,6 @@ const Course = () => {
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && (
-                  <div className="mt-10 absolute bg-white w-screen h-20 z-50">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Course Quiz
-                    </h2>
-                    <Quiz
-                      // courseTitle={mainTopic}
-                      // onCompletion={(score) => {
-                      //   // Handle quiz completion
-                      //   console.log(`Quiz completed with score: ${score}`);
-                      //   // You might want to update some state or show a completion message
-                      // }}
-                    />
-                  </div>
-                 // )} */}
-
-                    {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
@@ -981,16 +1045,18 @@ const Course = () => {
               </Navbar>
               <div className="px-8 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                  <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+                    <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={user?.uid} />
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">
@@ -1018,21 +1084,6 @@ const Course = () => {
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )} */}
                   </>
                 )}
               </div>

@@ -33,7 +33,7 @@ const Create = () => {
   //     }
 
   // }, []);
-
+  //checks and sets setCoursesCreatedToday
   useEffect(() => {
     const lastReset = sessionStorage.getItem("lastReset");
     if (
@@ -118,21 +118,18 @@ const Create = () => {
       return;
     }
 
-    if (coursesCreatedToday >= maxCoursesPerDay) {
+    if (coursesCreatedToday >= maxCoursesPerDay && sessionStorage.getItem("apiKey")==null) {
       setShowUpdateKeyPrompt(true);
       setProcessing(false);
       showToast(
         "You have exceeded the daily limit of 5 courses. Redirecting to update your API key."
       );
-
-      return;
+      navigate("/Profile");
     }
 
-    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}". Each topic should contain several related subtopics, starting with introductory concepts and moving towards more advanced ones
-
-Strictly include the following subtopics in the list: ${subtopics
+    const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
       .join(", ")
-      .toLowerCase()} starting with introductory concepts and moving towards more advanced ones. Ensure the topics follow a logical progression, starting with the basics  and gradually covering advanced concepts needed for internships or jobs. Keep the fields "theory", "youtube", and "image" empty. 
+      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", and "image" empty. 
 
 Please output the list in the following JSON format strictly in English:
 {
@@ -178,10 +175,26 @@ Please output the list in the following JSON format strictly in English:
   ]
 }`;
 
+
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
-
-    await sendPrompt(prompt, mainTopic, selectedType);
-
+    //update to use userprovided api keys after 5 courses.
+    const userApiKey = sessionStorage.getItem("apiKey");
+    if (coursesCreatedToday >= maxCoursesPerDay) {
+        if (userApiKey!==null) {
+          // Call sendPrompt with additional parameter indicating to use user API key
+          await sendPrompt(prompt, mainTopic, selectedType, true, userApiKey);
+        } else {
+          // in case both are not available navigate to /profile
+          setShowUpdateKeyPrompt(true);
+          setProcessing(false);
+          showToast("You have exceeded the daily limit of 5 courses. Please update your API key.");
+          navigate("/profile");
+      }
+    }
+    else{
+      await sendPrompt(prompt, mainTopic, selectedType, false);
+    }
+    // await sendPrompt(prompt, mainTopic, selectedType);
     setCoursesCreatedToday(coursesCreatedToday + 1);
     sessionStorage.setItem(
       "coursesCreatedToday",
@@ -190,30 +203,38 @@ Please output the list in the following JSON format strictly in English:
     setProcessing(false);
   };
 
-  async function sendPrompt(prompt, mainTopic, selectedType) {
+  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null) {
     const dataToSend = {
-      prompt: prompt,
+        prompt: prompt,
+        useUserApiKey: useUserApiKey, // Add this line to indicate whether to use the user API key
+        userApiKey: userApiKey, // Add the user API key if available
     };
+
     const postURL = "/api/prompt";
     const res = await axiosInstance.post(postURL, dataToSend);
+    
     const generatedText = res.data.generatedText;
     const cleanedJsonString = generatedText
-      .replace(/```json/g, "")
-      .replace(/```/g, "");
+        .replace(/```json/g, "")
+        .replace(/```/g, "");
+        
     try {
-      const parsedJson = JSON.parse(cleanedJsonString);
-      setProcessing(false);
-      navigate("/topics", {
-        state: {
-          jsonData: parsedJson,
-          mainTopic: mainTopic.toLowerCase(),
-          type: selectedType.toLowerCase(),
-        },
-      });
+        const parsedJson = JSON.parse(cleanedJsonString);
+        setProcessing(false);
+        navigate("/topics", {
+            state: {
+                jsonData: parsedJson,
+                mainTopic: mainTopic.toLowerCase(),
+                type: selectedType.toLowerCase(),
+                useUserApiKey: useUserApiKey,
+                userApiKey: userApiKey,
+            },
+        });
     } catch (error) {
-      setTimeout(() => sendPrompt(prompt, mainTopic, selectedType), 5000);
+        setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey), 5000);
     }
-  }
+}
+
 
   // eslint-disable-next-line
   const handleRadioChange = (event) => {

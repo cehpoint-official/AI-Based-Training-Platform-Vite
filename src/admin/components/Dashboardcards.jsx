@@ -1,4 +1,4 @@
-import { Card } from 'flowbite-react';
+import { Card, Spinner } from 'flowbite-react';
 import React from 'react';
 import { FaUsers } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
@@ -6,7 +6,14 @@ import { PiVideoFill } from "react-icons/pi";
 // import { RiRepeat2Fill } from "react-icons/ri";
 import DonutChart from 'react-donut-chart';
 
-const DashboardCards = ({ datas }) => {
+const DashboardCards = ({ datas, loading }) => {
+    if (loading) {
+        return (
+          <div className="flex justify-center items-center h-64">
+            <Spinner size="xl" color='gray' />
+          </div>
+        );
+      }
 
     const style = {
         "root": {
@@ -80,13 +87,13 @@ const DashboardCards = ({ datas }) => {
                         colors={['#000', '#fff']}
                         strokeColor='#000'
                         data={[
-                            // {
-                            //     label: 'Paid',
-                            //     value: datas.paid,
-                            // },
+                            {
+                                label: 'Paid',
+                                value: datas.paids,
+                            },
                             {
                                 label: 'Free',
-                                value: datas.free,
+                                value: datas.frees,
                             },
                         ]}
                     />
@@ -99,13 +106,13 @@ const DashboardCards = ({ datas }) => {
                         colors={['#000', '#fff']}
                         strokeColor='#000'
                         data={[
-                            // {
-                            //     label: 'Paid',
-                            //     value: datas.paid,
-                            // },
+                            {
+                                label: 'Paid',
+                                value: datas.paids,
+                            },
                             {
                                 label: 'Free',
-                                value: datas.free,
+                                value: datas.frees,
                             },
                         ]}
                     />
@@ -124,11 +131,11 @@ const DashboardCards = ({ datas }) => {
                         data={[
                             {
                                 label: 'Text',
-                                value: datas.textType,
+                                value: datas.textAndImageCourses,
                             },
                             {
                                 label: 'Video',
-                                value: datas.videoType,
+                                value: datas.videoAndTextCourses,
                             },
                         ]}
                     />
@@ -143,11 +150,11 @@ const DashboardCards = ({ datas }) => {
                         data={[
                             {
                                 label: 'Text',
-                                value: datas.textType,
+                                value: datas.textAndImageCourses,
                             },
                             {
                                 label: 'Video',
-                                value: datas.videoType,
+                                value: datas.videoAndTextCourses,
                             },
                         ]}
                     />
