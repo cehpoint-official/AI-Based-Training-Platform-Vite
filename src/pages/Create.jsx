@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import React, { useEffect, useState } from "react";
 import Header from "../components/header";
-import Footers from "../components/footers";
+import Footers from "../components/Footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
@@ -179,10 +179,11 @@ Please output the list in the following JSON format strictly in English:
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
     //update to use userprovided api keys after 5 courses.
     const userApiKey = sessionStorage.getItem("apiKey");
+    const userunsplashkey=sessionStorage.getItem("currentUnsplashApiKey");
     if (coursesCreatedToday >= maxCoursesPerDay) {
         if (userApiKey!==null) {
           // Call sendPrompt with additional parameter indicating to use user API key
-          await sendPrompt(prompt, mainTopic, selectedType, true, userApiKey);
+          await sendPrompt(prompt, mainTopic, selectedType, true, userApiKey,userunsplashkey);
         } else {
           // in case both are not available navigate to /profile
           setShowUpdateKeyPrompt(true);
@@ -203,7 +204,7 @@ Please output the list in the following JSON format strictly in English:
     setProcessing(false);
   };
 
-  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null) {
+  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null,userunsplashkey=null) {
     const dataToSend = {
         prompt: prompt,
         useUserApiKey: useUserApiKey, // Add this line to indicate whether to use the user API key
@@ -228,10 +229,11 @@ Please output the list in the following JSON format strictly in English:
                 type: selectedType.toLowerCase(),
                 useUserApiKey: useUserApiKey,
                 userApiKey: userApiKey,
+                userunsplashkey:userunsplashkey
             },
         });
     } catch (error) {
-        setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey), 5000);
+        setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey,userunsplashkey), 5000);
     }
 }
 
