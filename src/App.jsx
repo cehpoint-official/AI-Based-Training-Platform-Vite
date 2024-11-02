@@ -37,6 +37,7 @@ import ExpectationPage from "./components/Interview/ExpectationPage";
 import Final from "./components/Interview/Final";
 import { SkillsProvider } from "./Context/skills";
 import Topcandidate from "./admin/Topcandidate";
+import TestRecord from "./admin/TestRecord";
 
 
 
@@ -104,6 +105,7 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/admins" element={<Admins />} />
           <Route path="/contacts" element={<Contacts />} />
+          <Route path="/testrecord" element={<TestRecord />} />
           
           <Route path="*" element={<ErrorPage />} />
         </Routes>

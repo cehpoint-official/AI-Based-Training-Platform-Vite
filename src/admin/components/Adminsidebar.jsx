@@ -47,6 +47,9 @@ const AdminSidebar = () => {
   function redirectAdmins() {
     navigate("/admins");
   }
+  function redirectTestrecord() {
+    navigate("/testrecord");
+  }
   function redirectTerms() {
     navigate("/editterms");
   }
@@ -98,6 +101,13 @@ const AdminSidebar = () => {
         >
           <PiVideoFill size={18} />
           <p className="font-bold text-base ml-2">Courses</p>
+        </div>
+        <div
+          className="flex flex-row items-center mt-6"
+          onClick={redirectTestrecord}
+        >
+          <PiVideoFill size={18} />
+          <p className="font-bold text-base ml-2">Test Record</p>
         </div>
         {/* <div className='flex flex-row items-center mt-6' onClick={redirectPaid}>
                     <FaDollarSign size={18} />

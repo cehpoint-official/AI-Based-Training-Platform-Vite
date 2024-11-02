@@ -9,22 +9,16 @@ import skillsContext from "../../Context/skills";
 import { uploadResumeData, uploadResumeFile } from "../../../firebaseUtils";
 import * as pdfjsLib from "pdfjs-dist/webpack";
 import skillsList from "./skills";
-import { auth, db, storage } from "../../../firebaseConfig";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInAnonymously,
-  updateProfile,
-} from "firebase/auth";
+import { storage } from "../../../firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 const ResumeUpload = ({ onUploadComplete }) => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
+  const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
@@ -36,11 +30,11 @@ const ResumeUpload = ({ onUploadComplete }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!userUID) {
       navigate("/signin");
     }
-    // console.log(user.email)
-  }, [user, navigate]);
+    // console.log(userEmail)
+  }, [userUID, navigate]);
 
   // Load draft from localStorage on component mount
   useEffect(() => {
@@ -86,20 +80,20 @@ const ResumeUpload = ({ onUploadComplete }) => {
     setError(null);
   
     try {
-      console.log("Starting resume upload process...");
+      // console.log("Starting resume upload process...");
   
       // 1. Parse PDF and extract text - Add timeout and error handling
       const arrayBuffer = await selectedFile.arrayBuffer();
-      console.log("File loaded into buffer");
+      // console.log("File loaded into buffer");
   
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      console.log(loadingTask)
+      // console.log(loadingTask)
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('PDF loading timeout')), 100000)
       );
   
       const pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
-      console.log("PDF document loaded");
+      // console.log("PDF document loaded");
   
       let extractedText = "";
       const textExtractionPromises = [];
@@ -116,7 +110,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   
       const pageTexts = await Promise.all(textExtractionPromises);
       extractedText = pageTexts.join("\n");
-      console.log("Text extraction completed");
+      // console.log("Text extraction completed");
   
       if (!extractedText.trim()) {
         throw new Error("No text could be extracted from the PDF");
@@ -127,7 +121,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
       if (!parsedData.skills.includes('Corporate')) {
         parsedData.skills.push('Corporate');
       }
-      console.log("Resume parsed successfully:", parsedData);
+      // console.log("Resume parsed successfully:", parsedData);
   
       // 3. Update skills context
       setSkills(prevSkills => ({
@@ -143,20 +137,20 @@ const ResumeUpload = ({ onUploadComplete }) => {
       }));
   
       // 4. Upload to Firebase Storage
-      console.log("Starting file upload to Firebase");
-      const fileName = `resumes/${user.uid}_${Date.now()}.pdf`;
+      // console.log("Starting file upload to Firebase");
+      const fileName = `resumes/${userUID}_${Date.now()}.pdf`;
       const storageRef = ref(storage, fileName);
       await uploadBytes(storageRef, selectedFile);
       const fileUrl = await getDownloadURL(storageRef);
-      console.log("File uploaded successfully");
+      // console.log("File uploaded successfully");
   
       // 5. Prepare metadata for MongoDB
       const metadata = {
         fileName: selectedFile.name,
         fileUrl: fileUrl,
-        userId: user.uid,
-        userEmail: user.email || parsedData.contact.email || "Unknown",
-        userName: user.displayName || parsedData.name || "Unknown",
+        userId: userUID,
+        userEmail: userEmail || parsedData.contact.email || "Unknown",
+        userName: userName || parsedData.name || "Unknown",
         skills: parsedData.skills,
         experience: parsedData.experience,
         education: parsedData.education,
@@ -165,7 +159,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
       };
   
       // 6. Save metadata to MongoDB
-      console.log("Saving metadata to MongoDB");
+      // console.log("Saving metadata to MongoDB");
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/testusers`,
         {
@@ -179,12 +173,13 @@ const ResumeUpload = ({ onUploadComplete }) => {
   
       if (!response.ok) {
         throw new Error(`Failed to save metadata to MongoDB: ${response.statusText}`);
-      }console.log("Saving metadata to MongoDB");
+      }
+      // console.log("Saving metadata to MongoDB");
       
       const responseData = await uploadResumeData(
-        metadata.userName,
-        metadata.userEmail,
-        metadata.userId,
+        parsedData.name || userName || "Unknown",
+        parsedData.contact.email || userEmail || "Unknown",
+        userUID,
         {
           fileName: metadata.fileName,
           fileUrl: metadata.fileUrl,
@@ -196,7 +191,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
         }
       );
   
-      console.log("Metadata saved successfully:", responseData);
+      // console.log("Metadata saved successfully:", responseData);
   
       // 7. Update UI state
       setUploadSuccess(true);

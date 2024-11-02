@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { startRecording, stopRecording } from "./recorder";
 import { fetchQuestionsBySkills } from "./fetchQuestions";
 
@@ -15,8 +15,13 @@ import skillsContext from "../../Context/skills";
 import { Bounce, toast, ToastContainer } from "react-toastify";
 
 const TestPage = () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  // const auth = getAuth();
+  // const user = auth.currentUser;
+  // console.log(user)
+  const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
+  const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
+  // console.log(sessionStorage.getItem("uid"))
   const [userDetails, setUserDetails] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -107,7 +112,7 @@ const TestPage = () => {
     }
     return () => {
       if (isRecording) {
-        stopRecording(skills.email, skills.email);
+        stopRecording(userName, userEmail, userUID);
         setIsRecording(false);
       }
     };
@@ -155,15 +160,15 @@ const TestPage = () => {
   const handleSubmitTest = async () => {
     setIsSubmitting(true);
     try {
-      await stopRecording(skills.email, skills.email);
+      await stopRecording( userName, userEmail, userUID);
       const savedReport = await saveTestReportToFirebase(
         { questions, timePerQuestion, textAnswers },
-        user.name || "Unknown",
-        user.email,
-        user.uid
+        userName || "Unknown",
+        userEmail,
+        userUID
       );
       // console.log("Saved report:", savedReport);
-      navigate(`/${user.uid}/expectation`);
+      navigate(`/${userUID}/expectation`);
     } catch (error) {
       errorToast("Error submitting test")
       // Handle error (e.g., show an error message to the user)

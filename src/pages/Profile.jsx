@@ -10,12 +10,16 @@ import {
 } from "react-icons/ai";
 import { toast } from "react-toastify";
 import axiosInstance from "../axios";
+import { getAuth } from "firebase/auth";
 
 const Profile = () => {
+  const auth = getAuth()
+  console.log(auth.currentUser)
   const [mName, setName] = useState(sessionStorage.getItem("mName"));
   const [email, setEmail] = useState(sessionStorage.getItem("email"));
   const [firebase_id, setFirebase_id] = useState(sessionStorage.getItem("uid"));
-  const [profileImg, setProfileImg] = useState("https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=9c07ad9f-2390-4717-b83e-8af33a5da8d2");
+  console.log(sessionStorage.getItem("uid"))
+  const [profileImg, setProfileImg] = useState("https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d");
   const [password, setPassword] = useState("");
   const [processing, setProcessing] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -199,7 +203,7 @@ const Profile = () => {
 
             <div className="bg-gray-800 dark:bg-white/20 p-6 rounded-lg text-white flex items-center justify-between shadow-lg transition-transform transform ">
               <div className="flex items-center justify-start">
-                <span className="bg-white rounded-lg aspect-square overflow-hidden p-2 w-24 shadow-md">
+                <span className="bg-white rounded-lg aspect-square overflow-hidden w-20 shadow-md">
                   <img
                     src={profileImg}
                     alt="Profile"

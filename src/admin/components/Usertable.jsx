@@ -4,7 +4,7 @@ import React from "react";
 import axiosInstance from "../../axios";
 import UserTableProjectDetails from "./userTableProjectDetails";
 
-const UserTable = ({ datas, loading, projects = [] }) => {
+const UserTable = ({ datas=[], loading, projects = [] }) => {
   const [selectedUser, setSelectedUser] = useState(null); // State to manage which user's projects are being viewed
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [completedUsers, setCompletedUsers] = useState([]); // State to store users with completed projects
@@ -95,7 +95,7 @@ const UserTable = ({ datas, loading, projects = [] }) => {
   };
 
   // Filter users based on the selected filter
-  const filteredUsers = datas.filter((user) => {
+  const filteredUsers = datas?.filter((user) => {
     if (filter === "completed") {
       return completedUsers.includes(user._id);
     }

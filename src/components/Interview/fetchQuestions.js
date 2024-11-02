@@ -2,7 +2,7 @@
 export const fetchQuestionsBySkills = async (skills) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    console.log("Sending request to fetch questions with skills:", skills);
+    // console.log("Sending request to fetch questions with skills:", skills);
     
     const response = await fetch(`${import.meta.env.VITE_API_URL}/fetch-questions`, {
       method: 'POST',

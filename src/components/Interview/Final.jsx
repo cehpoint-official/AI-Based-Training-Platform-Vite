@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import skillsContext from "../../Context/skills";
-import { getTestReportsFromFirebase, updateTestReportInFirebase } from "../../../firebaseUtils";
+import { getResumeDataFromFirebase, getTestReportsFromFirebase, updateTestReportInFirebase } from "../../../firebaseUtils";
 import ReportModal from "./ReportModal"; // Import the ReportModal component
 import { AiOutlineLoading3Quarters, AiOutlineEye } from "react-icons/ai";
 import { useParams } from "react-router-dom";
@@ -15,38 +15,51 @@ const Final = () => {
   const [questionsData, setQuestionsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
   const [reportData, setReportData] = useState(null); 
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
+  
+  const [personalDataFromResume, setPersonalDataFromResume] = useState(null); 
+  const [resumeData, setResumeData] = useState(null); 
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       if (!uid) {
         console.log("User ID is missing.");
         setLoading(false);
         return;
       }
-
+  
       try {
-        const fetchedData = await getTestReportsFromFirebase(uid);
-        const Data = fetchedData.data
-        // console.log(Data)
-        if (Data && Data.reportData) {
-          setQuestionsData(Data.reportData.questions || []);
-          setReportData(Data)
-          setReport(Data.reportData); 
-        } else {
-          console.log(
-            "No such document found for the user or reportData is missing."
-          );
+        // Fetch both sets of data concurrently
+        const [testReportResponse, resumeResponse] = await Promise.all([
+          getTestReportsFromFirebase(uid),
+          getResumeDataFromFirebase(uid)
+        ]);
+  
+        // Process test report data
+        const testData = testReportResponse.data;
+        if (testData?.reportData) {
+          setQuestionsData(testData.reportData.questions || []);
+          setReportData(testData);
+          setReport(testData.reportData);
         }
+  
+        // Process resume data
+        const resumeData = resumeResponse.data;
+        if (resumeData) {
+          setPersonalDataFromResume(resumeData);
+          setResumeData(resumeData.resumeData);
+        }
+  
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        console.error("Error fetching data:", error);
+        // Add user-friendly error handling here
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+  
+    fetchAllData();
   }, [uid]);
 
   if (loading) {
@@ -209,8 +222,11 @@ const Final = () => {
         onClose={closeReportModal}
         report={report}
         questionsData={questionsData}
-        namee={reportData.name || "unknown"}
+        namee={reportData.name || "Unknown"}
         email={reportData.email}
+        resEmail={personalDataFromResume.email || "Unknown"}
+        resName={personalDataFromResume.name || "Unknown"}
+        resumeData={resumeData || []}
       />
     </div>
   );

@@ -18,7 +18,7 @@ export const saveTestReportToFirebase = async (testReport, name, email, uid) => 
       throw new Error(errorData.message || 'Failed to save test report');
     }
     const savedReport = await response.json();
-    console.log('Test report saved successfully:', savedReport);
+    // console.log('Test report saved successfully:', savedReport);
     return savedReport;
   } catch (error) {
     console.error('Error saving test report:', error);
@@ -38,7 +38,7 @@ export const uploadResumeData = async (name, email, uid, resumeData) => {
     });
     if (!response.ok) throw new Error('Failed to upload resume data');
     const data = await response.json();
-    console.log('Resume data uploaded successfully');
+    // console.log('Resume data uploaded successfully');
     return data;
   } catch (error) {
     console.error('Error uploading resume:', error);
@@ -46,7 +46,6 @@ export const uploadResumeData = async (name, email, uid, resumeData) => {
 };
 
 // // Function to get test reports 
-// Function to get test reports 
 export const getTestReportsFromFirebase = async (uid) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/test-report/${uid}`);
