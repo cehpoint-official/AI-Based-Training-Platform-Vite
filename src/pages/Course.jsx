@@ -16,15 +16,11 @@ import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import emailjs from "@emailjs/browser";
-import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
 import Projects from "../ProjectSuggestion/Projects";
 
 const Course = () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  // console.log(user?.uid)
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -131,7 +127,7 @@ const Course = () => {
       const response = await fetch("/api/get-certificate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid }),
+        body: JSON.stringify({ userId: userUID }),
       });
 
       if (!response.ok) {
@@ -950,9 +946,10 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                 </Sidebar.Items>
               </Sidebar>
 
-              <div className="px-8 bg-black dark:bg-black pt-5">
+              <div className="px-8 bg-white dark:bg-black pt-5">
+                {/* sm & md */}
                 {showQuiz ? (
-                    <div className="w-full min-h-[90vh] bg-black flex items-center justify-center">
+                    <div className="w-full min-h-[90vh] bg-white  dark:bg-black flex items-center justify-center">
                       <Quiz
                         courseTitle={mainTopic}
                         onCompletion={() => {
@@ -960,10 +957,12 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                           console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
+                        courseId={courseId}
+                        userId={userUID}
                       />
                     </div>
                 ) : showProjects ? (
-                  <Projects courseTitle={mainTopic} userId={user?.uid} />
+                  <Projects courseTitle={mainTopic} userId={userUID} />
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">
@@ -996,7 +995,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </div>
             </div>
           </div>
-          <div className="flex bg-black flex-row overflow-y-auto h-screen max-md:hidden">
+          <div className="flex bg-white dark:bg-black flex-row overflow-y-auto h-screen max-md:hidden">
             <Sidebar theme={storedTheme} aria-label="Default sidebar example">
               <LogoComponent isDarkMode={storedTheme} />
               <Sidebar.Items className="mt-6">
@@ -1045,7 +1044,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </Navbar>
               <div className="px-8 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                    <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
+                    <div className="w-full min-h-[80vh] bg-white dark:bg-black flex items-center justify-center">
                       <Quiz
                         courseTitle={mainTopic}
                         onCompletion={() => {
@@ -1053,10 +1052,12 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                           console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
+                        courseId={courseId}
+                        userId={userUID}
                       />
                     </div>
                 ) : showProjects ? (
-                  <Projects courseTitle={mainTopic} userId={user?.uid} />
+                  <Projects courseTitle={mainTopic} userId={userUID} />
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">

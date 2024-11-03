@@ -38,6 +38,7 @@ import Final from "./components/Interview/Final";
 import { SkillsProvider } from "./Context/skills";
 import Topcandidate from "./admin/Topcandidate";
 import TestRecord from "./admin/TestRecord";
+import Performance from "./pages/Performance";
 
 
 
@@ -84,6 +85,7 @@ function App() {
           <Route path="/topics" element={<Topics />} />
           <Route path="/course" element={<Course />} />
           <Route path="/certificate" element={<Certificate />} />
+          <Route path="/performance" element={<Performance />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />

@@ -3,12 +3,13 @@ import LogoComponent from "@/components/LogoComponent";
 import { MdSpaceDashboard } from "react-icons/md";
 import { FaUsers } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
-// import { FaDollarSign } from "react-icons/fa";
 import { MdSettingsInputComponent } from "react-icons/md";
 import { AiFillMessage, AiFillProject } from "react-icons/ai";
 import { IoIosDocument } from "react-icons/io";
 import { Sidebar } from "flowbite-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { GiGraduateCap } from "react-icons/gi";
+import { BsRecordBtnFill } from "react-icons/bs";
 
 const AdminSidebar = () => {
   const style = {
@@ -24,135 +25,40 @@ const AdminSidebar = () => {
   };
 
   const navigate = useNavigate();
-  function redirectDashBoard() {
-    navigate("/dashBoard");
-  }
-  function redirectProject() {
-    navigate("/project");
-  } function redirectTopCandidate() {
-    navigate("/topcandidate");
-  }
-  function redirectUsers() {
-    navigate("/users");
-  }
-  function redirectCourses() {
-    navigate("/courses");
-  }
-  // function redirectPaid() {
-  //     navigate("/paid");
-  // }
-  function redirectContacts() {
-    navigate("/contacts");
-  }
-  function redirectAdmins() {
-    navigate("/admins");
-  }
-  function redirectTestrecord() {
-    navigate("/testrecord");
-  }
-  function redirectTerms() {
-    navigate("/editterms");
-  }
-  // function redirectRefund() {
-  //     navigate("/editrefund");
-  // }
-  function redirectPrivacy() {
-    navigate("/editprivacy");
-  }
-  // function redirectBilling() {
-  //     navigate("/editbilling");
-  // }
-  // function redirectCancel() {
-  //     navigate("/editcancellation");
-  // }
+  const location = useLocation(); // get current path
+
+  // Function to check if the current route matches the target route
+  const isActive = (path) => location.pathname === path;
+
+  const linkItems = [
+    { label: "DashBoard", icon: <MdSpaceDashboard size={18} />, path: "/dashBoard" },
+    { label: "Projects", icon: <AiFillProject size={18} />, path: "/project" },
+    { label: "Top Candidate", icon: <GiGraduateCap size={18} />, path: "/topcandidate" },
+    { label: "Users", icon: <FaUsers size={18} />, path: "/users" },
+    { label: "Courses", icon: <PiVideoFill size={18} />, path: "/courses" },
+    { label: "Test Record", icon: <BsRecordBtnFill size={18} />, path: "/testrecord" },
+    { label: "Admins", icon: <MdSettingsInputComponent size={18} />, path: "/admins" },
+    { label: "Contacts", icon: <AiFillMessage size={18} />, path: "/contacts" },
+    { label: "Terms", icon: <IoIosDocument size={18} />, path: "/editterms" },
+    { label: "Privacy", icon: <IoIosDocument size={18} />, path: "/editprivacy" },
+  ];
 
   return (
     <Sidebar theme={style} aria-label="Default sidebar example">
       <LogoComponent isDarkMode={false} />
       <Sidebar.Items className="mt-8">
-        <div className="flex flex-row items-center" onClick={redirectDashBoard}>
-          <MdSpaceDashboard size={18} />
-          <p className="font-bold text-base ml-2 ">DashBoard</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectProject}
-        >
-          <AiFillProject size={18} />
-          <p className="font-bold text-base ml-2">Projects</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectTopCandidate}
-        >
-          <AiFillProject size={18} />
-          <p className="font-bold text-base ml-2">Top Candidate</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectUsers}
-        >
-          <FaUsers size={18} />
-          <p className="font-bold text-base ml-2">Users</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectCourses}
-        >
-          <PiVideoFill size={18} />
-          <p className="font-bold text-base ml-2">Courses</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectTestrecord}
-        >
-          <PiVideoFill size={18} />
-          <p className="font-bold text-base ml-2">Test Record</p>
-        </div>
-        {/* <div className='flex flex-row items-center mt-6' onClick={redirectPaid}>
-                    <FaDollarSign size={18} />
-                    <p className='font-bold text-base ml-2'>Paid Users</p>
-                </div> */}
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectAdmins}
-        >
-          <MdSettingsInputComponent size={18} />
-          <p className="font-bold text-base ml-2">Admins</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectContacts}
-        >
-          <AiFillMessage size={18} />
-          <p className="font-bold text-base ml-2">Contacts</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectTerms}
-        >
-          <IoIosDocument size={18} />
-          <p className="font-bold text-base ml-2">Terms</p>
-        </div>
-        <div
-          className="flex flex-row items-center mt-6"
-          onClick={redirectPrivacy}
-        >
-          <IoIosDocument size={18} />
-          <p className="font-bold text-base ml-2">Privacy</p>
-        </div>
-        {/* <div className='flex flex-row items-center mt-6' onClick={redirectCancel}>
-                    <IoIosDocument size={18} />
-                    <p className='font-bold text-base ml-2'>Cancellation</p>
-                </div>
-                <div className='flex flex-row items-center mt-6'  onClick={redirectRefund}>
-                    <IoIosDocument size={18} />
-                    <p className='font-bold text-base ml-2'>Refund</p>
-                </div>
-                <div className='flex flex-row items-center mt-6' onClick={redirectBilling}>
-                    <IoIosDocument size={18} />
-                    <p className='font-bold text-base ml-2'>Subscription & Billing</p> */}
-        {/* </div> */}
+        {linkItems.map((item, index) => (
+          <div
+            key={index}
+            onClick={() => navigate(item.path)}
+            className={`flex flex-row items-center mt-2 p-2 rounded-md cursor-pointer ${
+              isActive(item.path) ? "bg-black text-white" : "hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+          >
+            {item.icon}
+            <p className="font-bold text-base ml-2">{item.label}</p>
+          </div>
+        ))}
       </Sidebar.Items>
     </Sidebar>
   );

@@ -192,8 +192,8 @@ const Projects = ({ courseTitle }) => {
 
   if (!canCreateProject)
     return (
-      <div className="bg-white dark:bg-black max-md:min-h-[90svh] scrollbar-none flex items-center justify-center overflow-hidden">
-        <p className="text-red-500 mt-2 text-center">
+      <div className="bg-white dark:bg-black h-[60vh] scrollbar-none flex items-center justify-center overflow-hidden px-28">
+        <p className="text-red-500 mt-2 text-center text-xl">
           To create a new project, please ensure that you complete your current projects first. Thank you for your understanding.
         </p>
       </div>
