@@ -8,7 +8,8 @@ import UserTable from "./components/usertable";
 import axiosInstance from "../axios";
 import TopcandidateTable from "./components/TopcandidateTable";
 
-const Users = () => {
+const Topcandidate = () => {
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState([]);
   const [projects, setProjects] = useState([]); 
@@ -18,10 +19,10 @@ const Users = () => {
     sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
       try {
-        const postURL = `/api/getusers`;
+        const postURL = `/api/top-candidates-admin`;
         const response = await axiosInstance.get(postURL);
-        // console.log("GGGG", response);
-        setData(response.data);
+        console.log("GGGG", response.data.data);
+        setData(response.data.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {
@@ -94,7 +95,7 @@ const Users = () => {
                   )}
                 </div>
               </Navbar>
-              <UserTable datas={data} />
+              <TopcandidateTable datas={data} loading={loading} projects={projects} />
             </div>
             <AdminSidebarMobile isSidebarOpen={isSidebarOpen} />
           </div>
@@ -110,4 +111,4 @@ const Users = () => {
     </>
   );
 };
-export default Users;
+export default Topcandidate;

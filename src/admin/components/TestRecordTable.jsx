@@ -90,7 +90,9 @@ const TestRecordTable = ({ data = [], resumes = [], reports = [] }) => {
                   </a>
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
-                  <button onClick={() => handleReportClick(item.userId)}>
+                  <button onClick={() => handleReportClick(item.userId)}
+                  className="border border-red-400 px-3 py-1 rounded-md font-semibold text-red-400 hover:bg-red-50"
+                    >
                     See Report
                   </button>
                 </Table.Cell>

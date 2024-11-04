@@ -126,7 +126,7 @@ const TestRecord = () => {
                   )}
                 </div>
               </Navbar>
-              <TestRecordTable />
+              <TestRecordTable data={data} resumes={resumes} reports={reports} />
             </div>
             <AdminSidebarMobile isSidebarOpen={isSidebarOpen} />
           </div>
