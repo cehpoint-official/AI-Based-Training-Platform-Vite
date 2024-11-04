@@ -1,8 +1,7 @@
 // =========================
 // Report Analyzer with Firebase Integration and AI Evaluations
 // =========================
-
-// import {updateTestReportInFirebase} from '../firebaseUtils';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const analyzeReportWithAI = async (report) => {
   // Filter out questions with 'Corporate' skill and ensure type is 'mcq' or 'text'
@@ -102,10 +101,6 @@ export const analyzeReportWithAI = async (report) => {
     urls: report.urls || [], // Include URLs from the original report
   };
 
-  // Store the final report in Firestore
-  // await updateTestReportInFirebase(id,finalReport);
-
-  // Return the final analysis report
   return finalReport;
 };
 
@@ -121,47 +116,18 @@ export const analyzeReportWithAI = async (report) => {
  * @returns {Promise<string>} - 'correct' or 'wrong'
  */
 const evaluateTextAnswerAI = async (question, userAnswer) => {
-  const url = 'https://chat-gpt26.p.rapidapi.com/';
-
-  const options = {
-    method: 'POST',
-    headers: {
-      'x-rapidapi-key': '588f27f290msh8a5223a55a79a53p1f2c84jsn5bc65aefa67f',
-      'x-rapidapi-host': 'chat-gpt26.p.rapidapi.com',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a chatbot that determines whether an answer is correct or wrong. Respond with only "correct" or "wrong".',
-        },
-        {
-          role: 'user',
-          content: `Question: "${question}".\nUser's Answer: "${userAnswer}".\nIf the answer is correct, return "correct"; otherwise, return "wrong".`,
-        },
-      ],
-      model: 'gpt-3.5-turbo', // Corrected model name
-      max_tokens: 20, // Reduced tokens since response is short
-      temperature: 0, // Set to 0 for deterministic responses
-    }),
-  };
 
   try {
-    const response = await fetch(url, options);
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const prompt = `Question: "${question}".\nUser's Answer: "${userAnswer}".\nIf the answer is correct, return "correct"; otherwise, return "wrong".`
 
-    // Check for a successful response
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
+  const result = await model.generateContent(prompt);
 
     // Extract evaluation from the response
     let evaluation = 'wrong'; // Default to 'wrong'
-    if (result && result.choices && result.choices.length > 0) {
-      evaluation = result.choices[0].message.content.trim().toLowerCase();
+    if (result && result.response.text()) {
+      evaluation = result.response.text().trim().toLowerCase();
       console.log('AI Evaluation:', evaluation);
     } else {
       console.error('AI did not return a valid evaluation:', result);
@@ -188,53 +154,18 @@ const generateAIReportFeedback = async (
   correctAnswers,
   totalQuestions
 ) => {
-  const url = 'https://chat-gpt26.p.rapidapi.com/';
-
-  // Create a query string for direct feedback request
-  const query = `User ID: ${report.id} answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(
-    report.expectations
-  )}. If it doesn't align with the performance, then motivate the user. Based on their score and expectations, provide performance feedback and suggest areas to study if necessary. Also, based on the report, indicate whether the salary is justified or not.`;
-
-  const options = {
-    method: 'POST',
-    headers: {
-      'x-rapidapi-key': '588f27f290msh8a5223a55a79a53p1f2c84jsn5bc65aefa67f',
-      'x-rapidapi-host': 'chat-gpt26.p.rapidapi.com',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a performance report generator based on the data provided. The report should also indicate whether the expectations meet the performance or not.',
-        },
-        {
-          role: 'user',
-          content: query,
-        },
-      ],
-      model: 'gpt-3.5-turbo', // Corrected model name
-      max_tokens: 200, // Increased tokens for a detailed response
-      temperature: 0.7, // Balanced creativity
-    }),
-  };
+  const query = `User ID: ${report.id} answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
 
   try {
-    const response = await fetch(url, options);
+    const genAI = new GoogleGenerativeAI('AIzaSyAnIN9pRtfPR0SUBnLJNk8nQWagrfYCnak');
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(query);
 
-    // Check for a successful response
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+    console.log('Raw AI Feedback Result:', result); // Debug log
 
-    const result = await response.json();
-
-    // Extracting the feedback from the response
     let feedback = 'Could not generate feedback.';
-    if (result && result.choices && result.choices.length > 0) {
-      feedback = result.choices[0].message.content.trim();
-      console.log('AI Feedback:', feedback);
+    if (result && result.response && result.response.text()) {
+      feedback = result.response.text().trim();
     } else {
       console.error('AI feedback generation failed. No valid response:', result);
     }
@@ -244,6 +175,7 @@ const generateAIReportFeedback = async (
     return 'Error generating feedback. Please try again.';
   }
 };
+
 
 /**
  * Helper function to calculate employability score based on score percentage
