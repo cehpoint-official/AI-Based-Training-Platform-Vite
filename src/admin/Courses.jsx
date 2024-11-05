@@ -18,7 +18,7 @@ const Courses = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get('/api/getcourses');
-        console.log("Courses data:", response.data);
+        // console.log("Courses data:", response.data);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching courses:", error);

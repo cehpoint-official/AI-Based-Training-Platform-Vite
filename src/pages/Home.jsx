@@ -2,9 +2,12 @@ import React from 'react';
 import Header from '../components/header';
 import Footers from '../components/footers';
 import UserCourses from '../components/usercourses';
+// import { getAuth } from 'firebase/auth';
 
 const Home = () => {
-
+//     const auth = getAuth();
+//   const user = auth.currentUser;
+//   console.log(auth  )
     return (
         <div className='h-screen flex flex-col'>
             <Header isHome={true} className="sticky top-0 z-50" />

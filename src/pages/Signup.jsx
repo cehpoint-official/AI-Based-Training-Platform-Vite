@@ -12,13 +12,18 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleAuthProvider } from "firebase/auth";
 import GoogleSignUpButton from "../components/buttons/GoogleSignUpButton";
 import axiosInstance from "../axios";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 
 const SignUp = () => {
+  const auth = getAuth();
   const storedTheme = sessionStorage.getItem("darkMode");
   const [mName, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [profile, setProfile] = useState(
+    "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d"
+  );
 
   const navigate = useNavigate();
   function redirectSignIn() {
@@ -61,31 +66,63 @@ const SignUp = () => {
     } else if (password.length < 9) {
       showToast("Password should be at least 9 characters");
       return;
+    } else if (!validateEmail(email)) {
+      showToast("Please enter a valid email address");
+      return;
     }
+
     const postURL = "/api/signup";
     const type = "free";
     try {
       setProcessing(true);
+
+      // Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const uid = user.uid;
+
+      // Send user data to your backend
       const response = await axiosInstance.post(postURL, {
         email,
         mName,
         password,
         type,
+        uid,
+        profile,
+        apiKey: import.meta.env.VITE_API_KEY, // Use environment variable
       });
+
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
         sessionStorage.setItem("mName", mName);
         sessionStorage.setItem("auth", true);
-        sessionStorage.setItem("uid", response.data.userId);
+        sessionStorage.setItem("uid", uid);
         sessionStorage.setItem("type", "free");
-        sendEmail(email, mName);
+        sessionStorage.setItem("apiKey", import.meta.env.VITE_API_KEY); // Store API key
+        await sendEmail(email, mName);
+        redirectHome();
       } else {
         showToast(response.data.message);
       }
     } catch (error) {
-      showToast("Internal Server Error!");
+      console.error(
+        "Signup error:",
+        error.response ? error.response.data : error
+      );
+      showToast("Signup failed. Please try again.");
+    } finally {
+      setProcessing(false);
     }
+  };
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
   };
 
   async function sendEmail(mEmail, mName) {

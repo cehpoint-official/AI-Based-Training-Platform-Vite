@@ -1,7 +1,5 @@
 import { query, collection, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';
-
- // Adjust the path as necessary to import your Firestore db instance
+import { db } from '../../../firebaseConfig'; // Adjust the path as necessary to import your Firestore db instance
 
 export const fetchQuestionsBySkills = async (skills) => {
   try {
@@ -20,14 +18,11 @@ export const fetchQuestionsBySkills = async (skills) => {
       });
     }
 
-    // Fetch additional questions if needed
+    // Fetch additional questions using AI
     const additionalQuestions = await generateAdditionalQuestionsAI(skills, 5);
-
-  
-
     console.log(additionalQuestions);
+
     return [...allQuestions, ...additionalQuestions];
-    // return allQuestions;
   } catch (error) {
     console.error("Error fetching questions: ", error);
     throw error;
@@ -82,19 +77,18 @@ const generateAdditionalQuestionsAI = async (skills, limit) => {
     ];
     
     const questionsArray = rawText
-    .split(/\n\d+\.\s+/)
-    .filter(q => q.trim() !== '' && !unwantedPhrases.some(phrase => q.includes(phrase)))
-    .slice(1, 6) // Ensure we only take the first 5 questions
-    .map((q, index) => ({
-      id: `generated_${index + 1}`, // IDs will be from 1 to 5
-      question: q.trim(),
-      userAnswer: '',
-      userTextAnswer: '',
-      type: 'text',
-      skills: "additional",
-      isCorrect: null,
-    }));
-  
+      .split(/\n\d+\.\s+/)
+      .filter(q => q.trim() !== '' && !unwantedPhrases.some(phrase => q.includes(phrase)))
+      .slice(1, 6) // Ensure we only take the first 5 questions
+      .map((q, index) => ({
+        id: `generated_${index + 1}`, // IDs will be from 1 to 5
+        question: q.trim(),
+        userAnswer: '',
+        userTextAnswer: '',
+        type: 'text',
+        skills: "additional",
+        isCorrect: null,
+      }));
 
     console.log("Extracted questions:", questionsArray);
     return questionsArray;

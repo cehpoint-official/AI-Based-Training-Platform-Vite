@@ -6,27 +6,54 @@ import AdminHead from "./components/adminhead";
 import AdminSidebarMobile from "./components/adminsidebarmobile";
 import UserTable from "./components/usertable";
 import axiosInstance from "../axios";
-import TopcandidateTable from "./components/TopcandidateTable";
+import TestRecordTable from "./components/TestRecordTable";
 
-
-const Topcandidate = () => {
-
-
+const TestRecord = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState([]);
-  const [projects, setProjects] = useState([]); 
+  const [resumes, setResumes] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    sessionStorage.setItem("darkMode", false);
     async function dashboardData() {
       try {
-
-        const postURL = `/api/top-candidates-admin`;
+        const postURL = `/api/testuser/getalltestuser`;
         const response = await axiosInstance.get(postURL);
-        console.log("GGGG", response.data.data);
+        // console.log("Test Data", response.data.data);
         setData(response.data.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    dashboardData();
+  }, []);
 
+  useEffect(() => {
+    async function dashboardData() {
+      try {
+        const postURL = `/getallresumes`;
+        const response = await axiosInstance.get(postURL);
+        // console.log("Resume data", response.data.data)
+        setResumes(response.data.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    dashboardData();
+  }, []);
+
+  useEffect(() => {
+    async function dashboardData() {
+      try {
+        const postURL = `/getalltestreports`;
+        const response = await axiosInstance.get(postURL);
+        // console.log("Resume data", response.data.data)
+        setReports(response.data.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {
@@ -37,18 +64,18 @@ const Topcandidate = () => {
   }, []);
 
   // Fetch projects
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const response = await axiosInstance.get(`/api/getprojectsAdmin`);
-        console.log(response.data.data)
-        setProjects(response.data.data);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    }
-    fetchProjects();
-  }, []);
+  //   useEffect(() => {
+  //     async function fetchProjects() {
+  //       try {
+  //         const response = await axiosInstance.get(`/api/getprojectsAdmin`);
+  //         console.log(response.data.data)
+  //         setProjects(response.data.data);
+  //       } catch (error) {
+  //         console.error("Error fetching projects:", error);
+  //       }
+  //     }
+  //     fetchProjects();
+  //   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -99,9 +126,7 @@ const Topcandidate = () => {
                   )}
                 </div>
               </Navbar>
-
-              <TopcandidateTable datas={data} loading={loading} projects={projects} />
-
+              <TestRecordTable data={data} resumes={resumes} reports={reports} />
             </div>
             <AdminSidebarMobile isSidebarOpen={isSidebarOpen} />
           </div>
@@ -110,13 +135,11 @@ const Topcandidate = () => {
           <AdminSidebar />
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
-            <TopcandidateTable datas={data} loading={loading} projects={projects} />
+            <TestRecordTable data={data} resumes={resumes} reports={reports} />
           </div>
         </div>
       </div>
     </>
   );
 };
-
-export default Topcandidate;
-
+export default TestRecord;

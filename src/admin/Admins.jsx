@@ -19,7 +19,7 @@ const Admins = () => {
       try {
         const postURL = `/api/getadmins`;
         const response = await axiosInstance.get(postURL);
-        console.log(response.data.admins);
+        // console.log(response.data.admins);
         setAdmin(response.data.admins);
         setUser(response.data.users);
       } catch (error) {

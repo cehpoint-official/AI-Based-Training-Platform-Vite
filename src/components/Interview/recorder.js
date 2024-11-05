@@ -1,10 +1,9 @@
- // Ensure correct import path
-
 import { uploadRecording } from "../../../firebasedet";
 
 let cameraRecorder, screenRecorder;
 let cameraChunks = [];
 let screenChunks = [];
+let userStream; // Store the camera stream
 
 // Utility functions to check support
 const isScreenSharingSupported = () => {
@@ -42,7 +41,7 @@ export const startRecording = async () => {
 
     // Request camera and microphone permission (common for both desktop and mobile)
     if (isCameraSupported()) {
-      const userStream = await navigator.mediaDevices.getUserMedia({
+      userStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
@@ -130,6 +129,7 @@ export const stopRecording = async (userName) => {
 
   } catch (error) {
     console.error('Error stopping or uploading recordings:', error.message);
+    alert(`Error: ${error.message}`);
   }
 };
 

@@ -4,8 +4,9 @@ import { AiOutlineLoading } from "react-icons/ai";
 import emailjs from "@emailjs/browser";
 import { getAuth } from "firebase/auth";
 import Certificate from "../pages/Certificate";
+import { fetchMockQuiz } from "../data/mockQuizData";
 
-const Quiz = ({ courseTitle, onCompletion }) => {
+const Quiz = ({ courseTitle, onCompletion, courseId, userId }) => {
   const auth = getAuth();
   const user = auth.currentUser;
   const [questions, setQuestions] = useState([]);
@@ -20,8 +21,7 @@ const Quiz = ({ courseTitle, onCompletion }) => {
 
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState("");
+  const [previousQuizResult, setPreviousQuizResult] = useState(null);
 
   // ----------------------------------------------------------------------- //
   // Fetch user email and name from Firebase on load
@@ -29,97 +29,20 @@ const Quiz = ({ courseTitle, onCompletion }) => {
     if (user) {
       const displayName = user.displayName;
       const emailFromGoogle = user.providerData[0]?.email;
-  
+
       // Only update if the value has actually changed
       if (displayName !== userName) {
         setUserName(displayName || "User");
       }
-  
+
       if (emailFromGoogle !== userEmail) {
         setUserEmail(emailFromGoogle || user.email || "");
       }
     } else {
       // If user is not signed in, reset email
-      if (userEmail !== "") setUserEmail(""); 
+      if (userEmail !== "") setUserEmail("");
     }
   }, [user, userName, userEmail]);
-
-  // ----------------------------------------------------------------------- //
-  // Email Sending Logic
-  // const sendEmail = () => {
-  //   if (!userEmail) {
-  //     setEmailStatus("Email not available");
-  //     console.log("No user email found");
-  //     return;
-  //   }
-
-  //   setIsLoading(true); // Show loading state
-  //   setEmailStatus(""); // Reset email status before sending
-
-  //   const emailData = {
-  //     userName: userName, // Name of the user
-  //     userEmail: userEmail, // The email where the message will be sent
-  //     message: "Great Job, You finished the course!", // The email message
-  //   };
-
-  //   emailjs
-  //     .send(
-  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
-  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-  //       emailData,
-  //       {
-  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-  //       }
-  //     )
-  //     .then(
-  //       () => {
-  //         setEmailStatus("SUCCESS! Email sent");
-  //         alert("SUCCESS! Email sent"); // Show success message
-  //         setIsLoading(false); // Reset loading state
-  //       },
-  //       (error) => {
-  //         setEmailStatus(`FAILED... ${error.text}`);
-  //         console.log("FAILED...", error.text);
-  //         setIsLoading(false); // Reset loading state on error
-  //       }
-  //     );
-  // };
-
-  // const sendEmail = (download) => {
-  //   const emailData = {
-  //     userName: userName,
-  //     userEmail: userEmail, 
-  //     message: download 
-  //   };
-
-  //   emailjs
-  //     .send(
-  //       import.meta.env.VITE_EMAILJS_SERVICE_ID,
-  //       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-  //       emailData,
-  //       {
-  //         publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-  //       }
-  //     )
-  //     .then(
-  //       () => {
-
-  //         alert("SUCCESS! Email sent"); // Show success message
-          
-  //       },
-  //       (error) => {
-
-  //         console.log("FAILED...", error.text);
-          
-  //       }
-  //     );
-  // };
-
-  // ----------------------------------------------------------------------- //
-  // Button Handler
-  // const handleSendEmail = () => {
-  //   sendEmail();
-  // };
 
   // Function to fetch quiz data manually
   const fetchQuiz = async () => {
@@ -127,71 +50,88 @@ const Quiz = ({ courseTitle, onCompletion }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": import.meta.env.VITE_API_KEY, // Use API Key from .env
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
-                            - A question text.
-                            - Four multiple-choice options.
-                            - The correct answer labeled at the end.
-                            
+      // const response = await fetch(
+      //   "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "x-goog-api-key": import.meta.env.VITE_API_KEY, // Use API Key from .env
+      //     },
+      //     body: JSON.stringify({
+      //       contents: [
+      //         {
+      //           parts: [
+      //             {
+      //               text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
+      //                       - A question text.
+      //                       - Four multiple-choice options.
+      //                       - The correct answer labeled at the end.
 
-                            Format the response as an array of objects, with each object containing:
-                            - "question": The question text.
-                            - "options": An array of 4 options.
-                            - "answer": The correct answer.
+      //                       Format the response as an array of objects, with each object containing:
+      //                       - "question": The question text.
+      //                       - "options": An array of 4 options.
+      //                       - "answer": The correct answer.
 
-                            Example format:
-                            [
-                                {
-                                    "question": "What is the syntax to define a function in Python?",
-                                    "options": [
-                                        "def function_name():",
-                                        "function_name = def:",
-                                        "def function_name",
-                                        "define function_name:"
-                                    ],
-                                    "answer": "def function_name():"
-                                },
-                                {
-                                    "question": "Which data type is used for decimals in Python?",
-                                    "options": [
-                                        "int",
-                                        "float",
-                                        "complex",
-                                        "str"
-                                    ],
-                                    "answer": "float"
-                                }
-                            ]
+      //                       Example format:
+      //                       [
+      //                           {
+      //                               "question": "What is the syntax to define a function in Python?",
+      //                               "options": [
+      //                                   "def function_name():",
+      //                                   "function_name = def:",
+      //                                   "def function_name",
+      //                                   "define function_name:"
+      //                               ],
+      //                               "answer": "def function_name():"
+      //                           },
+      //                           {
+      //                               "question": "Which data type is used for decimals in Python?",
+      //                               "options": [
+      //                                   "int",
+      //                                   "float",
+      //                                   "complex",
+      //                                   "str"
+      //                               ],
+      //                               "answer": "float"
+      //                           }
+      //                       ]
 
-                            Please generate at least 10 questions in this format.`,
-                  },
-                ],
-              },
-            ],
-          }),
-        }
-      );
+      //                       Please generate at least 10 questions in this format.`,
+      //             },
+      //           ],
+      //         },
+      //       ],
+      //     }),
+      //   }
+      // );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch quiz: ${errorText}`);
-      }
+      // if (!response.ok) {
+      //   const errorText = await response.text();
+      //   throw new Error(`Failed to fetch quiz: ${errorText}`);
+      // }
 
-      const rawResponse = await response.text();
-      const cleanedResponse = cleanResponse(rawResponse);
-      const parsedQuestions = parseQuizContent(cleanedResponse);
+      // const rawResponse = await response.text();
+      // console.log(rawResponse)
+      // const cleanedResponse = cleanResponse(rawResponse);
+      // const parsedQuestions = parseQuizContent(cleanedResponse);
+
+      // // --------------------------------------------------------------------------- // //
+      // //       Use this for testing -> do not use main api key method                // //
+      // // --------------------------------------------------------------------------- // //
+      let parsedQuestions;
+      const mockData = await fetchMockQuiz("General Knowledge");
+      parsedQuestions = mockData.map((item) => ({
+        question: item.question,
+        options: item.options,
+        answer: {
+          optionNo:
+            item.options.findIndex((option) => option === item.answer) + 1,
+          optionAns: item.answer,
+        },
+      }));
+      // // --------------------------------------------------------------------------- // //
+
       setQuestions(parsedQuestions);
       setHasFetchedQuiz(true); // Mark quiz as fetched
       setLoading(false);
@@ -259,22 +199,69 @@ const Quiz = ({ courseTitle, onCompletion }) => {
     setAnswerSaved(true); // Mark answer as saved
   };
 
+  const fetchPreviousQuizResult = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/quiz/quiz-results/user/${userId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        // Find the specific quiz result for the current courseId
+        const currentCourseResult = data.find(
+          (result) => result.courseId === courseId
+        );
+        setPreviousQuizResult(currentCourseResult);
+      }
+    } catch (error) {
+      console.error("Error fetching previous quiz result:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPreviousQuizResult();
+  }, []);
+
+  const saveQuizResult = async () => {
+    try {
+      const quizData = {
+        userId: userId, // You already have this from props
+        courseId: courseId, // You already have this from props
+        score: score, // You already have this in state
+      };
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/quiz/quiz-results`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(quizData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save quiz result");
+      }
+
+      const data = await response.json();
+      // console.log('Quiz result saved successfully:', data);
+    } catch (error) {
+      console.error("Error saving quiz result:", error);
+    }
+  };
+
   const handleNext = () => {
-    setAnswerSaved(false); // Reset the saved answer flag
-    setSelectedAnswer(null); // Clear selection
+    setAnswerSaved(false);
+    setSelectedAnswer(null);
 
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prevQuestion) => prevQuestion + 1);
     } else {
       // Finish the quiz
-      setQuizFinished(true); // Mark the quiz as finished
-
-      // Send email if score is 5 or more
-      if (score >= 5) {
-        handleSendEmail(); // Send the email if the user scored 5 or more
-      }
-
-      onCompletion(score); // Optionally, pass the final score
+      setQuizFinished(true);
+      saveQuizResult();
+      onCompletion(score);
     }
   };
 
@@ -295,68 +282,93 @@ const Quiz = ({ courseTitle, onCompletion }) => {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center text-white h-[60vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative ${!quizStarted || !quizFinished ? 'p-10' : 'px-16' }`}>
-      {/* Floating Score Counter */}
-      <div className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${quizFinished && 'hidden'} `}>
-        <h3 className="text-lg font-semibold">Score: {score}</h3>
-      </div>
-      {!quizStarted && (
-        !quizFinished && (
-        <h1 className={`text-3xl font-bold mb-6`}>Quiz</h1>
-      )
-      )}
-      {!quizStarted ? (
-        <Button onClick={handleStartQuiz}>Start Quiz</Button>
-      ) : loading ? (
-        <div className="flex items-center justify-center">
-          <AiOutlineLoading size={50} className="animate-spin" />
-        </div>
-      ) : quizFinished ? (
-        score >= 5 ? (
-          <Certificate userEmail={userEmail} userName={userName} courseTitle={courseTitle} userId={user.uid} />
-        ) : (
-          <div className="flex items-center justify-center flex-col space-y-4">
-            <h2 className="text-3xl font-bold text-red-500">
-              Sorry, You Didn't Pass
-            </h2>
-            <p className="text-xl">
-              You scored {score} out of 10. We recommend you revise the course and try again.
-            </p>
-          </div>
-        )
-      ) : (
-        <div className="w-full max-w-3xl space-y-6 p-4">
-          <h2 className="text-xl font-bold">
-          {currentQuestion + 1}. {questions[currentQuestion]?.question}
+    <>
+      {previousQuizResult && previousQuizResult.score >= 5 ? (
+        <div className="text-center ">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">
+            You've already passed this quiz!
           </h2>
-          <ul className="space-y-3">
-            {questions[currentQuestion]?.options.map((option, index) => (
-              <li
-                key={index}
-                className={`border p-2 rounded-lg cursor-pointer transition-colors duration-300 ${getOptionClassName(
-                  index
-                )}`}
-                onClick={() => handleAnswerSelection(index)}
-              >
-                {option}
-              </li>
-            ))}
-          </ul>
-          <div className="flex justify-between mt-4">
-            <Button onClick={handleSaveAnswer} disabled={answerSaved}>
-              {answerSaved ? "Answer Saved" : "Save Answer"}
-            </Button>
-            {answerSaved && (
-              <Button onClick={handleNext}>
-                {currentQuestion === questions.length - 1
-                  ? "Finish Quiz"
-                  : "Next Question"}
-              </Button>
+          <p className="text-xl text-green-500">Your score was: {previousQuizResult.score}</p>
+        </div>
+      ) : (
+        <>
+          <div
+            className={`flex flex-col items-center justify-center text-white h-[80vh] rounded-lg bg-slate-800/80 w-full md:w-[60vw] overflow-y-hidden relative ${
+              !quizStarted || !quizFinished ? "p-10" : "px-16"
+            }`}
+          >
+            {/* Floating Score Counter */}
+            <div
+              className={`absolute top-0 right-0 bg-blue-500 text-white p-4 rounded-lg shadow-lg ${
+                quizFinished && "hidden"
+              } `}
+            >
+              <h3 className="text-lg font-semibold">Score: {score}</h3>
+            </div>
+            {!quizStarted && !quizFinished && (
+              <h1 className={`text-3xl font-bold mb-6`}>Quiz</h1>
+            )}
+            {!quizStarted ? (
+              <Button onClick={handleStartQuiz}>Start Quiz</Button>
+            ) : loading ? (
+              <div className="flex items-center justify-center">
+                <AiOutlineLoading size={50} className="animate-spin" />
+              </div>
+            ) : quizFinished ? (
+              score >= 5 ? (
+                <Certificate
+                  userEmail={userEmail}
+                  userName={userName}
+                  courseTitle={courseTitle}
+                  userId={user.uid}
+                />
+              ) : (
+                <div className="flex items-center justify-center flex-col space-y-4">
+                  <h2 className="text-3xl font-bold text-red-500">
+                    Sorry, You Didn't Pass
+                  </h2>
+                  <p className="text-xl">
+                    You scored {score} out of 10. We recommend you revise the
+                    course and try again.
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="w-full max-w-3xl space-y-6 p-4">
+                <h2 className="text-xl font-bold">
+                  {currentQuestion + 1}. {questions[currentQuestion]?.question}
+                </h2>
+                <ul className="space-y-3">
+                  {questions[currentQuestion]?.options.map((option, index) => (
+                    <li
+                      key={index}
+                      className={`border p-2 rounded-lg cursor-pointer transition-colors duration-300 ${getOptionClassName(
+                        index
+                      )}`}
+                      onClick={() => handleAnswerSelection(index)}
+                    >
+                      {option}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-between mt-4">
+                  <Button onClick={handleSaveAnswer} disabled={answerSaved}>
+                    {answerSaved ? "Answer Saved" : "Save Answer"}
+                  </Button>
+                  {answerSaved && (
+                    <Button onClick={handleNext}>
+                      {currentQuestion === questions.length - 1
+                        ? "Finish Quiz"
+                        : "Next Question"}
+                    </Button>
+                  )}
+                </div>
+              </div>
             )}
           </div>
-        </div>
+        </>
       )}
-    </div>
+    </>
   );
 };
 

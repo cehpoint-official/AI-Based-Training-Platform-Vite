@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { startRecording, stopRecording } from './recorder';
 import { fetchQuestionsBySkills } from './fetchQuestions';
-
 import {
   AiOutlineLoading3Quarters,
   AiOutlineStop,
   AiOutlinePlayCircle,
 } from 'react-icons/ai';
-
-import UserDetailsModal from './UserDetailsModal';
-
 import { saveTestReportToFirebase } from '../../../firebaseUtils';
+import UserDetailsModal from './UserDetailsModal';
 import skillsContext from '../../Context/skills';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 const TestPage = () => {
+  const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
+  const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
   const [userDetails, setUserDetails] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -33,6 +33,20 @@ const TestPage = () => {
   const navigate = useNavigate();
   const { skills } = useContext(skillsContext);
 
+  const errorToast = (error) => {
+    toast.error(error, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+      transition: Bounce,
+    });
+  };
+
   // Fetch questions based on resume skills
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -47,7 +61,7 @@ const TestPage = () => {
           }));
           setQuestions(initializedQuestions);
         } catch (error) {
-          console.error('Error fetching questions:', error);
+          errorToast("Sorry! Questions are not available right now");
         }
       }
     };
@@ -80,7 +94,7 @@ const TestPage = () => {
     }
     return () => {
       if (isRecording) {
-        stopRecording(skills.email, skills.email);
+        stopRecording(userName, userEmail, userUID);
         setIsRecording(false);
       }
     };
@@ -127,10 +141,15 @@ const TestPage = () => {
 
   const handleSubmitTest = async () => {
     setIsSubmitting(true);
-    await stopRecording(skills.email, skills.email);
-    await saveTestReportToFirebase({ userDetails, questions, timePerQuestion, textAnswers },skills.email);
-    setIsSubmitting(false);
-    navigate('/expectation');
+    try {
+      await stopRecording(userName, userEmail, userUID);
+      await saveTestReportToFirebase({ questions, timePerQuestion, textAnswers }, userName || "Unknown", userEmail, userUID);
+      navigate(`/${userUID}/expectation`);
+    } catch (error) {
+      errorToast("Error submitting test");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -145,14 +164,12 @@ const TestPage = () => {
     setQuestionStartTime(Date.now());
   };
 
-  // Calculate progress percentage
   const progressPercentage = questions.length
     ? ((currentQuestionIndex + 1) / questions.length) * 100
     : 0;
 
   return (
     <div className="p-6 bg-[url('.\assets\image3.png')] bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
-      {/* User Details Modal */}
       {showModal && (
         <UserDetailsModal
           setUserDetails={setUserDetails}
@@ -160,14 +177,10 @@ const TestPage = () => {
           onClose={() => setShowModal(false)}
         />
       )}
-
-      {/* Permission Denied Screen */}
       {permissionDenied ? (
         <div className="bg-red-700 text-white rounded-lg p-8 max-w-md w-full text-center shadow-lg">
           <h2 className="text-3xl font-semibold mb-6">Permission Denied</h2>
-          <p className="mb-6">
-            Please ensure all required permissions are granted to continue the test.
-          </p>
+          <p className="mb-6">Please ensure all required permissions are granted to continue the test.</p>
           <button
             onClick={() => navigate('/')}
             className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium"
@@ -176,27 +189,20 @@ const TestPage = () => {
           </button>
         </div>
       ) : testStarted ? (
-        // Test Started Screen
         <div className="bg-gradient-to-br from-gray-50 to-white text-gray-800 rounded-lg shadow-xl p-10 max-w-3xl w-full relative shadow-gray-500">
-          {/* Progress Bar */}
           <div className="w-full bg-gray-700 rounded-full h-3 mb-8">
             <div
               className="bg-blue-500 h-3 rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
-
-          {/* Timer and Recording Controls */}
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">
-              Time Remaining: {formatTime(timer)}
-            </h2>
+            <h2 className="text-3xl font-bold">Time Remaining: {formatTime(timer)}</h2>
             <div className="flex items-center space-x-4">
               {isRecording ? (
                 <button
-                  onClick={()=>navigate('/')}
+                  onClick={() => navigate('/')}
                   className="flex items-center bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition text-lg font-medium"
-                  aria-label="Stop Recording and Submit Test"
                 >
                   <AiOutlineStop className="w-6 h-6 mr-3" />
                   Stop Recording
@@ -208,7 +214,6 @@ const TestPage = () => {
                     setIsRecording(true);
                   }}
                   className="flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium"
-                  aria-label="Start Recording"
                 >
                   <AiOutlinePlayCircle className="w-6 h-6 mr-3" />
                   Start Recording
@@ -216,8 +221,6 @@ const TestPage = () => {
               )}
             </div>
           </div>
-
-          {/* Question Section */}
           {questions.length > 0 ? (
             <div className="space-y-8">
               <div className="fade-in">
@@ -225,108 +228,77 @@ const TestPage = () => {
                   Question {currentQuestionIndex + 1} of {questions.length}
                 </h3>
                 <p className="text-xl mb-6 font-medium">{questions[currentQuestionIndex]?.question}</p>
-
-                {/* Render based on question type */}
                 {questions[currentQuestionIndex]?.type !== 'mcq' ? (
-                  // Render Textarea for Non-MCQ Questions
                   <div>
-                    <label htmlFor="textAnswer" className="block text-lg font-medium text-gray-900 mb-2">
-                      Your Answer:
+                    <label htmlFor="textAnswer" className="text-lg">
+                      Your Answer
                     </label>
                     <textarea
                       id="textAnswer"
-                      className="w-full p-4 border bg-gray-100 border-gray-400 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900 outline-0"
-                      placeholder="Type your answer here..."
-                      value={questions[currentQuestionIndex]?.userTextAnswer || ''}
+                      value={textAnswers[currentQuestionIndex] || ''}
                       onChange={handleTextAnswerChange}
+                      rows={5}
+                      className="w-full p-4 bg-gray-100 rounded-lg text-gray-800 mt-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 ) : (
-                  // Render MCQ Options
-                  <ul className="space-y-4">
-                    {questions[currentQuestionIndex]?.choices?.map((choice, index) => (
-                      <li key={index}>
-                        <button
-                          className={`w-full flex items-center px-6 py-4 border rounded-lg hover:bg-blue-200 transition  
-                            ${
-                              questions[currentQuestionIndex]?.userAnswer === choice
-                                ? 'bg-blue-200 text-gray-900 border-blue-700'
-                                : 'bg-white text-gray-900 border-gray-700'
-                            } text-lg font-medium`}
+                  <div>
+                    <p className="mb-6">Select an answer below:</p>
+                    <div className="space-y-4">
+                      {questions[currentQuestionIndex].choices.map((choice, index) => (
+                        <div
+                          key={index}
                           onClick={() => handleSelectAnswer(choice)}
+                          className={`cursor-pointer p-4 rounded-lg border transition ${
+                            questions[currentQuestionIndex].userAnswer === choice
+                              ? 'border-blue-500 bg-blue-100'
+                              : 'border-gray-300 bg-white'
+                          }`}
                         >
-                          <span className="mr-4">{String.fromCharCode(65 + index)}.</span>
                           {choice}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-between">
-                <button
-                  onClick={handleNextQuestion}
-                  className={`flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium 
-                    ${currentQuestionIndex === questions.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={currentQuestionIndex === questions.length - 1}
-                  aria-label="Next Question"
-                >
-                  Next
-                </button>
-                {currentQuestionIndex === questions.length - 1 && (
+              <div className="flex justify-between mt-8">
+                {currentQuestionIndex < questions.length - 1 ? (
+                  <button
+                    onClick={handleNextQuestion}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium"
+                  >
+                    Next Question
+                  </button>
+                ) : (
                   <button
                     onClick={handleSubmitTest}
-                    className="flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium"
+                    className={`bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium ${
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                     disabled={isSubmitting}
-                    aria-label="Submit Test"
                   >
-                    {isSubmitting ? (
-                      <div className="flex items-center">
-                        <AiOutlineLoading3Quarters className="w-6 h-6 mr-3 animate-spin" />
-                        Submitting...
-                      </div>
-                    ) : (
-                      'Submit Test'
-                    )}
+                    Submit Test
                   </button>
                 )}
               </div>
             </div>
           ) : (
-            <p className="text-center text-xl">No questions available.</p>
+            <p className="text-center text-xl">Loading questions...</p>
           )}
         </div>
       ) : (
-        // Pre-Test Instructions Screen
-        <div className="relative bg-gradient-to-tr from-slate-50 to-white text-gray-900 rounded-xl shadow-lg p-12 max-w-xl w-full mx-auto overflow-hidden shadow-gray-600">
-  {/* Background Animation */}
-  <div className="absolute inset-0 z-0 opacity-30 pointer-events-none" id="vanta-bg"></div>
-
-  {/* Content */}
-  <h2 className="text-4xl font-extrabold mb-8 text-center relative z-10">Important Guidelines</h2>
-  <ul className="list-disc list-inside space-y-4 text-lg leading-relaxed relative z-10 ">
-    <li>Ensure a stable internet connection throughout the test.</li>
-    <li>Avoid refreshing the page or closing the browser during the test.</li>
-    <li>Your screen, camera, and microphone will be actively recorded , And capture entire screen throughout the test.</li>
-    <li>Complete the test within the given time limit.</li>
-    <li>Attempt the test fairly and All the Best !</li>
-  </ul>
-  <div className="mt-10 flex justify-center relative z-10">
-    <button
-      onClick={handleStartTest}
-      className={`border border-gray-600 bg-blue-200 text-gray-900 px-10 py-3 rounded-lg hover:bg-blue-300 hover:text-black transition-colors duration-300 text-lg font-medium
-        ${!userDetails || !resumeData ? 'opacity-60 cursor-not-allowed' : ''}`}
-      disabled={!resumeData}
-      aria-label="Start Test">
-      Start Test
-    </button>
-  </div>
-</div>
-
-
+        <div className="bg-gradient-to-br from-gray-50 to-white text-gray-800 rounded-lg shadow-xl p-10 max-w-3xl w-full text-center shadow-gray-500">
+          <h1 className="text-4xl font-semibold mb-6">Welcome to the Skill Assessment Test</h1>
+          <button
+            onClick={handleStartTest}
+            className="mt-6 bg-green-600 text-white px-8 py-4 rounded-lg hover:bg-green-700 transition text-xl font-medium"
+          >
+            Start Test
+          </button>
+        </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

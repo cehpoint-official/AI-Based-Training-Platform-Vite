@@ -9,22 +9,21 @@ import skillsContext from "../../Context/skills";
 import { uploadResumeData, uploadResumeFile } from "../../../firebaseUtils";
 import * as pdfjsLib from "pdfjs-dist/webpack";
 import skillsList from "./skills";
-import { auth, db, storage } from "../../../firebaseConfig";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInAnonymously,
-  updateProfile,
-} from "firebase/auth";
+
+import { storage } from "../../../firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import axiosInstance from "../../axios";
+
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 const ResumeUpload = ({ onUploadComplete }) => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+
+  const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
+  const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
@@ -33,14 +32,149 @@ const ResumeUpload = ({ onUploadComplete }) => {
   const [isParsing, setIsParsing] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  const navigate = useNavigate();
+  const [meetsCriteria, setMeetsCriteria] = useState(null);
+  const [showEligibilityPopup, setShowEligibilityPopup] = useState(false);
+  const [userExists, setUserExists] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+
+  // ----- Eligiblitity:START -------- //
+  const fetchPerformance = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/top-candidates-admin`);
+      const filteredData = response.data.data.filter(
+        (item) => item.uid === userUID
+      );
+
+      if (filteredData.length > 0) {
+        const performanceData = filteredData[0];
+
+        const criteriaMet =
+          performanceData.projectCount >= projectCountCriteria &&
+          performanceData.courseCount >= courseCountCriteria &&
+          performanceData.quizScoreAvg >= quizScoreAvgCriteria &&
+          performanceData.averageProgress >= averageProgressCriteria;
+
+        setMeetsCriteria(criteriaMet);
+
+        // Show eligibility popup if criteria not met
+        if (!criteriaMet) {
+          setShowEligibilityPopup(true);
+        }
+
+        console.log(criteriaMet);
+      } else {
+        setMeetsCriteria(false);
+        console.log(false);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setLoading(false);
+      setOpenSnackbar(true);
+    }
+  };
 
   useEffect(() => {
-    if (!user) {
+    if (userUID) {
+      fetchPerformance();
+      // console.log(performance.data[0])
+    } else {
+      console.error("User ID not found in session storage.");
+      setLoading(false);
+    }
+  }, [userUID]);
+
+  const projectCountCriteria = 1;
+  const courseCountCriteria = 5;
+  const quizScoreAvgCriteria = 25;
+  const averageProgressCriteria = 100;
+
+  const EligibilityPopup = () => {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+        <div className="bg-white text-black max-w-md p-5 rounded-lg shadow-lg flex flex-col items-center justify-center">
+          <h2 className="text-lg font-semibold text-red-600 text-xl">
+            Eligibility Check
+          </h2>
+          <p className="mt-2 text-center">
+            You are not eligible for the test. Please go back to home and check
+            your performance first.
+          </p>
+          <div className="w-full flex items-center justify-center gap-x-6 mt-5">
+            <a
+              href={`${import.meta.env.VITE_ORIGINAL_SITE}/home`}
+              className="px-4 py-2 border border-red-600 text-red-600 rounded hover:bg-gray-100 transition duration-200"
+            >
+              Go to Home
+            </a>
+            <a
+              href={`${import.meta.env.VITE_ORIGINAL_SITE}/performance`}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition duration-200"
+            >
+              Performance
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+   // ----- Eligiblitity:END -------- //
+
+  const navigate = useNavigate();
+
+  // --------------- Check User Exist or not: START --------- //
+  useEffect(() => {
+    const checkUserExists = async () => {
+      try {
+        const userCheckResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/testusers/check/${userUID}`, // Check if user exists
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!userCheckResponse.ok) {
+          // Handle the case where the user does not exist
+          const errorData = await userCheckResponse.json();
+          if (errorData.message === "User  not found") {
+            setUserExists(false);
+          } else {
+            setError("Error checking user existence");
+          }
+        } else {
+          // User exists
+          const data = await userCheckResponse.json();
+          if (data.success) {
+            setUserExists(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking user existence:", error);
+        setError("Failed to check user existence");
+      }
+    };
+
+    // Only call the function if userUID is available
+    if (userUID) {
+      checkUserExists();
+    }
+  }, [userUID]);
+  // --------------- Check User Exist or not: END --------- //
+
+  useEffect(() => {
+    if (!userUID) {
       navigate("/signin");
     }
-    console.log(user.email)
-  }, [user, navigate]);
+    // console.log(userEmail)
+  }, [userUID, navigate]);
+
 
   // Load draft from localStorage on component mount
   useEffect(() => {
@@ -79,56 +213,61 @@ const ResumeUpload = ({ onUploadComplete }) => {
       setError("Please select a valid resume file to upload.");
       return;
     }
-  
+
+
     setIsParsing(true);
     setError(null);
-  
+
     try {
-      console.log("Starting resume upload process...");
-  
+      // console.log("Starting resume upload process...");
+
       // 1. Parse PDF and extract text - Add timeout and error handling
       const arrayBuffer = await selectedFile.arrayBuffer();
-      console.log("File loaded into buffer");
-  
+      // console.log("File loaded into buffer");
+
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      console.log(loadingTask)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('PDF loading timeout')), 100000)
+      // console.log(loadingTask)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("PDF loading timeout")), 100000)
       );
-  
+
       const pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
-      console.log("PDF document loaded");
-  
+      // console.log("PDF document loaded");
+
       let extractedText = "";
       const textExtractionPromises = [];
-  
+
+
+
       // Process pages in parallel
       for (let i = 1; i <= pdf.numPages; i++) {
         textExtractionPromises.push(
           pdf.getPage(i).then(async (page) => {
             const textContent = await page.getTextContent();
-            return textContent.items.map(item => item.str).join(" ");
+
+            return textContent.items.map((item) => item.str).join(" ");
           })
         );
       }
-  
+
       const pageTexts = await Promise.all(textExtractionPromises);
       extractedText = pageTexts.join("\n");
-      console.log("Text extraction completed");
-  
+      // console.log("Text extraction completed");
+
       if (!extractedText.trim()) {
         throw new Error("No text could be extracted from the PDF");
       }
-  
+
       // 2. Parse the extracted text
       const parsedData = parseResumeText(extractedText);
-      if (!parsedData.skills.includes('Corporate')) {
-        parsedData.skills.push('Corporate');
+      if (!parsedData.skills.includes("Corporate")) {
+        parsedData.skills.push("Corporate");
       }
-      console.log("Resume parsed successfully:", parsedData);
-  
+      // console.log("Resume parsed successfully:", parsedData);
+
       // 3. Update skills context
-      setSkills(prevSkills => ({
+      setSkills((prevSkills) => ({
+
         ...prevSkills,
         skills: parsedData.skills,
         name: parsedData.name || prevSkills.name,
@@ -139,31 +278,37 @@ const ResumeUpload = ({ onUploadComplete }) => {
         projects: parsedData.projects || prevSkills.projects,
         certifications: parsedData.certifications || prevSkills.certifications,
       }));
-  
+
+
       // 4. Upload to Firebase Storage
-      console.log("Starting file upload to Firebase");
-      const fileName = `resumes/${user.uid}_${Date.now()}.pdf`;
+      // console.log("Starting file upload to Firebase");
+      const fileName = `resumes/${userUID}_${Date.now()}.pdf`;
       const storageRef = ref(storage, fileName);
       await uploadBytes(storageRef, selectedFile);
       const fileUrl = await getDownloadURL(storageRef);
-      console.log("File uploaded successfully");
-  
+      // console.log("File uploaded successfully");
+
+
       // 5. Prepare metadata for MongoDB
       const metadata = {
         fileName: selectedFile.name,
         fileUrl: fileUrl,
-        userId: user.uid,
-        userEmail: user.email || parsedData.contact.email || "Unknown",
-        userName: user.displayName || parsedData.name || "Unknown",
+
+        userId: userUID,
+        userEmail: userEmail || parsedData.contact.email || "Unknown",
+        userName: userName || parsedData.name || "Unknown",
+
         skills: parsedData.skills,
         experience: parsedData.experience,
         education: parsedData.education,
         projects: parsedData.projects,
         certifications: parsedData.certifications,
       };
-  
+
+
       // 6. Save metadata to MongoDB
-      console.log("Saving metadata to MongoDB");
+      // console.log("Saving metadata to MongoDB");
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/testusers`,
         {
@@ -174,20 +319,39 @@ const ResumeUpload = ({ onUploadComplete }) => {
           body: JSON.stringify(metadata),
         }
       );
-  
+
+
       if (!response.ok) {
-        throw new Error(`Failed to save metadata to MongoDB: ${response.statusText}`);
+        throw new Error(
+          `Failed to save metadata to MongoDB: ${response.statusText}`
+        );
       }
-  
-      const responseData = await response.json();
-      console.log("Metadata saved successfully:", responseData);
-  
+      // console.log("Saving metadata to MongoDB");
+
+      const responseData = await uploadResumeData(
+        parsedData.name || userName || "Unknown",
+        parsedData.contact.email || userEmail || "Unknown",
+        userUID,
+        {
+          fileName: metadata.fileName,
+          fileUrl: metadata.fileUrl,
+          skills: metadata.skills,
+          experience: metadata.experience,
+          education: metadata.education,
+          projects: metadata.projects,
+          certifications: metadata.certifications,
+        }
+      );
+
+      // console.log("Metadata saved successfully:", responseData);
+
+
       // 7. Update UI state
       setUploadSuccess(true);
       setIsUploading(false);
       setIsParsing(false);
       onUploadComplete(true, metadata);
-  
+
     } catch (error) {
       console.error("Upload process failed:", error);
       setError(`Failed to process resume: ${error.message}`);
@@ -391,91 +555,120 @@ const ResumeUpload = ({ onUploadComplete }) => {
 
   return (
     <div className="bg-white rounded-md p-8 shadow-sm max-w-2xl mx-auto mt-10">
-      <p className="text-gray-800 font-semibold mb-6">
-        Upload your resume to start the test
-      </p>
 
-      {/* Drag and Drop Area */}
-      <div
-        className={`border-2 border-dashed border-gray-900 rounded-md p-8 mt-4 flex flex-col items-center justify-center cursor-pointer bg-white hover:bg-gray-100 transition-colors ${
-          isUploading || isParsing ? "opacity-50 cursor-not-allowed" : ""
-        }`}
-        onClick={() =>
-          !isUploading &&
-          !isParsing &&
-          document.getElementById("resumeInput").click()
-        }
-      >
-        <AiOutlineCloudUpload className="w-16 h-16 text-gray-800" />
-        <p className="text-gray-600 mt-4 text-center">
-          Click here to upload your resume
-        </p>
-        <span className="text-sm text-gray-500">
-          Acceptable file type: PDF (5MB max)
-        </span>
-        <input
-          type="file"
-          id="resumeInput"
-          accept=".pdf"
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={isUploading || isParsing}
-        />
-      </div>
-
-      {/* Selected File Info */}
-      {selectedFile && (
-        <div className="mt-6 flex items-center">
-          <AiOutlineCheckCircle className="w-6 h-6 text-green-500 mr-3" />
-          <span className="text-green-600 font-medium">
-            Selected File: {selectedFile.name}
-          </span>
-        </div>
+      {showEligibilityPopup && (
+        <EligibilityPopup/>
       )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="mt-6 bg-red-100 text-red-600 px-5 py-3 rounded-md">
-          {error}
-        </div>
-      )}
+      {!userExists ? (
+        <>
+          <p className="text-gray-800 font-semibold mb-6">
+            Upload your resume to start the test
+          </p>
 
-      {/* Success Message */}
-      {uploadSuccess && (
-        <div className="mt-6 bg-green-100 text-green-600 px-5 py-3 rounded-md">
-          Resume parsed successfully! Redirecting to test...
-        </div>
-      )}
+          {/* Drag and Drop Area */}
+          <div
+            className={`border-2 border-dashed border-gray-900 rounded-md p-8 mt-4 flex flex-col items-center justify-center cursor-pointer bg-white hover:bg-gray-100 transition-colors ${
+              isUploading || isParsing ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={() =>
+              !isUploading &&
+              !isParsing &&
+              document.getElementById("resumeInput").click()
+            }
+          >
+            <AiOutlineCloudUpload className="w-16 h-16 text-gray-800" />
+            <p className="text-gray-600 mt-4 text-center">
+              Click here to upload your resume
+            </p>
+            <span className="text-sm text-gray-500">
+              Acceptable file type: PDF (5MB max)
+            </span>
+            <input
+              type="file"
+              id="resumeInput"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={isUploading || isParsing}
+            />
+          </div>
 
-      {/* Parsing Stage Indicator */}
-      {isParsing && (
-        <div className="mt-4 flex items-center">
-          <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
-          <span>Parsing...</span>
-        </div>
-      )}
-
-      {/* Upload Button */}
-      <div className="mt-8">
-        <button
-          onClick={handleResumeUpload}
-          className={`inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-            isUploading || isParsing
-              ? "bg-indigo-400 cursor-not-allowed"
-              : "bg-indigo-600 hover:bg-indigo-700"
-          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-          disabled={isUploading || isParsing || !selectedFile}
-        >
-          {isUploading || isParsing ? (
-            <>
-              <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
-              {isParsing ? "Parsing..." : "Uploading..."}
-            </>
-          ) : (
-            "Upload and Start Test"
+          {/* Selected File Info */}
+          {selectedFile && (
+            <div className="mt-6 flex items-center">
+              <AiOutlineCheckCircle className="w-6 h-6 text-green-500 mr-3" />
+              <span className="text-green-600 font-medium">
+                Selected File: {selectedFile.name}
+              </span>
+            </div>
           )}
-        </button>
-      </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mt-6 bg-red-100 text-red-600 px-5 py-3 rounded-md">
+              {error}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {uploadSuccess && (
+            <div className="mt-6 bg-green-100 text-green-600 px-5 py-3 rounded-md">
+              Resume parsed successfully! Redirecting to test...
+            </div>
+          )}
+
+          {/* Parsing Stage Indicator */}
+          {isParsing && (
+            <div className="mt-4 flex items-center">
+              <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
+              <span>Parsing...</span>
+            </div>
+          )}
+
+          {/* Upload Button */}
+          <div className="mt-8">
+            <button
+              onClick={handleResumeUpload}
+              className={`inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                isUploading || isParsing || !meetsCriteria
+                  ? "bg-indigo-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+              disabled={
+                isUploading || isParsing || !selectedFile || !meetsCriteria
+              }
+            >
+              {isUploading || isParsing ? (
+                <>
+                  <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
+                  {isParsing ? "Parsing..." : "Uploading..."}
+                </>
+              ) : (
+                "Upload and Start Test"
+              )}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="mt-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md">
+          <div className="flex items-center">
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM10 3.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13z" />
+            </svg>
+            <p className="font-semibold">
+              Great news! You've already completed the test.
+              <br />
+              Thank you for your participation!
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
