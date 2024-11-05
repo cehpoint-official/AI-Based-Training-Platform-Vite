@@ -9,17 +9,21 @@ import skillsContext from "../../Context/skills";
 import { uploadResumeData, uploadResumeFile } from "../../../firebaseUtils";
 import * as pdfjsLib from "pdfjs-dist/webpack";
 import skillsList from "./skills";
+
 import { storage } from "../../../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import axiosInstance from "../../axios";
 
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 const ResumeUpload = ({ onUploadComplete }) => {
+
   const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
   const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
   const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
@@ -27,6 +31,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
   const [meetsCriteria, setMeetsCriteria] = useState(null);
   const [showEligibilityPopup, setShowEligibilityPopup] = useState(false);
   const [userExists, setUserExists] = useState(false);
@@ -170,6 +175,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
     // console.log(userEmail)
   }, [userUID, navigate]);
 
+
   // Load draft from localStorage on component mount
   useEffect(() => {
     const draft = JSON.parse(localStorage.getItem("resumeDraft"));
@@ -208,6 +214,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
       return;
     }
 
+
     setIsParsing(true);
     setError(null);
 
@@ -230,11 +237,14 @@ const ResumeUpload = ({ onUploadComplete }) => {
       let extractedText = "";
       const textExtractionPromises = [];
 
+
+
       // Process pages in parallel
       for (let i = 1; i <= pdf.numPages; i++) {
         textExtractionPromises.push(
           pdf.getPage(i).then(async (page) => {
             const textContent = await page.getTextContent();
+
             return textContent.items.map((item) => item.str).join(" ");
           })
         );
@@ -257,6 +267,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
 
       // 3. Update skills context
       setSkills((prevSkills) => ({
+
         ...prevSkills,
         skills: parsedData.skills,
         name: parsedData.name || prevSkills.name,
@@ -268,6 +279,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
         certifications: parsedData.certifications || prevSkills.certifications,
       }));
 
+
       // 4. Upload to Firebase Storage
       // console.log("Starting file upload to Firebase");
       const fileName = `resumes/${userUID}_${Date.now()}.pdf`;
@@ -276,13 +288,16 @@ const ResumeUpload = ({ onUploadComplete }) => {
       const fileUrl = await getDownloadURL(storageRef);
       // console.log("File uploaded successfully");
 
+
       // 5. Prepare metadata for MongoDB
       const metadata = {
         fileName: selectedFile.name,
         fileUrl: fileUrl,
+
         userId: userUID,
         userEmail: userEmail || parsedData.contact.email || "Unknown",
         userName: userName || parsedData.name || "Unknown",
+
         skills: parsedData.skills,
         experience: parsedData.experience,
         education: parsedData.education,
@@ -290,8 +305,10 @@ const ResumeUpload = ({ onUploadComplete }) => {
         certifications: parsedData.certifications,
       };
 
+
       // 6. Save metadata to MongoDB
       // console.log("Saving metadata to MongoDB");
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/testusers`,
         {
@@ -302,6 +319,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
           body: JSON.stringify(metadata),
         }
       );
+
 
       if (!response.ok) {
         throw new Error(
@@ -327,11 +345,13 @@ const ResumeUpload = ({ onUploadComplete }) => {
 
       // console.log("Metadata saved successfully:", responseData);
 
+
       // 7. Update UI state
       setUploadSuccess(true);
       setIsUploading(false);
       setIsParsing(false);
       onUploadComplete(true, metadata);
+
     } catch (error) {
       console.error("Upload process failed:", error);
       setError(`Failed to process resume: ${error.message}`);
@@ -535,6 +555,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
 
   return (
     <div className="bg-white rounded-md p-8 shadow-sm max-w-2xl mx-auto mt-10">
+
       {showEligibilityPopup && (
         <EligibilityPopup/>
       )}
@@ -647,6 +668,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

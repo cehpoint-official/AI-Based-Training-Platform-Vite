@@ -6,8 +6,13 @@ let screenChunks = [];
 let userStream; // Store the camera stream
 
 // Utility functions to check support
-const isScreenSharingSupported = () => 'getDisplayMedia' in navigator.mediaDevices;
-const isCameraSupported = () => 'getUserMedia' in navigator.mediaDevices;
+const isScreenSharingSupported = () => {
+  return 'getDisplayMedia' in navigator.mediaDevices;
+};
+
+const isCameraSupported = () => {
+  return 'getUserMedia' in navigator.mediaDevices;
+};
 
 // Start screen and camera recording
 export const startRecording = async () => {
@@ -15,7 +20,7 @@ export const startRecording = async () => {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     console.log('Device detected:', isMobile ? 'Mobile' : 'Desktop');
 
-    // Fullscreen for desktop only
+    // Fullscreen for desktop only (optional for mobile)
     if (!isMobile && !document.fullscreenElement) {
       await document.documentElement.requestFullscreen();
       console.log('Fullscreen enabled.');
@@ -27,14 +32,19 @@ export const startRecording = async () => {
     let displayStream = null;
     if (!isMobile && isScreenSharingSupported()) {
       console.log('Screen sharing supported, requesting permission...');
-      displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { mediaSource: 'screen' } });
+      displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { mediaSource: 'screen' }
+      });
     } else {
       console.log('Screen sharing not supported or mobile device detected.');
     }
 
-    // Request camera and microphone permission
+    // Request camera and microphone permission (common for both desktop and mobile)
     if (isCameraSupported()) {
-      userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      userStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
 
       // Camera recording setup
       cameraRecorder = new MediaRecorder(userStream);
@@ -73,7 +83,7 @@ export const startRecording = async () => {
 };
 
 // Stop recording and upload the video
-export const stopRecording = async (userName, userEmail, userId) => {
+export const stopRecording = async (userName) => {
   try {
     console.log('Stopping recordings...');
 
@@ -90,21 +100,10 @@ export const stopRecording = async (userName, userEmail, userId) => {
     // Ensure recordings finish processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Stop camera stream (turn off camera)
-    if (userStream) {
-      userStream.getTracks().forEach((track) => track.stop()); // This will close the camera
-      console.log('Camera stream stopped.');
-    }
-
-    // Check if both userName and userEmail are provided
-    if (!userName || !userEmail) {
-      throw new Error('Both userName and userEmail are required for uploading recordings.');
-    }
-
     // Upload camera recording
     if (cameraChunks.length > 0) {
       const cameraBlob = new Blob(cameraChunks, { type: 'video/webm' });
-      await uploadRecording(userEmail, cameraBlob, 'camera', userId); 
+      await uploadRecording(userName, cameraBlob, 'camera');
       cameraChunks = [];
       console.log('Camera recording uploaded.');
     }
@@ -112,7 +111,7 @@ export const stopRecording = async (userName, userEmail, userId) => {
     // Upload screen recording (if available)
     if (screenChunks.length > 0) {
       const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
-      await uploadRecording(userEmail, screenBlob, 'screen', userId); 
+      await uploadRecording(userName, screenBlob, 'screen');
       screenChunks = [];
       console.log('Screen recording uploaded.');
     }

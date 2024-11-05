@@ -10,7 +10,7 @@ import axiosInstance from "../axios";
 const Topics = () => {
   const { state } = useLocation();
   const [processing, setProcessing] = useState(false);
-  const { jsonData, mainTopic, type , useUserApiKey, userApiKey } = state || {};
+  const { jsonData, mainTopic, type , useUserApiKey, userApiKey,userunsplashkey } = state || {};
 
   const navigate = useNavigate();
 
@@ -123,7 +123,8 @@ const Topics = () => {
       content,
       type,
       mainTopic,
-      
+      useUserApiKey: useUserApiKey,
+      userunsplashkey:userunsplashkey
     });
 
     if (response.data.success) {

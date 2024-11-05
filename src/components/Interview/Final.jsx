@@ -1,4 +1,5 @@
 // src/components/Final.jsx
+
 import React, { useContext, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import skillsContext from "../../Context/skills";
@@ -54,13 +55,16 @@ const Final = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         // Add user-friendly error handling here
+
       } finally {
         setLoading(false);
       }
     };
+
   
     fetchAllData();
   }, [uid]);
+
 
   if (loading) {
     return (
@@ -70,11 +74,13 @@ const Final = () => {
     );
   }
 
+
   if (!uid) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <p className="text-center text-gray-400 text-xl">
           User ID is missing or incomplete.
+
         </p>
       </div>
     );
@@ -82,6 +88,7 @@ const Final = () => {
 
   const generateTextReport = async () => {
     if (!questionsData || questionsData.length === 0) {
+
       alert("No report data available to generate the report.");
       return;
     }
@@ -177,6 +184,7 @@ const Final = () => {
       console.error("Error in report generation process:", error);
       alert(`Failed to generate report: ${error.message}`);
     }
+
   };
 
   const viewReport = () => {
@@ -188,6 +196,7 @@ const Final = () => {
   };
 
   return (
+
     <div className={`flex flex-col items-center justify-center min-h-screen bg-[url('@/assets/image.png')] bg-cover  text-gray-300 p-6 rounded-lg shadow-xl`}>
       <h1 className="text-4xl mb-4 text-center font-extrabold font-serif text-gray-900 cursor-pointer">
         🎉🎉🎉 Congratulations! 🎉🎉🎉{" "}
@@ -195,6 +204,7 @@ const Final = () => {
       <p className="text-lg mb-6 text-center text-gray-500">
         You have successfully completed the interview. Our team will contact you
         within 1 or 2 working days...
+
       </p>
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <Button
@@ -213,13 +223,14 @@ const Final = () => {
         >
           View Report
         </Button>
-        
+
       </div>
 
       {/* Report Modal */}
       <ReportModal
         isOpen={isModalOpen}
         onClose={closeReportModal}
+
         report={report}
         questionsData={questionsData}
         namee={reportData.name || "Unknown"}
@@ -227,9 +238,11 @@ const Final = () => {
         resEmail={personalDataFromResume.email || "Unknown"}
         resName={personalDataFromResume.name || "Unknown"}
         resumeData={resumeData || []}
+
       />
     </div>
   );
 };
+
 
 export default Final;

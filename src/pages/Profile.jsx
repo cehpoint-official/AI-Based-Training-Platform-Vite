@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/header";
-import Footers from "../components/footers";
+import Footers from "../components/Footers";
 import { Button, Label } from "flowbite-react";
 import {
   AiOutlineFileImage,
@@ -57,7 +57,9 @@ const Profile = () => {
       setCurrentApiKey(storedApiKey);
     }
 
-    const storedUnsplashApiKey = sessionStorage.getItem("unsplashApiKey");
+    const userJsonString =sessionStorage.getItem("user");
+    const user = JSON.parse(userJsonString);
+    const storedUnsplashApiKey = user.unsplashApiKey;
     if (storedUnsplashApiKey) {
       setCurrentUnsplashApiKey(storedUnsplashApiKey);
     }

@@ -1,4 +1,9 @@
-// Function to save the test report
+// Import necessary Firebase functions
+import { db, storage } from './firebaseConfig';
+import { collection, addDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes } from 'firebase/storage';
+
+// Function to save the test report to Firebase
 export const saveTestReportToFirebase = async (testReport, name, email, uid) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/test-report`, {
@@ -6,11 +11,11 @@ export const saveTestReportToFirebase = async (testReport, name, email, uid) => 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        name, 
-        email, 
-        uid, 
-        reportData: testReport 
+      body: JSON.stringify({
+        name,
+        email,
+        uid,
+        reportData: testReport,
       }),
     });
     if (!response.ok) {
@@ -18,7 +23,6 @@ export const saveTestReportToFirebase = async (testReport, name, email, uid) => 
       throw new Error(errorData.message || 'Failed to save test report');
     }
     const savedReport = await response.json();
-    // console.log('Test report saved successfully:', savedReport);
     return savedReport;
   } catch (error) {
     console.error('Error saving test report:', error);
@@ -26,7 +30,7 @@ export const saveTestReportToFirebase = async (testReport, name, email, uid) => 
   }
 };
 
-// Function to upload resume data 
+// Function to upload resume data
 export const uploadResumeData = async (name, email, uid, resumeData) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/resume`, {
@@ -38,14 +42,13 @@ export const uploadResumeData = async (name, email, uid, resumeData) => {
     });
     if (!response.ok) throw new Error('Failed to upload resume data');
     const data = await response.json();
-    // console.log('Resume data uploaded successfully');
     return data;
   } catch (error) {
     console.error('Error uploading resume:', error);
   }
 };
 
-// // Function to get test reports 
+// Function to get test reports from Firebase
 export const getTestReportsFromFirebase = async (uid) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/test-report/${uid}`);
@@ -57,7 +60,7 @@ export const getTestReportsFromFirebase = async (uid) => {
   }
 };
 
-// Function to get resume data 
+// Function to get resume data from Firebase
 export const getResumeDataFromFirebase = async (uid) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/resume/${uid}`);
@@ -69,36 +72,26 @@ export const getResumeDataFromFirebase = async (uid) => {
   }
 };
 
-// // Function to upload resume file to Firebase Storage
+// Function to upload resume file to Firebase Storage
 export const uploadResumeFile = async (userName, resumeBlob) => {
+  const fileName = `${userName}.pdf`;
+  const storageRef = ref(storage, `resumes/${fileName}`);
+
   try {
-    const response = await fetch('/upload-resume', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userName, resumeBlob }),
-    });
-    if (!response.ok) throw new Error('Failed to upload resume file');
-    const { filePath } = await response.json();
-    console.log('Resume file uploaded successfully');
-    return filePath;
+    await uploadBytes(storageRef, resumeBlob);
+    console.log('Resume file uploaded to Firebase Storage');
+    return `resumes/${fileName}`;
   } catch (error) {
-    console.error('Error uploading resume file:', error);
+    console.error('Error uploading resume file to Firebase:', error);
     throw error;
   }
 };
 
+// Function to add a question to Firebase
 export const addQuestionToFirebase = async (questionData) => {
   try {
-    const response = await fetch('/add-question', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(questionData),
-    });
-    if (!response.ok) throw new Error('Failed to add question');
+    const questionRef = collection(db, 'questions');
+    await addDoc(questionRef, questionData);
     console.log('Question added successfully');
   } catch (error) {
     console.error('Error adding question:', error);
@@ -106,6 +99,7 @@ export const addQuestionToFirebase = async (questionData) => {
   }
 };
 
+// Function to update the test report in Firebase
 export const updateTestReportInFirebase = async (uid, updatedReportData) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/update-test-report/${uid}`, {

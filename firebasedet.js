@@ -1,4 +1,3 @@
-// src/firebase.js
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
 import { storage, db } from './firebaseConfig'; // Ensure correct import path
@@ -36,7 +35,7 @@ export const uploadRecording = async (userName, videoBlob, type, userId) => {
     console.log('Recordings updated in the database successfully');
   } catch (error) {
     console.error('Error uploading recording to Firebase:', error);
-    throw error; 
+    throw error;
   }
 };
 

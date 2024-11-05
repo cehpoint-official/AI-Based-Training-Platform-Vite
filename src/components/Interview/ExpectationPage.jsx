@@ -1,5 +1,3 @@
-// src/components/ExpectationPage.jsx
-
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   getTestReportsFromFirebase,
@@ -18,12 +16,13 @@ import { db } from "../../../firebaseConfig";
 
 const ExpectationPage = () => {
   const { uid } = useParams();
-  // console.log("USER ID", uid)
+
   const [report, setReport] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [isFetching, setIsFetching] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
   const [expectations, setExpectations] = useState({
     salary: "",
     careerGrowth: "",
@@ -44,29 +43,12 @@ const ExpectationPage = () => {
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const auth = getAuth();
-
-  //   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-  //     if (currentUser) {
-  //       console.log(currentUser.email);
-  //       setUser(currentUser);
-  //     } else {
-  //       setUser(null);
-  //     }
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  // In your component
   useEffect(() => {
     const fetchReport = async () => {
       setIsFetching(true);
       setError(null);
       try {
         const fetchedReport = await getTestReportsFromFirebase(uid);
-        // console.log("dfhdyfyus", fetchedReport.data.reportData.questions)
         setReport(fetchedReport.data);
 
         const fetchedResumeData = await getResumeDataFromFirebase(uid);
@@ -78,13 +60,10 @@ const ExpectationPage = () => {
       }
     };
 
-    // If uid is available in user object, fetch report
     if (uid) {
       fetchReport();
     }
   }, [uid]);
-
-  // Fetch user email from Firebase authentication and set it in skills context
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -94,29 +73,26 @@ const ExpectationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-  
+
     try {
       const updatedReportData = {
         expectations,
         questions: report.reportData.questions,
       };
-  
-      // First update with expectations
+
       await updateTestReportInFirebase(uid, updatedReportData);
-  
-      // Analyze with AI
+
       const aiAnalysis = await analyzeReportWithAI(updatedReportData);
-  
-      // Update with full report including AI analysis
+
       const fullReportData = {
         ...updatedReportData,
         aiAnalysis,
         feedback: aiAnalysis.feedback,
         suggestions: aiAnalysis.suggestions,
       };
-  
+
       await updateTestReportInFirebase(uid, fullReportData);
-  
+
       navigate(`/${uid}/final`);
     } catch (error) {
       setError("Failed to submit expectations or generate analysis.");
@@ -126,7 +102,6 @@ const ExpectationPage = () => {
     }
   };
 
-  // Dynamic message fetching for tooltips (same as before)
   const dynamicMessage = useCallback(async (id) => {
     try {
       const q = query(
@@ -231,7 +206,6 @@ const ExpectationPage = () => {
       className="flex flex-col items-center p-4 bg-cover text-gray-300 min-h-screen"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      {/* Job Expectations Form */}
       <form
         className="w-full max-w-2xl mt-8 bg-gradient-to-t from-slate-50 to-white shadow-lg rounded-lg p-8 sm:p-10 md:p-12 shadow-gray-500"
         onSubmit={handleSubmit}
@@ -240,7 +214,6 @@ const ExpectationPage = () => {
           Job Expectations
         </h2>
 
-        {/* Salary Expectation */}
         <div
           className="mb-6 relative group tooltip-container"
           data-field="salary"
@@ -276,7 +249,6 @@ const ExpectationPage = () => {
           </div>
         </div>
 
-        {/* Career Growth */}
         <div
           className="mb-6 relative group tooltip-container"
           data-field="careerGrowth"
@@ -312,7 +284,6 @@ const ExpectationPage = () => {
           </div>
         </div>
 
-        {/* Learning Opportunities */}
         <div
           className="mb-6 relative group tooltip-container"
           data-field="learningOpportunities"
@@ -327,7 +298,7 @@ const ExpectationPage = () => {
             type="text"
             name="learningOpportunities"
             id="learningOpportunities"
-            placeholder="e.g., Courses, skills development"
+            placeholder="e.g., Courses, conferences"
             className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-100 transition-colors duration-300"
             value={expectations.learningOpportunities}
             onChange={handleInputChange}
@@ -352,13 +323,16 @@ const ExpectationPage = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
-          className="bg-indigo-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-300 w-full"
+          className="w-full py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-300"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Submitting..." : "Submit"}
+          {isSubmitting ? (
+            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 inline-block" />
+          ) : (
+            "Submit Expectations"
+          )}
         </button>
       </form>
     </div>

@@ -1,3 +1,4 @@
+// src/components/ReportModal.jsx
 import React, { useState } from "react";
 import { AiOutlineClose, AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 
@@ -227,7 +228,7 @@ const ReportModal = ({
                 href={`${import.meta.env.VITE_ORIGINAL_SITE}/create`}
                 className="text-indigo-400 hover:text-indigo-300 ml-1"
               >
-                generate a new courses
+                generate new courses
               </a>{" "}
               and try again later.
             </p>

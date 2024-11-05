@@ -3,7 +3,9 @@ import { Spinner, Table, Button } from "flowbite-react";
 import React from "react";
 import axiosInstance from "../../axios";
 
+
 const TopcandidateTable = ({ datas = [], loading }) => {
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -22,6 +24,7 @@ const TopcandidateTable = ({ datas = [], loading }) => {
             <Table.HeadCell className="font-black">Type</Table.HeadCell>
             <Table.HeadCell className="font-black">ID</Table.HeadCell>
             <Table.HeadCell className="font-black">Projects</Table.HeadCell>
+
             <Table.HeadCell className="font-black">Courses</Table.HeadCell>
             <Table.HeadCell className="font-black">Quiz Score</Table.HeadCell>
             {/* <Table.HeadCell className="font-black">Action</Table.HeadCell> */}
@@ -56,11 +59,13 @@ const TopcandidateTable = ({ datas = [], loading }) => {
                 {/* <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
                   <button>Send Email</button>
                 </Table.Cell> */}
+
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
       </div>
+
     </div>
   );
 };
