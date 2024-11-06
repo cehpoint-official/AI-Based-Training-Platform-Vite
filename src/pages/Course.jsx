@@ -345,6 +345,7 @@ const Course = () => {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
+      // console.log(generatedText)
       const htmlContent = generatedText;
   
       // Attempt to parse and send image
