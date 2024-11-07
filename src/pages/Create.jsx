@@ -246,7 +246,7 @@ Please output the list in the following JSON format strictly in English:
               showToast(errorMessage || "An error occurred while generating the course. Please try again.");
           }
       } else if (error instanceof SyntaxError) {
-          console.log('JSON parsing error, retrying in 5 seconds...');
+          // console.log('JSON parsing error, retrying in 5 seconds...');
           setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey, userunsplashkey), 5000);
       } else {
           showToast("An error occurred while generating the course. Please try again.");

@@ -75,7 +75,7 @@ const Topics = () => {
       } catch (error) {
         console.error("Error parsing the generated text:", error);
         if (retryCount < MAX_RETRIES) {
-          console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           sendPrompt(prompt, promptImage, retryCount + 1);
         } else {
           console.error("Max retries reached. Failed to parse the response.");
@@ -84,7 +84,7 @@ const Topics = () => {
     } catch (error) {
       console.error("Error sending prompt:", error);
       if (retryCount < MAX_RETRIES) {
-        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
         sendPrompt(prompt, promptImage, retryCount + 1);
       } else {
         console.error("Max retries reached. Failed to send the prompt.");
@@ -254,7 +254,7 @@ const Topics = () => {
   }
 
   async function sendSummery(prompt, url) {
-    console.log(prompt, url);
+    // console.log(prompt, url);
     const dataToSend = {
       prompt: prompt,
     };

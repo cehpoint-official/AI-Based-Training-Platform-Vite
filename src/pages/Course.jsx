@@ -77,9 +77,9 @@ const Course = () => {
         completed: progress >= 100 // Add this line to send completion status
       });
       if (response.data.success) {
-        console.log('Progress updated in database');
+        // console.log('Progress updated in database');
       } else {
-        console.error('Failed to update progress in database');
+        // console.error('Failed to update progress in database');
       }
     } catch (error) {
       console.error('Error updating progress in database:', error);
@@ -486,7 +486,7 @@ const Course = () => {
         const response = await axiosInstance.post(postURL, dataToSend);
 
         if (i === contentChunks.length - 1) {
-          console.log("Course updated successfully");
+          // console.log("Course updated successfully");
           // Handle successful update (e.g., show a success message)
         }
       } catch (error) {
@@ -641,8 +641,8 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
     const dataToSend = { prompt: mainPrompt };
     const url = "/api/chat";
 
-    console.log("Sending request to:", url);
-    console.log("Request data:", dataToSend);
+    // console.log("Sending request to:", url);
+    // console.log("Request data:", dataToSend);
 
     const maxRetries = 3;
     let attempts = 0;
@@ -955,7 +955,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         courseTitle={mainTopic}
                         onCompletion={() => {
                           // Handle quiz completion
-                          console.log(`Quiz completed`);
+                          // console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
                         courseId={courseId}
@@ -1050,7 +1050,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         courseTitle={mainTopic}
                         onCompletion={() => {
                           // Handle quiz completion
-                          console.log(`Quiz completed`);
+                          // console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
                         courseId={courseId}
