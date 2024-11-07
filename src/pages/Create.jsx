@@ -23,6 +23,7 @@ const Create = () => {
   const [lableText, setLableText] = useState(
     "For free member sub topics is limited to 4"
   );
+  const [showApiKeyErrorPopup, setShowApiKeyErrorPopup] = useState(false);
   const navigate = useNavigate();
 
   // useEffect(() => {
@@ -204,22 +205,22 @@ Please output the list in the following JSON format strictly in English:
     setProcessing(false);
   };
 
-  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null,userunsplashkey=null) {
-    const dataToSend = {
-        prompt: prompt,
-        useUserApiKey: useUserApiKey, // Add this line to indicate whether to use the user API key
-        userApiKey: userApiKey, // Add the user API key if available
-    };
-
-    const postURL = "/api/prompt";
-    const res = await axiosInstance.post(postURL, dataToSend);
-    
-    const generatedText = res.data.generatedText;
-    const cleanedJsonString = generatedText
-        .replace(/```json/g, "")
-        .replace(/```/g, "");
-        
+  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null, userunsplashkey = null) {
     try {
+        const dataToSend = {
+            prompt: prompt,
+            useUserApiKey: useUserApiKey,
+            userApiKey: userApiKey,
+        };
+
+        const postURL = "/api/prompt";
+        const res = await axiosInstance.post(postURL, dataToSend);
+        
+        const generatedText = res.data.generatedText;
+        const cleanedJsonString = generatedText
+            .replace(/```json/g, "")
+            .replace(/```/g, "");
+            
         const parsedJson = JSON.parse(cleanedJsonString);
         setProcessing(false);
         navigate("/topics", {
@@ -229,13 +230,56 @@ Please output the list in the following JSON format strictly in English:
                 type: selectedType.toLowerCase(),
                 useUserApiKey: useUserApiKey,
                 userApiKey: userApiKey,
-                userunsplashkey:userunsplashkey
+                userunsplashkey: userunsplashkey
             },
         });
     } catch (error) {
-        setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey,userunsplashkey), 5000);
-    }
+      console.error('Error in sendPrompt:', error);
+      setProcessing(false);
+
+      if (error.response) {
+          const errorMessage = error.response.data.error;
+          if (errorMessage.includes('The provided API key is invalid or has expired. Please check your API key and try again.') || errorMessage.includes('Permission denied')) {
+              // This is where you open the popup
+              setShowApiKeyErrorPopup(true);
+          } else {
+              showToast(errorMessage || "An error occurred while generating the course. Please try again.");
+          }
+      } else if (error instanceof SyntaxError) {
+          // console.log('JSON parsing error, retrying in 5 seconds...');
+          setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey, userunsplashkey), 5000);
+      } else {
+          showToast("An error occurred while generating the course. Please try again.");
+      }
+  }
 }
+
+const ApiKeyErrorPopup = ({ isVisible, onClose }) => {
+  if (!isVisible) return null;
+
+  return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-sm w-full">
+              <h2 className="text-xl font-bold mb-4 text-black dark:text-white text-center">Invalid API Key</h2>
+              <p className="mb-4 text-black dark:text-white text-center">Your API key is invalid or has expired. Please update it in your profile to continue generating courses.</p>
+              <div className="flex justify-center  space-x-4">
+                  <Button
+                      onClick={() => navigate("/profile")}
+                      className="bg-black text-white dark:bg-white dark:text-black font-bold rounded-none"
+                  >
+                      Go to Profile
+                  </Button>
+                  <Button
+                      onClick={onClose}
+                      className="bg-gray-300 text-black dark:bg-gray-600 dark:text-white font-bold rounded-none"
+                  >
+                      Close
+                  </Button>
+              </div>
+          </div>
+      </div>
+  );
+};
 
 
   // eslint-disable-next-line
@@ -250,6 +294,15 @@ Please output the list in the following JSON format strictly in English:
   return (
     <div className="h-screen flex flex-col">
       <Header isHome={true} className="sticky top-0 z-50" />
+
+      
+{showApiKeyErrorPopup && (
+  <ApiKeyErrorPopup 
+            isVisible={showApiKeyErrorPopup} 
+            onClose={() => setShowApiKeyErrorPopup(false)} 
+        />
+)}
+      
 
       <div className="dark:bg-black flex-1">
         <div className="flex-1 flex items-center justify-center py-10">
