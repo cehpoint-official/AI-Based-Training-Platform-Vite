@@ -1,0 +1,19 @@
+/* src/styles/custom.css */
+
+/* Floating Shapes */
+.floating {
+  position: absolute;
+  animation: floating 5s infinite;
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0%) rotate(-55deg);
+  }
+  50% {
+    transform: translateY(300%) rotate(55deg);
+  }
+  100% {
+    transform: translateY(0%) rotate(-55deg);
+  }
+}

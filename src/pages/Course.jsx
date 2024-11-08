@@ -16,14 +16,11 @@ import { FaCheck } from "react-icons/fa";
 import { IoSend } from "react-icons/io5";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import emailjs from "@emailjs/browser";
-import { getAuth } from "firebase/auth";
 import Quiz from "../quiz/Quiz";
+import Projects from "../ProjectSuggestion/Projects";
 
 const Course = () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  // console.log(user.uid)
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
@@ -44,13 +41,14 @@ const Course = () => {
   const [submissionInstructions, setSubmissionInstructions] = useState(null);
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
   const CountDoneTopics = () => {
     let doneCount = 0;
     let totalTopics = 0;
-
+  
     jsonData[mainTopic.toLowerCase()].forEach((topic) => {
       topic.subtopics.forEach((subtopic) => {
         if (subtopic.done) {
@@ -61,9 +59,30 @@ const Course = () => {
     });
     const completionPercentage = Math.round((doneCount / totalTopics) * 100);
     setPercentage(completionPercentage);
-    if (completionPercentage >= "100") {
+    if (completionPercentage >= 100) {
       setIsCompleted(true);
       setQuizAvailable(true);
+    }
+  
+    // Add this: Update progress in the database
+    updateProgressInDatabase(completionPercentage);
+  };
+  
+  // New function to update progress in the database
+  const updateProgressInDatabase = async (progress) => {
+    try {
+      const response = await axiosInstance.post('/api/updateProgress', {
+        courseId: courseId,
+        progress: progress,
+        completed: progress >= 100 // Add this line to send completion status
+      });
+      if (response.data.success) {
+        // console.log('Progress updated in database');
+      } else {
+        // console.error('Failed to update progress in database');
+      }
+    } catch (error) {
+      console.error('Error updating progress in database:', error);
     }
   };
 
@@ -102,13 +121,13 @@ const Course = () => {
       }
     }
   };
-  
+
   const getCertificateUrl = async () => {
     try {
       const response = await fetch("/api/get-certificate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid }),
+        body: JSON.stringify({ userId: userUID }),
       });
 
       if (!response.ok) {
@@ -326,6 +345,7 @@ const Course = () => {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
+      // console.log(generatedText)
       const htmlContent = generatedText;
   
       // Attempt to parse and send image
@@ -466,7 +486,7 @@ const Course = () => {
         const response = await axiosInstance.post(postURL, dataToSend);
 
         if (i === contentChunks.length - 1) {
-          console.log("Course updated successfully");
+          // console.log("Course updated successfully");
           // Handle successful update (e.g., show a success message)
         }
       } catch (error) {
@@ -621,8 +641,8 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
     const dataToSend = { prompt: mainPrompt };
     const url = "/api/chat";
 
-    console.log("Sending request to:", url);
-    console.log("Request data:", dataToSend);
+    // console.log("Sending request to:", url);
+    // console.log("Request data:", dataToSend);
 
     const maxRetries = 3;
     let attempts = 0;
@@ -713,6 +733,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                           onClick={() => {
                             handleSelect(topic.title, subtopic.title);
                             setShowQuiz(false);
+                            setShowProjects(false);
                           }}
                           className="flex py-2 text-sm flex-row items-center font-normal text-black dark:text-white  text-start"
                           role="menuitem"
@@ -731,18 +752,25 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {quizAvailable ||
-            (isComplete && (
+          {isComplete && (
               <Sidebar.ItemGroup>
+                
                 <button
-                  onClick={() => setShowQuiz(true)}
-                  className="text-start text-base w-full px-3 py-2 font-bold text-black dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
+                  onClick={() => {setShowQuiz(true); setShowProjects(false)}}
+                  className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between"
                 >
                   Take Quiz
                   <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
                 </button>
+
+                <div className="w-full bg-black/70 dark:bg-white/70 h-[1px]"></div>
+                <button 
+                onClick={() => {setShowProjects(true); setShowQuiz(false)}}
+                className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10">
+                  Projects
+                </button>
               </Sidebar.ItemGroup>
-            ))}
+            )}
         </div>
       );
     } catch (error) {
@@ -919,22 +947,26 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                 </Sidebar.Items>
               </Sidebar>
 
-              <div className="mx-5 overflow-y-auto bg-white dark:bg-black">
-                {/* sm & md  */}
+              <div className="px-8 bg-white dark:bg-black pt-5">
+                {/* sm & md */}
                 {showQuiz ? (
-                  <div className="w-full min-h-[90vh] flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+                    <div className="w-full min-h-[90vh] bg-white  dark:bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          // console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                        courseId={courseId}
+                        userId={userUID}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={userUID} />
                 ) : (
                   <>
-                    <p className="font-black text-black dark:text-white text-lg">
+                    <p className="font-black text-black dark:text-white text-xl">
                       {selected}
                     </p>
                     <div className="overflow-hidden mt-5 text-black dark:text-white text-base pb-10 max-w-full">
@@ -959,43 +991,12 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && (
-                  <div className="mt-10 absolute bg-white w-screen h-20 z-50">
-                    <h2 className="text-xl font-bold text-black dark:text-white">
-                      Course Quiz
-                    </h2>
-                    <Quiz
-                      // courseTitle={mainTopic}
-                      // onCompletion={(score) => {
-                      //   // Handle quiz completion
-                      //   console.log(`Quiz completed with score: ${score}`);
-                      //   // You might want to update some state or show a completion message
-                      // }}
-                    />
-                  </div>
-                 // )} */}
-
-                    {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex bg-black flex-row overflow-y-auto h-screen max-md:hidden">
+          <div className="flex bg-white dark:bg-black flex-row overflow-y-auto h-screen max-md:hidden">
             <Sidebar theme={storedTheme} aria-label="Default sidebar example">
               <LogoComponent isDarkMode={storedTheme} />
               <Sidebar.Items className="mt-6">
@@ -1044,16 +1045,20 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
               </Navbar>
               <div className="px-8 bg-white dark:bg-black pt-5">
                 {showQuiz ? (
-                  <div className="w-full min-h-[80vh] bg-black flex items-center justify-center">
-                    <Quiz
-                      courseTitle={mainTopic}
-                      onCompletion={() => {
-                        // Handle quiz completion
-                        console.log(`Quiz completed`);
-                        // You might want to update some state or show a completion message
-                      }}
-                    />
-                  </div>
+                    <div className="w-full min-h-[80vh] bg-white dark:bg-black flex items-center justify-center">
+                      <Quiz
+                        courseTitle={mainTopic}
+                        onCompletion={() => {
+                          // Handle quiz completion
+                          // console.log(`Quiz completed`);
+                          // You might want to update some state or show a completion message
+                        }}
+                        courseId={courseId}
+                        userId={userUID}
+                      />
+                    </div>
+                ) : showProjects ? (
+                  <Projects courseTitle={mainTopic} userId={userUID} />
                 ) : (
                   <>
                     <p className="font-black text-black dark:text-white text-xl">
@@ -1081,21 +1086,6 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         </div>
                       )}
                     </div>
-                    {/* {isComplete && projectSuggestions && (
-                      <div className="mt-10">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
-                          Project Suggestions
-                        </h2>
-                        <ul className="list-disc list-inside mt-5 text-black dark:text-white">
-                          {projectSuggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-5 text-black dark:text-white">
-                          <p>{submissionInstructions}</p>
-                        </div>
-                      </div>
-                    )} */}
                   </>
                 )}
               </div>

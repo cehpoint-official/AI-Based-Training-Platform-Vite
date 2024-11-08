@@ -1,14 +1,22 @@
-import { Table } from "flowbite-react";
+import { Table, Button } from "flowbite-react";
 import React from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "@/axios";
 
-const AdminTable = ({ admin, user }) => {
+const AdminTable = ({ admin = [], user = [] }) => {
   async function removeAdmin(email) {
-    const postURL = "/api/removeadmin";
-    const response = await axiosInstance.post(postURL, { email });
-    if (response.data.success) {
-      showToast(response.data.message);
+    try {
+      const postURL = "/api/removeadmin";
+      const response = await axiosInstance.post(postURL, { email });
+      if (response.data.success) {
+        showToast(response.data.message);
+      } else {
+        console.error("Remove admin failed:", response.data.message);
+        showToast("Failed to remove admin: " + response.data.message);
+      }
+    } catch (error) {
+      console.error("Error removing admin:", error.response ? error.response.data : error.message);
+      showToast("Error removing admin. Please try again.");
     }
   }
 
@@ -22,7 +30,6 @@ const AdminTable = ({ admin, user }) => {
       draggable: true,
       progress: undefined,
     });
-    window.location.reload();
   };
 
   async function addAdmin(email) {
@@ -40,6 +47,7 @@ const AdminTable = ({ admin, user }) => {
           <Table.Head className="border-b text-black">
             <Table.HeadCell className="font-black">Email</Table.HeadCell>
             <Table.HeadCell className="font-black">Name</Table.HeadCell>
+            {/* <Table.HeadCell className="font-black">Status</Table.HeadCell> */}
             <Table.HeadCell className="font-black">Edit</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
@@ -52,21 +60,20 @@ const AdminTable = ({ admin, user }) => {
                   {user.email}
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
-                  {" "}
                   {user.mName}
                 </Table.Cell>
-                {user.type === "no" ? (
-                  <Table.Cell
+                {/* <Table.Cell className="whitespace-normal font-normal text-blue-800 dark:text-blue-800">
+                  Admin
+                </Table.Cell> */}
+                <Table.Cell>
+                  <Button
+                    size="sm"
+                    color="red"
                     onClick={() => removeAdmin(user.email)}
-                    className="whitespace-normal font-normal text-blue-800 dark:text-blue-800"
                   >
-                    Remove Admin
-                  </Table.Cell>
-                ) : (
-                  <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
-                    Main Admin
-                  </Table.Cell>
-                )}
+                    Remove
+                  </Button>
+                </Table.Cell>
               </Table.Row>
             ))}
             {user.map((user) => (
@@ -78,14 +85,19 @@ const AdminTable = ({ admin, user }) => {
                   {user.email}
                 </Table.Cell>
                 <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
-                  {" "}
                   {user.mName}
                 </Table.Cell>
-                <Table.Cell
-                  onClick={() => addAdmin(user.email)}
-                  className="whitespace-normal font-normal text-blue-800 dark:text-blue-800"
-                >
-                  Add Admin
+                <Table.Cell className="whitespace-normal font-normal text-gray-500 dark:text-gray-400">
+                  User
+                </Table.Cell>
+                <Table.Cell>
+                  <Button
+                    size="sm"
+                    color="green"
+                    onClick={() => addAdmin(user.email)}
+                  >
+                    Make Admin
+                  </Button>
                 </Table.Cell>
               </Table.Row>
             ))}
