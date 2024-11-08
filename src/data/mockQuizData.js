@@ -24,7 +24,7 @@ const mockQuizzes = {
     },
     {
       question: "What is the largest ocean on Earth?",
-      options: [
+      options:[
         "Atlantic Ocean",
         "Indian Ocean",
         "Arctic Ocean",

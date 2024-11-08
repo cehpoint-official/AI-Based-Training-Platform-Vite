@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addQuestionToFirebase } from '../firebaseUtils'; // Import Firebase function
 
+
 const AddQuestion = () => {
   const [question, setQuestion] = useState('');
   const [skills, setSkills] = useState([]);
