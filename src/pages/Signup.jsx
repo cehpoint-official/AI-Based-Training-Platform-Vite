@@ -108,6 +108,8 @@ const SignUp = () => {
         sessionStorage.setItem("type", "free");
         sessionStorage.setItem("apiKey", firebaseApiKey); // Store API key
         sessionStorage.setItem("uapiKey", unsplashApiKey); // Store API key
+        sessionStorage.setItem("userapikey1", null); // Store user API key
+        sessionStorage.setItem("userapikey1", null); // Store user API key
         await sendEmail(email, mName);
         redirectHome();
       } else {
