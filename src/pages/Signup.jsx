@@ -86,6 +86,8 @@ const SignUp = () => {
       const uid = user.uid;
 
       // Send user data to your backend
+      const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+      const unsplashApiKey = import.meta.env.VITE_UNSPLASH_API_KEY;
       const response = await axiosInstance.post(postURL, {
         email,
         mName,
@@ -93,9 +95,10 @@ const SignUp = () => {
         type,
         uid,
         profile,
-        apiKey: import.meta.env.VITE_API_KEY, // Use environment variable
+        apiKey: firebaseApiKey, // Use environment variable
+        unsplashApiKey:unsplashApiKey,  // Use environment variable
       });
-
+      console.log()
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
@@ -103,7 +106,8 @@ const SignUp = () => {
         sessionStorage.setItem("auth", true);
         sessionStorage.setItem("uid", uid);
         sessionStorage.setItem("type", "free");
-        sessionStorage.setItem("apiKey", import.meta.env.VITE_API_KEY); // Store API key
+        sessionStorage.setItem("apiKey", firebaseApiKey); // Store API key
+        sessionStorage.setItem("uapiKey", unsplashApiKey); // Store API key
         await sendEmail(email, mName);
         redirectHome();
       } else {

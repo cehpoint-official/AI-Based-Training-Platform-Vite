@@ -118,7 +118,7 @@ const Create = () => {
       return;
     }
 
-    if (coursesCreatedToday >= maxCoursesPerDay && sessionStorage.getItem("apiKey")==null) {
+    if (coursesCreatedToday >= maxCoursesPerDay && sessionStorage.getItem("userapikey1")==null) {
       setShowUpdateKeyPrompt(true);
       setProcessing(false);
       showToast(
@@ -178,7 +178,7 @@ Please output the list in the following JSON format strictly in English:
 
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
     //update to use userprovided api keys after 5 courses.
-    const userApiKey = sessionStorage.getItem("apiKey");
+    const userApiKey = sessionStorage.getItem("userapikey1");
     const userunsplashkey=sessionStorage.getItem("currentUnsplashApiKey");
     if (coursesCreatedToday >= maxCoursesPerDay) {
         if (userApiKey!==null) {
