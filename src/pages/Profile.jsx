@@ -14,11 +14,11 @@ import { getAuth } from "firebase/auth";
 
 const Profile = () => {
   const auth = getAuth()
-  console.log(auth.currentUser)
+  // console.log(auth.currentUser)
   const [mName, setName] = useState(sessionStorage.getItem("mName"));
   const [email, setEmail] = useState(sessionStorage.getItem("email"));
   const [firebase_id, setFirebase_id] = useState(sessionStorage.getItem("uid"));
-  console.log(sessionStorage.getItem("uid"))
+  // console.log(sessionStorage.getItem("uid"))
   const [profileImg, setProfileImg] = useState("https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d");
   const [password, setPassword] = useState("");
   const [processing, setProcessing] = useState(false);
@@ -363,7 +363,9 @@ const Profile = () => {
                       {showCurrentUnsplashApiKey ? "Hide" : "Show"}
                     </button>
                   </div>
+
                   <form onSubmit={handleSubmitUnsplashApiKey}>
+
                     <Label
                       className="font-bold text-white mb-2"
                       htmlFor="newUnsplashApiKey"
