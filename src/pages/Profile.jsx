@@ -217,9 +217,9 @@ const Profile = () => {
                   <p className="text-gray-300"><em>{email}</em></p>
                 </sapn>
               </div>
-              <Button className="bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 transition duration-200">
+              {/* <Button className="bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 transition duration-200">
                 Update
-              </Button>
+              </Button> */}
             </div>
 
             <div className="py-6">
