@@ -31,7 +31,6 @@ const Profile = () => {
     sessionStorage.getItem("currentApiKey") || ""
   );
   const [showCurrentApiKey, setShowCurrentApiKey] = useState(false);
-
   const [showUnsplashApiKeyForm, setShowUnsplashApiKeyForm] = useState(false);
   const [newUnsplashApiKey, setNewUnsplashApiKey] = useState("");
   const [currentUnsplashApiKey, setCurrentUnsplashApiKey] = useState(
@@ -66,9 +65,11 @@ const Profile = () => {
       setCurrentApiKey(storedApiKey);
     }
 
+
     const userJsonString = sessionStorage.getItem("user");
     const user = JSON.parse(userJsonString);
     const storedUnsplashApiKey = user.unsplashApiKey;
+
     if (storedUnsplashApiKey) {
       setCurrentUnsplashApiKey(storedUnsplashApiKey);
     }
@@ -77,7 +78,40 @@ const Profile = () => {
     if (storedYouTubeApiKey) {
       setCurrentYouTubeApiKey(storedYouTubeApiKey);
     }
+
   }, []);
+
+    setProcessing(true);
+    const uid = sessionStorage.getItem("uid");
+    if (!uid) {
+      showToast("User ID not found in session");
+      setProcessing(false);
+      return;
+    }
+    const postURL = `/api/profile`;
+    try {
+      const response = await axiosInstance.post(postURL, {
+        email,
+        mName,
+        apiKey: newApiKey,
+        uid,
+      });
+      if (response.data.success) {
+        setCurrentApiKey(newApiKey);
+        sessionStorage.setItem("apiKey", newApiKey);
+        showToast(response.data.message);
+        setProcessing(false);
+        setNewApiKey("");
+        setShowApiKeyForm(false);
+      } else {
+        showToast(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.response || error.message);
+      showToast("Internal Server Error");
+    }
+  };
+
 
   const handleSubmitYouTubeApiKey = async (event) => {
     event.preventDefault();
@@ -143,9 +177,9 @@ const Profile = () => {
                   </p>
                 </span>
               </div>
-              <Button className="bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 transition duration-200">
+              {/* <Button className="bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 transition duration-200">
                 Update
-              </Button>
+              </Button> */}
             </div>
 
             <div className="py-6">
@@ -185,7 +219,13 @@ const Profile = () => {
                       {showCurrentYouTubeApiKey ? "Hide" : "Show"}
                     </button>
                   </div>
+
                   <form onSubmit={handleSubmitYouTubeApiKey}>
+
+
+                  <form onSubmit={handleSubmitUnsplashApiKey}>
+
+
                     <Label
                       className="font-bold text-white mb-2"
                       htmlFor="newYouTubeApiKey"

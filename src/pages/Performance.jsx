@@ -69,7 +69,7 @@ const Performance = () => {
   const completionPercentage = (totalCriteriaMet / 4) * 100;
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-x-hidden">
       <Header isHome={true} className="sticky top-0 z-50" />
       <div className="flex-1 dark:bg-gray-900 bg-gray-800 dark:text-white text-white p-4 flex flex-col items-center">
         <h2 className="text-lg font-bold mb-4">Performance Overview</h2>
@@ -99,7 +99,7 @@ const Performance = () => {
                 justifyContent="flex-start"
                 width="100%"
               >
-                <div className="flex items-center justify-center gap-x-10">
+                <div className="flex items-center justify-center max-md:flex-col gap-x-10">
                   {/* Circular Progress */}
                   <Box position="relative" mr={2}>
                     <CircularProgress
