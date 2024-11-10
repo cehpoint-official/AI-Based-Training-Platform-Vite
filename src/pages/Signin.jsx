@@ -72,7 +72,7 @@ const SignIn = () => {
 
       // Send sign-in request to your server
       const res = await axiosInstance.post(postURL, { email, password, firebaseUid });
-
+      console.log(res.data);
       if (res.data.success) {
         showToast(res.data.message);
         sessionStorage.setItem("user", JSON.stringify(res.data.userData));
@@ -81,7 +81,17 @@ const SignIn = () => {
         sessionStorage.setItem("auth", true);
         sessionStorage.setItem("type", res.data.userData.type);
         sessionStorage.setItem("uid", res.data.userData.uid); // Use the updated uid
-        sessionStorage.setItem("apiKey", res.data.userData.apiKey);
+        sessionStorage.setItem("uapiKey",res.data.userData.unsplashApiKey);
+        sessionStorage.setItem("userapikey1", res.data.userData.userapikey1 || null);
+        sessionStorage.setItem("apiKey", res.data.userData.apiKey || null);
+        // Check if both userapikey1 and userapikey2 are null
+        if (!res.data.userData.userapikey1 && !res.data.userData.userapikey2) {
+          showToast("please fill out the api keys");
+        } else if (!res.data.userData.userapikey1) {
+          showToast("Gemini Key is not set.");
+        } else if (!res.data.userData.userapikey2) {
+          showToast("Unsplash Key is not set.");
+        }
         redirectHome();
       } else {
         showToast(res.data.message);
