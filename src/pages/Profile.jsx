@@ -29,7 +29,6 @@ const Profile = () => {
     sessionStorage.getItem("currentApiKey") || ""
   );
   const [showCurrentApiKey, setShowCurrentApiKey] = useState(false);
-
   const [showUnsplashApiKeyForm, setShowUnsplashApiKeyForm] = useState(false);
   const [newUnsplashApiKey, setNewUnsplashApiKey] = useState("");
   const [currentUnsplashApiKey, setCurrentUnsplashApiKey] = useState(
@@ -56,10 +55,7 @@ const Profile = () => {
     if (storedApiKey) {
       setCurrentApiKey(storedApiKey);
     }
-
-    const userJsonString =sessionStorage.getItem("user");
-    const user = JSON.parse(userJsonString);
-    const storedUnsplashApiKey = user.unsplashApiKey;
+    const storedUnsplashApiKey = sessionStorage.getItem("uapiKey");
     if (storedUnsplashApiKey) {
       setCurrentUnsplashApiKey(storedUnsplashApiKey);
     }
@@ -126,6 +122,11 @@ const Profile = () => {
     }
     setProcessing(true);
     const uid = sessionStorage.getItem("uid");
+    if (!uid) {
+      showToast("User ID not found in session");
+      setProcessing(false);
+      return;
+    }
     const postURL = `/api/profile`;
     try {
       const response = await axiosInstance.post(postURL, {
@@ -136,7 +137,7 @@ const Profile = () => {
       });
       if (response.data.success) {
         setCurrentApiKey(newApiKey);
-        sessionStorage.setItem("currentApiKey", newApiKey);
+        sessionStorage.setItem("apiKey", newApiKey);
         showToast(response.data.message);
         setProcessing(false);
         setNewApiKey("");
@@ -362,7 +363,9 @@ const Profile = () => {
                       {showCurrentUnsplashApiKey ? "Hide" : "Show"}
                     </button>
                   </div>
-                  <form onSubmit={()=>{alert('handleUnsplashApiSubmit')}}>
+
+                  <form onSubmit={handleSubmitUnsplashApiKey}>
+
                     <Label
                       className="font-bold text-white mb-2"
                       htmlFor="newUnsplashApiKey"
