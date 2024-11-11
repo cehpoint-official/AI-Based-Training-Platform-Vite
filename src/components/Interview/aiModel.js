@@ -1,6 +1,3 @@
-// =========================
-// Report Analyzer with Firebase Integration and AI Evaluations
-// =========================
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const analyzeReportWithAI = async (report) => {
@@ -21,7 +18,7 @@ export const analyzeReportWithAI = async (report) => {
 
   // Evaluate each question and collect results
   const evaluationPromises = questionsToEvaluate.map(async (question) => {
-    const userAnswer = question.userAnswer;
+    const userAnswer = question.userTextAnswer;
 
     // Treat 'N/A', null, undefined, or empty string as unanswered
     if (!userAnswer || userAnswer.toLowerCase() === 'n/a') {
@@ -120,10 +117,26 @@ const evaluateTextAnswerAI = async (question, userAnswer) => {
   try {
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const prompt = `Question: "${question}".\nUser's Answer: "${userAnswer}".\nIf the answer is correct, return "correct"; otherwise, return "wrong".`
+  const prompt = `
+Evaluate the user's answer to the given question and respond with either "correct" or "wrong" without explanation.
+
+Examples:
+Question: "What is the capital of India?"
+User's Answer: "New Delhi is the capital of India"
+Response: "correct"
+
+Question: "What is the capital of India?"
+User's Answer: "India is the capital of India"
+Response: "wrong"
+
+Now evaluate:
+Question: ${question}
+User's Answer: ${userAnswer}
+Response:
+`;
 
   const result = await model.generateContent(prompt);
-
+    console.log(result);
     // Extract evaluation from the response
     let evaluation = 'wrong'; // Default to 'wrong'
     if (result && result.response.text()) {
@@ -157,11 +170,11 @@ const generateAIReportFeedback = async (
   const query = `User ID: ${report.id} answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
 
   try {
-    const genAI = new GoogleGenerativeAI('AIzaSyAnIN9pRtfPR0SUBnLJNk8nQWagrfYCnak');
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(query);
 
-    console.log('Raw AI Feedback Result:', result); // Debug log
+    // console.log('Raw AI Feedback Result:', result); // Debug log
 
     let feedback = 'Could not generate feedback.';
     if (result && result.response && result.response.text()) {
