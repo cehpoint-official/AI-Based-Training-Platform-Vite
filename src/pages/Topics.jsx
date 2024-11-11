@@ -10,7 +10,8 @@ import axiosInstance from "../axios";
 const Topics = () => {
   const { state } = useLocation();
   const [processing, setProcessing] = useState(false);
-  const { jsonData, mainTopic, type , useUserApiKey, userApiKey,userunsplashkey } = state || {};
+  const { jsonData, mainTopic, type , useUserApiKey, apiKey,userunsplashkey, subtopic } = state || {};
+  const [showApiKeyErrorPopup, setShowApiKeyErrorPopup] = useState(false);
 
   const navigate = useNavigate();
 
@@ -51,7 +52,7 @@ const Topics = () => {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
       const promptImage = `Example of ${firstSubtopic.title} in ${mainTopic}`;
       setProcessing(true);
-      sendPrompt(prompt, promptImage,useUserApiKey, userApiKey);
+      sendPrompt(prompt, promptImage,useUserApiKey, apiKey);
     }
   }
 
@@ -60,7 +61,7 @@ const Topics = () => {
     const dataToSend = {
       prompt: prompt,
       useUserApiKey: useUserApiKey,
-      userApiKey: userApiKey,
+      apiKey: apiKey,
     };
   
     try {
@@ -74,7 +75,7 @@ const Topics = () => {
       } catch (error) {
         console.error("Error parsing the generated text:", error);
         if (retryCount < MAX_RETRIES) {
-          console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           sendPrompt(prompt, promptImage, retryCount + 1);
         } else {
           console.error("Max retries reached. Failed to parse the response.");
@@ -83,7 +84,7 @@ const Topics = () => {
     } catch (error) {
       console.error("Error sending prompt:", error);
       if (retryCount < MAX_RETRIES) {
-        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
         sendPrompt(prompt, promptImage, retryCount + 1);
       } else {
         console.error("Max retries reached. Failed to send the prompt.");
@@ -112,44 +113,80 @@ const Topics = () => {
   }
 
   async function sendData(image, theory) {
-    jsonData[mainTopic][0].subtopics[0].theory = theory;
-    jsonData[mainTopic][0].subtopics[0].image = image;
-
-    const user = sessionStorage.getItem("uid");
-    const content = JSON.stringify(jsonData);
-    const postURL = "/api/course";
-    const response = await axiosInstance.post(postURL, {
-      user,
-      content,
-      type,
-      mainTopic,
-      useUserApiKey: useUserApiKey,
-      userunsplashkey:userunsplashkey
-    });
-
-    if (response.data.success) {
-      showToast(response.data.message);
-      sessionStorage.setItem("courseId", response.data.courseId);
-      sessionStorage.setItem("first", response.data.completed);
-      sessionStorage.setItem("jsonData", JSON.stringify(jsonData));
-      navigate("/course", {
-        state: {
-          jsonData: jsonData,
-          mainTopic: mainTopic.toUpperCase(),
-          type: type.toLowerCase(),
-          courseId: response.data.courseId,
-          end: "",
-        },
-      });
-    } else {
-      sendData(image, theory);
+    try {
+      jsonData[mainTopic][0].subtopics[0].theory = theory;
+      jsonData[mainTopic][0].subtopics[0].image = image;
+  
+      const user = sessionStorage.getItem("uid");
+      if (!user) {
+        showToast("User session not found. Please login again.");
+        navigate("/login");
+        return;
+      }
+  
+      const content = JSON.stringify(jsonData);
+      const postURL = "/api/course";
+      
+      const requestData = {
+        user,
+        content,
+        type,
+        mainTopic,
+        useUserApiKey,
+        userunsplashkey
+      };
+  
+      // console.log("Sending request with data:", requestData); // Debug log
+  
+      const response = await axiosInstance.post(postURL, requestData);
+  
+      if (response.data.success) {
+        showToast(response.data.message);
+        sessionStorage.setItem("courseId", response.data.courseId);
+        sessionStorage.setItem("first", response.data.completed);
+        sessionStorage.setItem("jsonData", JSON.stringify(jsonData));
+        
+        navigate("/course", {
+          state: {
+            jsonData: jsonData,
+            mainTopic: mainTopic.toUpperCase(),
+            type: type.toLowerCase(),
+            courseId: response.data.courseId,
+            end: "",
+          },
+        });
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error in sendData:", error);
+  
+      if (error.response) {
+        if (error.response.status === 401) {
+          // API key error
+          setShowApiKeyErrorPopup(true);
+        } else if (error.response.status === 500) {
+          showToast("Server error. Please try again later.");
+          console.error("Server error details:", error.response.data);
+        } else {
+          showToast(error.response.data.message || "An error occurred");
+        }
+      } else if (error.request) {
+        showToast("Network error. Please check your connection.");
+      } else {
+        showToast("An unexpected error occurred. Please try again.");
+      }
+  
+      
     }
   }
+
+  
 
   async function sendDataVideo(image, theory) {
     jsonData[mainTopic][0].subtopics[0].theory = theory;
     jsonData[mainTopic][0].subtopics[0].youtube = image;
-
+    // const subtopic = jsonData[mainTopic][0].subtopics[0].title
     const user = sessionStorage.getItem("uid");
     const content = JSON.stringify(jsonData);
     const postURL = "/api/course";
@@ -217,7 +254,7 @@ const Topics = () => {
   }
 
   async function sendSummery(prompt, url) {
-    console.log(prompt, url);
+    // console.log(prompt, url);
     const dataToSend = {
       prompt: prompt,
     };

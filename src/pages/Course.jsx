@@ -77,12 +77,13 @@ const Course = () => {
         completed: progress >= 100 // Add this line to send completion status
       });
       if (response.data.success) {
-        console.log('Progress updated in database');
+        // console.log('Progress updated in database');
       } else {
-        console.error('Failed to update progress in database');
+        // console.error('Failed to update progress in database');
       }
     } catch (error) {
       console.error('Error updating progress in database:', error);
+      toast.error('Error updating progress');// Error in updating the progress
     }
   };
 
@@ -118,6 +119,7 @@ const Course = () => {
         }
       } catch (error) {
         console.error("Error fetching project suggestions:", error);
+        toast.error('Error in project suggestions');// toast error in project suggestion
       }
     }
   };
@@ -138,6 +140,7 @@ const Course = () => {
       return data.certificateUrl;
     } catch (error) {
       console.error("Error fetching certificate URL:", error);
+      toast.error('Error in generating certificate');// Error in generating certificate
       return null;
     }
   };
@@ -345,6 +348,7 @@ const Course = () => {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
+      // console.log(generatedText)
       const htmlContent = generatedText;
   
       // Attempt to parse and send image
@@ -369,6 +373,7 @@ const Course = () => {
         return sendPrompt(prompt, promptImage, topics, sub, id, retries - 1, delay * 2); 
       } else {
         console.error("Failed to send prompt after multiple attempts:", error);
+
         throw error;
       }
     }
@@ -395,6 +400,7 @@ const Course = () => {
         return sendImage(parsedJson,promptImage,topics,sub,id,retries-1,delay*2);
       } else {
         console.error('Failed to send image after multiple attempts:', error);
+        toast.error('Failed to generate image'); // Toast Failed to generate image
         throw error; // If retries are over then throw the error
       }
     }
@@ -485,7 +491,7 @@ const Course = () => {
         const response = await axiosInstance.post(postURL, dataToSend);
 
         if (i === contentChunks.length - 1) {
-          console.log("Course updated successfully");
+          // console.log("Course updated successfully");
           // Handle successful update (e.g., show a success message)
         }
       } catch (error) {
@@ -516,6 +522,7 @@ async function sendVideo(query, mTopic, mSubTopic, id, subtop, retries = 3, dela
       return sendVideo(query, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2); // Exponential backoff
     } else {
       console.error('Failed to send video after multiple attempts:', error);
+      toast.error('Failed to generate video'); // toast erorr in video
       throw error; // If retries are over then throw the error
     }
   }
@@ -553,6 +560,7 @@ async function sendTranscript(url, mTopic, mSubTopic, id, subtop, retries = 3, d
       await new Promise(resolve => setTimeout(resolve, delay));
       return sendTranscript(url,mTopic,mSubTopic,id,subtop,retries-1,delay*2); 
     } else {
+      toast.error('Error in generating subtopic');//toast to generate prompt
       await sendSummery(fallbackPrompt,url,mTopic,mSubTopic,id);
     }
   }
@@ -591,6 +599,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
       await new Promise(resolve => setTimeout(resolve, delay));  
       return sendSummery(prompt, url, mTopic, mSubTopic, id, retries - 1, delay * 2);  
     } else {
+      toast.error('Failed to generate summary');// toast for error in generating summary
       throw new Error("Failed to generate summary after multiple retries.");  
     }
   }
@@ -640,8 +649,8 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
     const dataToSend = { prompt: mainPrompt };
     const url = "/api/chat";
 
-    console.log("Sending request to:", url);
-    console.log("Request data:", dataToSend);
+    // console.log("Sending request to:", url);
+    // console.log("Request data:", dataToSend);
 
     const maxRetries = 3;
     let attempts = 0;
@@ -954,7 +963,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         courseTitle={mainTopic}
                         onCompletion={() => {
                           // Handle quiz completion
-                          console.log(`Quiz completed`);
+                          // console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
                         courseId={courseId}
@@ -1049,7 +1058,7 @@ async function sendSummery(prompt, url, mTopic, mSubTopic, id, retries = 3, dela
                         courseTitle={mainTopic}
                         onCompletion={() => {
                           // Handle quiz completion
-                          console.log(`Quiz completed`);
+                          // console.log(`Quiz completed`);
                           // You might want to update some state or show a completion message
                         }}
                         courseId={courseId}
