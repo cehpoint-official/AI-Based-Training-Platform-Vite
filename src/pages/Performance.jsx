@@ -14,6 +14,7 @@ import axiosInstance from "../axios";
 
 const Performance = () => {
   const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
+  // console.log(userUID)
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -21,6 +22,7 @@ const Performance = () => {
   const fetchPerformance = async () => {
     try {
       const response = await axiosInstance.get(`/api/top-candidates-admin`);
+      console.log(response.data.data)
       // Filter data based on uid
       const filteredData = response.data.data.filter(
         (item) => item.uid === userUID

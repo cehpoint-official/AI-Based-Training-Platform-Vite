@@ -1,4 +1,6 @@
 //BRAND
+export const mainname = "Cehpoint";
+export const subname = "E-Learning AI Solutions";
 export const name = "Cehpoint E-Learning AI Solutions";
 export const company = "Cehpoint E-Learning & Cybersecurity AI Solutions";
 export const websiteURL = "/";
