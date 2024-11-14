@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navbar } from "flowbite-react";
 import { Flowbite } from "flowbite-react";
-import { name, websiteURL } from "../constants";
+import { name, mainname, subname, websiteURL } from "../constants";
 import DarkModeToggle from "./DarkModeToggle";
 import LogoComponent from "./LogoComponent";
 import { useNavigate } from "react-router-dom";
@@ -115,9 +115,9 @@ const Header = ({ isHome }) => {
           <Navbar fluid className=" py-3 dark:bg-black">
             <Navbar.Brand href={websiteURL} className="ml-1">
               <LogoComponent isDarkMode={storedTheme} />
-              <span className="self-center whitespace-nowrap text-2xl font-black dark:text-white ">
-                {name}
-                {/* AI COURSE CREATORS */}
+              <span className="self-center whitespace-nowrap text-2xl flex items-start justify-center flex-col font-black dark:text-white ">
+                <h1 className="font-black">{mainname}</h1>
+                <em className="text-sm font-semibold">{subname}</em>
               </span>
             </Navbar.Brand>
             <div className="flex md:hidden justify-center items-center">
@@ -231,16 +231,18 @@ const Header = ({ isHome }) => {
           >
             <Navbar.Brand href={websiteURL} className="ml-1">
               <LogoComponent isDarkMode={storedTheme} />
-              <span className="self-center whitespace-nowrap text-2xl font-black dark:text-white ">
-                {name}
+              <span className="self-center whitespace-nowrap text-2xl flex items-start justify-center flex-col font-black dark:text-white ">
+                <h1 className="font-black">{mainname}</h1>
+                <em className="text-sm font-semibold">{subname}</em>
               </span>
             </Navbar.Brand>
-            <div className="flex md:hidden justify-center items-center">
-              <DarkModeToggle className="inline-flex items-cente md:hidden" />
-              <Navbar.Toggle className="inline-flex items-center rounded-lg p-2 text-sm text-black hover:bg-white focus:outline-none focus:ring-0 focus:ring-gray-200 dark:text-white dark:hover:bg-black dark:focus:ring-gray-600 md:hidden" />
+            <div className="flex lg:hidden justify-center items-center">
+              <DarkModeToggle className="inline-flex items-cente" />
+              <Navbar.Toggle className="inline-flex items-center rounded-lg p-2 text-sm text-black hover:bg-white focus:outline-none focus:ring-0 focus:ring-gray-200 dark:text-white dark:hover:bg-black dark:focus:ring-gray-600" />
             </div>
+ 
             <Navbar.Collapse>
-              <div className="hidden md:flex justify-center items-center">
+              <div className="hidden lg:flex justify-center items-center">
                 <DarkModeToggle />
               </div>
               <Navbar.Link
@@ -369,6 +371,7 @@ const Header = ({ isHome }) => {
                 Generate Course
               </Navbar.Link>
             </Navbar.Collapse>
+            
           </Navbar>
         </>
       )}

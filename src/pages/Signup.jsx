@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/signup.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { company, logo, name, websiteURL } from "../constants";
+import { company, logo, mainname, subname, name, websiteURL } from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { toast } from "react-toastify";
@@ -191,14 +191,15 @@ const SignUp = () => {
   return (
     <GoogleOAuthProvider clientId="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">
       <Flowbite>
-        <div className="flex h-screen dark:bg-black no-scrollbar">
+        <div className="flex h-screen dark:bg-black no-scrollbar overflow-x-hidden">
           <div className="flex-1 overflow-y-auto no-scrollbar">
             <Navbar fluid className="p-8 dark:bg-black">
               <Navbar.Brand href={websiteURL} className="ml-1">
                 <LogoComponent isDarkMode={storedTheme} />
-                <span className="self-center whitespace-nowrap text-2xl font-black dark:text-white ">
-                  {name}
-                </span>
+                <span className="self-center whitespace-nowrap text-2xl flex items-start justify-center flex-col font-black dark:text-white ">
+                <h1 className="font-black">{mainname}</h1>
+                <em className="text-sm font-semibold">{subname}</em>
+              </span>
               </Navbar.Brand>
               <DarkModeToggle />
             </Navbar>
