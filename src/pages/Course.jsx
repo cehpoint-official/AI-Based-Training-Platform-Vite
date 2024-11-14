@@ -19,6 +19,7 @@ import "react-circular-progressbar/dist/styles.css";
 import Quiz from "../quiz/Quiz";
 import Projects from "../ProjectSuggestion/Projects";
 import CourseLogoComponent from "../components/CourseLogoComponent";
+import axios from "axios";
 
 const Course = () => {
   const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
@@ -590,127 +591,130 @@ const Course = () => {
     id,
     subtop,
     retries = 3,
-    delay = 1000
-  ) {
+    delay = 800
+) {
     const dataToSend = {
-      prompt: url,
+        prompt: url,
     };
     try {
-      const postURL = "/api/transcript";
-      const res = await axiosInstance.post(postURL, dataToSend);
+        const postURL = "/api/transcript";
+        const res = await axiosInstance.post(postURL, dataToSend);
 
-      // Process the response data
-      try {
-        const generatedText = res.data.url;
-        const allText = generatedText.map((item) => item.text);
-        const concatenatedText = allText.join(" ");
-        const prompt = `Summarize this theory in a teaching way: ${concatenatedText}.`;
-        await sendSummery(prompt, url, mTopic, mSubTopic, id);
-      } catch (error) {
-        console.warn(
-          "Error processing transcript response, retrying with fallback...",
-          error
-        );
-        const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-        if (retries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          return sendTranscript(
-            url,
-            mTopic,
-            mSubTopic,
-            id,
-            subtop,
-            retries - 1,
-            delay * 2
-          );
-        } else {
-          await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
+        // Process the response data
+        try {
+            const generatedText = res.data.url;
+            const allText = generatedText.map((item) => item.text);
+            const concatenatedText = allText.join(" ");
+            const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+            await sendSummery(prompt, url, mTopic, mSubTopic, id);
+        } catch (error) {
+            console.warn(
+                "Error processing transcript response, retrying with fallback...",
+                error
+            );
+            const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+            if (retries > 0) {
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                return sendTranscript(
+                    url,
+                    mTopic,
+                    mSubTopic,
+                    id,
+                    subtop,
+                    retries - 1,
+                    delay * 2
+                );
+            } else {
+                await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
+            }
         }
-      }
     } catch (error) {
-      console.warn(
-        "Error fetching transcript, retrying with fallback...",
-        error
-      );
-      const fallbackPrompt = `Explain me about this subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-      if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return sendTranscript(
-          url,
-          mTopic,
-          mSubTopic,
-          id,
-          subtop,
-          retries - 1,
-          delay * 2
+        console.warn(
+            "Error fetching transcript, retrying with fallback...",
+            error
         );
-      } else {
-        toast.error("Error in generating subtopic"); //toast to generate prompt
-        await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
-      }
+        const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+        if (retries > 0) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            return sendTranscript(
+                url,
+                mTopic,
+                mSubTopic,
+                id,
+                subtop,
+                retries - 1,
+                delay * 2
+            );
+        } else {
+            toast.dismiss(id);
+            toast.error("Error in generating subtopic");
+            await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
+        }
     }
-  }
+}
 
-  async function sendSummery(
-    prompt,
-    url,
-    mTopic,
-    mSubTopic,
-    id,
-    retries = 3,
-    delay = 1000
-  ) {
-    const dataToSend = {
-      prompt: prompt,
-    };
+async function sendSummery(
+  prompt,
+  url,
+  mTopic,
+  mSubTopic,
+  id,
+  retries = 3,
+  delay = 1000,
+  totalRetries = 0
+) {
+  const dataToSend = {
+      prompt: `Provide a summary in JavaScript context: ${prompt}`,
+  };
 
-    try {
+  try {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
 
       // Process the generated summary text
       try {
-        const generatedText = res.data.text;
-        const htmlContent = generatedText;
-        const parsedJson = htmlContent; // Process the HTML content
+          const generatedText = res.data.text;
+          const htmlContent = generatedText;
+          const parsedJson = htmlContent;
 
-        await sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
+          await sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
       } catch (error) {
-        console.warn("Error processing summary response, retrying...", error);
-        if (retries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          return sendSummery(
-            prompt,
-            url,
-            mTopic,
-            mSubTopic,
-            id,
-            retries - 1,
-            delay * 2
-          );
-        } else {
-          throw new Error("Failed to process summary after multiple retries.");
-        }
+          console.warn("Error processing summary response, retrying...", error);
+          if (retries > 0) {
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              return sendSummery(
+                  prompt,
+                  url,
+                  mTopic,
+                  mSubTopic,
+                  id,
+                  retries - 1,
+                  delay * 2,
+                  totalRetries + 1 // Increment total retries
+              );
+          } else {
+              throw new Error("Failed to process summary after multiple retries.");
+          }
       }
-    } catch (error) {
+  } catch (error) {
       console.warn("Error fetching summary, retrying...", error);
       if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return sendSummery(
-          prompt,
-          url,
-          mTopic,
-          mSubTopic,
-          id,
-          retries - 1,
-          delay * 2
-        );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return sendSummery(
+prompt,
+              url,
+              mTopic,
+              mSubTopic,
+              id,
+              retries - 1,
+              delay * 2,
+              totalRetries + 1 // Increment total retries
+          );
       } else {
-        toast.error("Failed to generate summary"); // toast for error in generating summary
-        throw new Error("Failed to generate summary after multiple retries.");
+          throw new Error("Failed to generate summary after multiple retries.");
       }
-    }
   }
+}
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
