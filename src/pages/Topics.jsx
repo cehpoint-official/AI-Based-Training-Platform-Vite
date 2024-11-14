@@ -46,7 +46,7 @@ const Topics = () => {
     if (type === "video & text course") {
       const query = `Watch tutorials on ${firstSubtopic.title} related to ${mainTopic} in English. Learn the best practices and insights!`;
 
-      sendVideo(query, firstSubtopic.title);
+      sendVideo(query, `${firstSubtopic.title} related to ${mainTopic}`);
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
@@ -243,32 +243,52 @@ const Topics = () => {
       const generatedText = res.data.url;
       const allText = generatedText.map((item) => item.text);
       const concatenatedText = allText.join(" ");
-      const prompt = `Summarize this theory in a teaching way and :- ${concatenatedText}.`;
-      sendSummery(prompt, url);
+      const maxLength = 1000;
+      const truncatedText =
+        concatenatedText.length > maxLength
+          ? concatenatedText.slice(0, maxLength - 3) + "..."
+          : concatenatedText;
+
+      // Specify that the summary should be in English
+      const prompt = `Summarize this theory in a teaching way in English: ${truncatedText}.`;
+      await sendSummery(prompt, url);
     } catch (error) {
       const mainTopicData = jsonData[mainTopic][0];
       const firstSubtopic = mainTopicData.subtopics[0];
-      const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
-      sendSummery(prompt, url);
+      const prompt = `Explain the subtopic of ${mainTopic} in English: ${firstSubtopic.title}.`;
+      await sendSummery(prompt, url);
     }
   }
 
   async function sendSummery(prompt, url) {
-    // console.log(prompt, url);
+    if (!prompt || typeof prompt !== "string") {
+      console.error("Invalid prompt:", prompt);
+      return; // Exit early if the prompt is invalid
+    }
+
     const dataToSend = {
       prompt: prompt,
     };
+
     try {
       const postURL = "/api/generate";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.text;
       const htmlContent = generatedText;
 
-      const parsedJson = htmlContent;
+      const parsedJson = htmlContent; // Ensure this is the expected format
       setProcessing(false);
       sendDataVideo(url, parsedJson);
     } catch (error) {
-      console.log(error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
     }
   }
 

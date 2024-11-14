@@ -20,11 +20,12 @@ const Performance = () => {
 
   const fetchPerformance = async () => {
     try {
-      const response = await axiosInstance.get(`/api/top-candidates-admin`);
+      const response = await axiosInstance.get(`/api/top-candidates-user`);
       // Filter data based on uid
       const filteredData = response.data.data.filter(
         (item) => item.uid === userUID
       );
+      // console.log(filteredData);
 
       if (filteredData.length > 0) {
         setData({ success: true, data: filteredData });
@@ -58,13 +59,20 @@ const Performance = () => {
   const projectCount = data?.data[0]?.projectCount || 0;
   const courseCount = data?.data[0]?.courseCount || 0;
   const quizScoreAvg = data?.data[0]?.quizScoreAvg || 0;
-  const averageProgress = data?.data[0]?.averageProgress || 0;
+  const averageProgress = Math.floor(data?.data[0]?.averageProgress / 500) || 0;
+
+
+  // Ensure that values above the threshold are capped at 1 (meaning "done")
+  const cappedProjectCount = projectCount >= projectCountCriteria ? 1 : 0;
+  const cappedCourseCount = courseCount >= courseCountCriteria ? 1 : 0;
+  const cappedQuizScoreAvg = quizScoreAvg >= quizScoreAvgCriteria ? 1 : 0;
+  const cappedAverageProgress = averageProgress >= averageProgressCriteria ? 1 : 0;
 
   const totalCriteriaMet =
-    (projectCount >= projectCountCriteria ? 1 : 0) +
-    (courseCount >= courseCountCriteria ? 1 : 0) +
-    (quizScoreAvg >= quizScoreAvgCriteria ? 1 : 0) +
-    (averageProgress >= averageProgressCriteria ? 1 : 0);
+    cappedProjectCount +
+    cappedCourseCount +
+    cappedQuizScoreAvg +
+    cappedAverageProgress;
 
   const completionPercentage = (totalCriteriaMet / 4) * 100;
 
@@ -90,8 +98,6 @@ const Performance = () => {
             className="w-full mb-4 flex item-center justify-center"
             style={{ backgroundColor: "transparent" }}
           >
-            {" "}
-            {/* Transparent background */}
             <CardContent>
               <Box
                 display="flex justify-center"
@@ -139,7 +145,6 @@ const Performance = () => {
                         variant="caption"
                         component="div"
                         color="textSecondary"
-                        className=""
                       >
                         <p className="text-2xl text-white">{`${Math.round(
                           completionPercentage
@@ -206,9 +211,10 @@ const Performance = () => {
                       </Typography>
                       <LinearProgress
                         variant="determinate"
-                        value={
-                          (averageProgress / averageProgressCriteria) * 100
-                        }
+                        value={(
+                          (averageProgress / averageProgressCriteria) *
+                          100
+                        )}
                         style={{ width: "300px", height: "10px" }} // Set your desired height here
                       />
                     </Box>
