@@ -75,9 +75,11 @@ const Topics = () => {
       } catch (error) {
         console.error("Error parsing the generated text:", error);
         if (retryCount < MAX_RETRIES) {
+          showToast("Error while generating  content, retrying");
           // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           sendPrompt(prompt, promptImage, retryCount + 1);
         } else {
+          showToast("Error while generating  content,Max retries reached");
           console.error("Max retries reached. Failed to parse the response.");
         }
       }
