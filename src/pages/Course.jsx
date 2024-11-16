@@ -328,7 +328,7 @@ const Course = () => {
       const id = toast.loading("Please wait...");
 
       if (type === "video & text course") {
-        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+        sendVideo(query, selectedTopics, selectedSub, id, `${mSubTopic.title} related to ${mTopic.title}`);
       } else {
         const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
         const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
@@ -605,14 +605,14 @@ const Course = () => {
             const generatedText = res.data.url;
             const allText = generatedText.map((item) => item.text);
             const concatenatedText = allText.join(" ");
-            const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+            const prompt = `Summarize this theory in a teaching way, focusing on ${mTopic}: ${concatenatedText}.`;
             await sendSummery(prompt, url, mTopic, mSubTopic, id);
         } catch (error) {
             console.warn(
                 "Error processing transcript response, retrying with fallback...",
                 error
             );
-            const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+            const fallbackPrompt = `Explain the  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
             if (retries > 0) {
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 return sendTranscript(
@@ -633,7 +633,7 @@ const Course = () => {
             "Error fetching transcript, retrying with fallback...",
             error
         );
-        const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+        const fallbackPrompt = `Explain  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
         if (retries > 0) {
             await new Promise((resolve) => setTimeout(resolve, delay));
             return sendTranscript(
@@ -664,7 +664,7 @@ async function sendSummery(
   totalRetries = 0
 ) {
   const dataToSend = {
-      prompt: `Provide a summary in JavaScript context: ${prompt}`,
+      prompt: `Provide a summary in ${mTopic} context: ${prompt}`,
   };
 
   try {
