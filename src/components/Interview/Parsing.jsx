@@ -42,7 +42,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   // ----- Eligiblitity:START -------- //
   const fetchPerformance = async () => {
     try {
-      const response = await axiosInstance.get(`/api/top-candidates-admin`);
+      const response = await axiosInstance.get(`/api/top-candidates-user`);
       const filteredData = response.data.data.filter(
         (item) => item.uid === userUID
       );
@@ -96,7 +96,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
         <div className="bg-white text-black max-w-md p-5 rounded-lg shadow-lg flex flex-col items-center justify-center">
-          <h2 className="text-lg font-semibold text-red-600 text-xl">
+          <h2 className=" font-semibold text-red-600 text-xl">
             Eligibility Check
           </h2>
           <p className="mt-2 text-center">
