@@ -8,6 +8,7 @@ import {
   CardContent,
   Snackbar,
 } from "@mui/material";
+import { FaCheckCircle } from "react-icons/fa";
 import Header from "../components/header";
 import Footers from "../components/footers";
 import axiosInstance from "../axios";
@@ -21,21 +22,19 @@ const Performance = () => {
   const fetchPerformance = async () => {
     try {
       const response = await axiosInstance.get(`/api/top-candidates-user`);
-      // Filter data based on uid
       const filteredData = response.data.data.filter(
         (item) => item.uid === userUID
       );
-      // console.log(filteredData);
 
       if (filteredData.length > 0) {
         setData({ success: true, data: filteredData });
       } else {
-        setData({ success: false, data: [] }); // No data found for this UID
+        setData({ success: false, data: [] });
       }
 
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching projects:", error);
+      console.error("Error fetching data:", error);
       setLoading(false);
       setOpenSnackbar(true);
     }
@@ -55,26 +54,39 @@ const Performance = () => {
   const quizScoreAvgCriteria = 25;
   const averageProgressCriteria = 100;
 
-  // Use optional chaining and set default values to avoid TypeError
   const projectCount = data?.data[0]?.projectCount || 0;
   const courseCount = data?.data[0]?.courseCount || 0;
-  const quizScoreAvg = data?.data[0]?.quizScoreAvg || 0;
-  const averageProgress = Math.floor(data?.data[0]?.averageProgress / 500) || 0;
+  const quizScoreAvg = parseFloat(
+    (data?.data[0]?.quizScoreAvg || 0).toFixed(2)
+  );
+  const averageProgress = parseFloat(
+    (data?.data[0]?.averageProgress / 500 || 0).toFixed(2)
+  ) ;
 
+  // Ensure progress doesn't exceed 100% and calculate completion percentages
+  const projectCountCompletion = projectCount >= projectCountCriteria ? 100 : 0;
+  const courseCountCompletion = Math.min(
+    (courseCount / courseCountCriteria) * 100,
+    100
+  );
+  const quizScoreAvgCompletion = Math.min(
+    (quizScoreAvg / quizScoreAvgCriteria) * 100,
+    100
+  );
+  const averageProgressCompletion = Math.min(
+    (averageProgress / averageProgressCriteria) * 100,
+    100
+  );
 
-  // Ensure that values above the threshold are capped at 1 (meaning "done")
-  const cappedProjectCount = projectCount >= projectCountCriteria ? 1 : 0;
-  const cappedCourseCount = courseCount >= courseCountCriteria ? 1 : 0;
-  const cappedQuizScoreAvg = quizScoreAvg >= quizScoreAvgCriteria ? 1 : 0;
-  const cappedAverageProgress = averageProgress >= averageProgressCriteria ? 1 : 0;
+  // Calculate the total completion percentage
+  const totalCompletionPercentage =
+    (projectCountCompletion +
+      courseCountCompletion +
+      quizScoreAvgCompletion +
+      averageProgressCompletion) /
+    4;
 
-  const totalCriteriaMet =
-    cappedProjectCount +
-    cappedCourseCount +
-    cappedQuizScoreAvg +
-    cappedAverageProgress;
-
-  const completionPercentage = (totalCriteriaMet / 4) * 100;
+  const completionPercentage = totalCompletionPercentage.toFixed(2);
 
   return (
     <div className="h-screen flex flex-col overflow-x-hidden">
@@ -111,7 +123,7 @@ const Performance = () => {
                     <CircularProgress
                       variant="determinate"
                       value={100}
-                      size={220} // Increased size
+                      size={220}
                       thickness={6}
                       sx={{
                         color: "#e0e0e0",
@@ -121,14 +133,14 @@ const Performance = () => {
                     <CircularProgress
                       variant="determinate"
                       value={completionPercentage}
-                      size={220} // Increased size
+                      size={220}
                       thickness={6}
                       sx={{
-                        color: "#FFEA00", // Yellow color for progress
+                        color: "#FFEA00",
                         position: "absolute",
                         top: 0,
                         left: 0,
-                        filter: "drop-shadow(0 0 10px rgba(255, 234, 0, 0.8))", // Glowing effect
+                        filter: "drop-shadow(0 0 10px rgba(255, 234, 0, 0.8))",
                       }}
                     />
                     <Box
@@ -157,66 +169,97 @@ const Performance = () => {
                   <Box
                     display="flex"
                     flexDirection="column"
+                    alignItems="flex-start"
                     justifyContent="space-between"
                     width="100%"
+                    gap="8px"
                   >
-                    <Box>
+                    {/* Project Count */}
+                    <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
-                        className="mb-2 text-white"
+                        className="mb-1 text-white"
                       >
                         Project Count: {projectCount}
                       </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(projectCount / projectCountCriteria) * 100}
-                        style={{ width: "300px", height: "10px" }} // Set your desired height here
-                      />
+                      <Box display="flex" alignItems="center">
+                        <LinearProgress
+                          variant="determinate"
+                          value={projectCountCompletion}
+                          style={{ width: "300px", height: "10px" }}
+                        />
+                        {projectCountCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
+                      </Box>
                     </Box>
 
-                    <Box>
+                    {/* Course Count */}
+                    <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
-                        className="mb-2 text-white"
+                        className="mb-1 text-white"
                       >
                         Course Count: {courseCount}
                       </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(courseCount / courseCountCriteria) * 100}
-                        style={{ width: "300px", height: "10px" }} // Set your desired height here
-                      />
+                      <Box display="flex" alignItems="center">
+                        <LinearProgress
+                          variant="determinate"
+                          value={courseCountCompletion}
+                          style={{ width: "300px", height: "10px" }}
+                        />
+                        {courseCountCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
+                      </Box>
                     </Box>
 
-                    <Box>
+                    {/* Quiz Score Average */}
+                    <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
-                        className="mb-2 text-white"
+                        className="mb-1 text-white"
                       >
                         Quiz Score Average: {quizScoreAvg}
                       </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(quizScoreAvg / quizScoreAvgCriteria) * 100}
-                        style={{ width: "300px", height: "10px" }} // Set your desired height here
-                      />
+                      <Box display="flex" alignItems="center">
+                        <LinearProgress
+                          variant="determinate"
+                          value={quizScoreAvgCompletion}
+                          style={{ width: "300px", height: "10px" }}
+                        />
+                        {quizScoreAvgCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
+                      </Box>
                     </Box>
 
-                    <Box>
+                    {/* Average Progress */}
+                    <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
-                        className="mb-2 text-white"
+                        className="mb-1 text-white"
                       >
                         Average Progress: {averageProgress}
                       </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(
-                          (averageProgress / averageProgressCriteria) *
-                          100
+                      <Box display="flex" alignItems="center">
+                        <LinearProgress
+                          variant="determinate"
+                          value={averageProgressCompletion}
+                          style={{ width: "300px", height: "10px" }}
+                        />
+                        {averageProgressCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
                         )}
-                        style={{ width: "300px", height: "10px" }} // Set your desired height here
-                      />
+                      </Box>
                     </Box>
                   </Box>
                 </div>
@@ -224,37 +267,14 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
-        <Box className="mt-4">
-          {Math.round(completionPercentage) === 100 ? (
-            <Typography variant="h6" className="text-green-500 text-sm">
-              Eligible for the Test round!
-            </Typography>
-          ) : (
-            <Typography variant="h6" className="text-red-500 text-sm">
-              Not eligible for the Test round.{" "}
-              <span className="font-semibold">
-                Practice more and try again!
-              </span>
-            </Typography>
-          )}
-          <Typography variant="body1" className="mt-2 text-white/80 text-sm">
-            You need to meet the following criteria to be eligible for the test:
-          </Typography>
-          <ul className="list-disc list-inside text-white/70 mt-1 text-sm">
-            <li>Project Count: At least {projectCountCriteria} (Accepted)</li>
-            <li>Course Count: At least {courseCountCriteria} or more</li>
-            <li>Quiz Score Average: At least {quizScoreAvgCriteria} or more</li>
-            <li>Average Progress: 100</li>
-          </ul>
-        </Box>
       </div>
 
-      <Footers className="sticky bottom-0 z-50" />
+      <Footers />
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
-        message="Error fetching projects. Please try again later."
+        message="There was an issue fetching the data."
       />
     </div>
   );

@@ -98,6 +98,18 @@ const Course = () => {
     height: "250px",
     width: "100%",
   };
+  //toast config
+  const showToast = async (msg) => {
+    toast(msg, {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
 
   const finish = async () => {
     if (percentage === 100) {
@@ -324,11 +336,17 @@ const Course = () => {
     const { theory, youtube, image } = mSubTopic;
 
     if (!theory) {
-      const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      //const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
+      //const query = `"${mSubTopic.title}" tutorial and best practices as part of "${mTopic.title}" learning, examples included, in English`;
+      //const query = `"${mSubTopic.title}" detailed tutorial with step-by-step guidance, best practices, and real-world examples for learning "${mTopic.title}" in English`;
+      const query = `Detailed video on "${mSubTopic.title}" as part of learning "${mTopic.title}" in English - tutorial, best practices, examples`;
       const id = toast.loading("Please wait...");
 
       if (type === "video & text course") {
+
+        console.log(query);
         sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+
       } else {
         const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
         const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
@@ -366,7 +384,7 @@ const Course = () => {
         const parsedJson = htmlContent;
         await sendImage(parsedJson, promptImage, topics, sub, id);
       } catch (error) {
-        console.warn("Error in sendImage, retrying...", error);
+        console.warn("Error in sendImage, retrying...",error);
         if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           return sendPrompt(
@@ -386,7 +404,7 @@ const Course = () => {
           throw error;
         }
       }
-    } catch (error) {
+    } catch(error) {
       console.warn("Error in sendPrompt, retrying...", error);
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -429,6 +447,7 @@ const Course = () => {
       await sendData(generatedText, parsedJson, topics, sub, id);
     } catch (error) {
       if (retries > 0) {
+        showToast("Error while generating  image , retrying");
         console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
         await new Promise((resolve) => setTimeout(resolve, delay)); // Wait before retrying
         return sendImage(
@@ -561,28 +580,21 @@ const Course = () => {
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.url;
 
-      //sending the transcript
-      await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
-    } catch (error) {
-      if (retries > 0) {
-        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
-        await new Promise((resolve) => setTimeout(resolve, delay)); // Waiting before retrying
-        return sendVideo(
-          query,
-          mTopic,
-          mSubTopic,
-          id,
-          subtop,
-          retries - 1,
-          delay * 2
-        ); // Exponential backoff
-      } else {
-        console.error("Failed to send video after multiple attempts:", error);
-        toast.error("Failed to generate video"); // toast erorr in video
-        throw error; // If retries are over then throw the error
-      }
+    //sending the transcript
+    await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
+  
+  } catch (error) {
+    if (retries > 0) {
+      console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, delay)); // Waiting before retrying
+      return sendVideo(query, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2); // Exponential backoff
+    } else {
+      console.error('Failed to send video after multiple attempts:', error);
+      toast.error('Failed to generate video'); // toast erorr in video
+      throw error; // If retries are over then throw the error
     }
   }
+}
 
   async function sendTranscript(
     url,
@@ -605,14 +617,22 @@ const Course = () => {
             const generatedText = res.data.url;
             const allText = generatedText.map((item) => item.text);
             const concatenatedText = allText.join(" ");
-            const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+
+            // const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+            const prompt = `Summarize this theory in a teaching way, focusing on : ${concatenatedText}.`;
+            console.log(prompt);
+
             await sendSummery(prompt, url, mTopic, mSubTopic, id);
         } catch (error) {
             console.warn(
                 "Error processing transcript response, retrying with fallback...",
                 error
             );
-            const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+            const fallbackPrompt = `Explain the  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
+            console.log(fallbackPrompt);
+            //const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
             if (retries > 0) {
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 return sendTranscript(
@@ -633,7 +653,11 @@ const Course = () => {
             "Error fetching transcript, retrying with fallback...",
             error
         );
-        const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
+        const fallbackPrompt = `Explain the subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+        console.log(fallbackPrompt);
+        // const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
         if (retries > 0) {
             await new Promise((resolve) => setTimeout(resolve, delay));
             return sendTranscript(
@@ -664,7 +688,10 @@ async function sendSummery(
   totalRetries = 0
 ) {
   const dataToSend = {
-      prompt: `Provide a summary in JavaScript context: ${prompt}`,
+
+      // prompt: `Provide a summary in JavaScript context: ${prompt}`,
+      prompt: `Provide a summary in context: ${prompt}`,
+
   };
 
   try {

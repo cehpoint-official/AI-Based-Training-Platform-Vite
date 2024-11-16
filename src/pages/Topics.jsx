@@ -46,7 +46,7 @@ const Topics = () => {
     if (type === "video & text course") {
       const query = `Watch tutorials on ${firstSubtopic.title} related to ${mainTopic} in English. Learn the best practices and insights!`;
 
-      sendVideo(query, `${firstSubtopic.title} related to ${mainTopic}`);
+      sendVideo(`tutorials on ${firstSubtopic.title} related to ${mainTopic} in English.`, `${firstSubtopic.title} related to ${mainTopic}`);
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
@@ -75,9 +75,11 @@ const Topics = () => {
       } catch (error) {
         console.error("Error parsing the generated text:", error);
         if (retryCount < MAX_RETRIES) {
+          showToast("Error while generating  content, retrying");
           // console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           sendPrompt(prompt, promptImage, retryCount + 1);
         } else {
+          showToast("Error while generating  content,Max retries reached");
           console.error("Max retries reached. Failed to parse the response.");
         }
       }
