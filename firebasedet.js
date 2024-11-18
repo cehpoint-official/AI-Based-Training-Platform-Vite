@@ -3,9 +3,11 @@ import { doc, setDoc } from 'firebase/firestore';
 import { storage, db } from './firebaseConfig'; // Ensure correct import path
 
 // Upload video recording to Firebase Storage
+
 export const uploadRecording = async (userName, videoBlob, type, userId) => {
   const fileName = `${userName}${type}.webm`;
   const storageRef = ref(storage, `recordings/${fileName}`); // Use storage instead of db
+  console.log('type : ',type);
 
   try {
     // Upload the recording to Firebase
@@ -50,3 +52,4 @@ export const uploadResumeData = async (userName, userEmail, parsedData) => {
     throw error; // Optionally rethrow to handle higher up
   }
 };
+

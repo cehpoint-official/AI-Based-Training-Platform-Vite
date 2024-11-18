@@ -94,7 +94,7 @@ const TestPage = () => {
     }
     return () => {
       if (isRecording) {
-        stopRecording(userName, userEmail, userUID);
+        stopRecording(userName,userUID);
         setIsRecording(false);
       }
     };
@@ -142,7 +142,7 @@ const TestPage = () => {
   const handleSubmitTest = async () => {
     setIsSubmitting(true);
     try {
-      await stopRecording(userName, userEmail, userUID);
+      await stopRecording(userName,userUID);
       await saveTestReportToFirebase({ questions, timePerQuestion, textAnswers }, userName || "Unknown", userEmail, userUID);
       navigate(`/${userUID}/expectation`);
     } catch (error) {

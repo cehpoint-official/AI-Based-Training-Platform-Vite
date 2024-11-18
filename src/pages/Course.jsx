@@ -26,7 +26,15 @@ const Course = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [key, setkey] = useState("");
   const { state } = useLocation();
-  const { mainTopic, type, courseId, end } = state || {};
+  const {
+    mainTopic,
+    type,
+    courseId,
+    end,
+    useUserApiKey,
+    apiKey,
+    userunsplashkey,
+  } = state || {};
   const jsonData = JSON.parse(sessionStorage.getItem("jsonData"));
   const storedTheme = sessionStorage.getItem("darkMode");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -44,6 +52,13 @@ const Course = () => {
   const [quizAvailable, setQuizAvailable] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
+
+  const [mtopicex, setMtopicex] = useState("");
+  const [msubtopicex, setSubMtopicex] = useState("");
+  const [idex, setidex] = useState("");
+  const [urlex, seturlex] = useState("");
+  const [aiExplanation, setAiExplanation] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOnClose = () => setIsOpenDrawer(false);
 
@@ -307,6 +322,7 @@ const Course = () => {
       firstSubtopic.done = true;
       setSelected(firstSubtopic.title);
       setTheory(firstSubtopic.theory);
+      setAiExplanation(firstSubtopic.aiExplanation)
 
       if (type === "video & text course") {
         setMedia(firstSubtopic.youtube);
@@ -322,43 +338,56 @@ const Course = () => {
   const handleSelect = (selectedTopics, selectedSub) => {
     const topicKey = mainTopic.toLowerCase();
     const mTopic = jsonData[topicKey]?.find(
-      (topic) => topic.title === selectedTopics
+        (topic) => topic.title === selectedTopics
     );
     const mSubTopic = mTopic?.subtopics.find(
-      (subtopic) => subtopic.title === selectedSub
+        (subtopic) => subtopic.title === selectedSub
     );
 
     if (!mSubTopic) {
-      toast.error("Subtopic not found.");
-      return;
+        toast.error("Subtopic not found.");
+        return;
     }
 
-    const { theory, youtube, image } = mSubTopic;
+    const { theory, youtube, image, aiExplanation } = mSubTopic;
 
+    // If theory is not present, we need to generate it
     if (!theory) {
-      //const query = `Watch tutorials on ${mSubTopic.title} related to ${mTopic.title} in English. Learn the best practices and insights!`;
-      //const query = `"${mSubTopic.title}" tutorial and best practices as part of "${mTopic.title}" learning, examples included, in English`;
-      //const query = `"${mSubTopic.title}" detailed tutorial with step-by-step guidance, best practices, and real-world examples for learning "${mTopic.title}" in English`;
-      const query = `Detailed video on "${mSubTopic.title}" as part of learning "${mTopic.title}" in English - tutorial, best practices, examples`;
-      const id = toast.loading("Please wait...");
+        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations.`;
+        const id = toast.loading("Please wait...");
 
-      if (type === "video & text course") {
+        if (type === "video & text course") {
+            // console.log(query);
+            // INITIALIZING AI GENERATED TEXTS
+            setMtopicex(mTopic.title);
+            setSubMtopicex(mSubTopic.title);
+            setidex(id);
+            seturlex(query);
 
-        console.log(query);
-        sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
-
-      } else {
-        const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
-        const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
-        sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
-      }
-      return;
+            sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
+        } else {
+            const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
+            const promptImage = `Example of ${mSubTopic.title} in ${mTopic.title}`;
+            sendPrompt(prompt, promptImage, selectedTopics, selectedSub, id);
+        }
+        return; // Exit the function early since we are generating content
     }
 
+    // If theory exists, we set the relevant states
     setSelected(mSubTopic.title);
     setTheory(theory);
     setMedia(type === "video & text course" ? youtube : image);
-  };
+
+    // Set the AI explanation only if it exists
+     if (aiExplanation) {
+        // Introduce a delay of 1 second (1000 milliseconds)
+        setTimeout(() => {
+            setAiExplanation(aiExplanation);
+        }, 1000); // Adjust the delay as needed
+    } else {
+        setAiExplanation(""); // Optionally clear the explanation if it doesn't exist
+    }
+};
 
   async function sendPrompt(
     prompt,
@@ -384,7 +413,7 @@ const Course = () => {
         const parsedJson = htmlContent;
         await sendImage(parsedJson, promptImage, topics, sub, id);
       } catch (error) {
-        console.warn("Error in sendImage, retrying...",error);
+        // console.warn("Error in sendImage, retrying...", error);
         if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           return sendPrompt(
@@ -397,15 +426,15 @@ const Course = () => {
             delay * 2
           );
         } else {
-          console.error(
-            "Failed to send prompt after multiple attempts:",
-            error
-          );
+          // console.error(
+          //   "Failed to send prompt after multiple attempts:",
+          //   error
+          // );
           throw error;
         }
       }
-    } catch(error) {
-      console.warn("Error in sendPrompt, retrying...", error);
+    } catch (error) {
+      // console.warn("Error in sendPrompt, retrying...", error);
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
         return sendPrompt(
@@ -418,7 +447,7 @@ const Course = () => {
           delay * 2
         );
       } else {
-        console.error("Failed to send prompt after multiple attempts:", error);
+        // console.error("Failed to send prompt after multiple attempts:", error);
 
         throw error;
       }
@@ -448,7 +477,7 @@ const Course = () => {
     } catch (error) {
       if (retries > 0) {
         showToast("Error while generating  image , retrying");
-        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        // console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
         await new Promise((resolve) => setTimeout(resolve, delay)); // Wait before retrying
         return sendImage(
           parsedJson,
@@ -460,7 +489,7 @@ const Course = () => {
           delay * 2
         );
       } else {
-        console.error("Failed to send image after multiple attempts:", error);
+        // console.error("Failed to send image after multiple attempts:", error);
         toast.error("Failed to generate image"); // Toast Failed to generate image
         throw error; // If retries are over then throw the error
       }
@@ -516,6 +545,9 @@ const Course = () => {
       closeOnClick: true,
     });
     setTheory(theory);
+    // console.log("AII")
+    // console.log(mSubTopic.aiExplanation)
+    // setAiExplanation(mSubTopic.aiExplanation)
     if (type === "video & text course") {
       setMedia(image);
     } else {
@@ -579,22 +611,36 @@ const Course = () => {
       const postURL = "/api/yt";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.url;
-
-    //sending the transcript
-    await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
-  
-  } catch (error) {
-    if (retries > 0) {
-      console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
-      await new Promise(resolve => setTimeout(resolve, delay)); // Waiting before retrying
-      return sendVideo(query, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2); // Exponential backoff
-    } else {
-      console.error('Failed to send video after multiple attempts:', error);
-      toast.error('Failed to generate video'); // toast erorr in video
-      throw error; // If retries are over then throw the error
+      // console.log("URL -> ", generatedText)
+      //sending the transcript
+      await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
+      // await handleAIGeneratedExplanation(
+      //   generatedText,
+      //   mTopic,
+      //   mSubTopic,
+      //   id,
+      //   subtop
+      // );
+    } catch (error) {
+      if (retries > 0) {
+        // console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        await new Promise((resolve) => setTimeout(resolve, delay)); // Waiting before retrying
+        return sendVideo(
+          query,
+          mTopic,
+          mSubTopic,
+          id,
+          subtop,
+          retries - 1,
+          delay * 2
+        ); // Exponential backoff
+      } else {
+        console.error("Failed to send video after multiple attempts:", error);
+        toast.error("Failed to generate video"); // toast erorr in video
+        throw error; // If retries are over then throw the error
+      }
     }
   }
-}
 
   async function sendTranscript(
     url,
@@ -604,144 +650,171 @@ const Course = () => {
     subtop,
     retries = 3,
     delay = 800
-) {
+  ) {
     const dataToSend = {
-        prompt: url,
+      prompt: url,
     };
     try {
-        const postURL = "/api/transcript";
-        const res = await axiosInstance.post(postURL, dataToSend);
-
-        // Process the response data
-        try {
-            const generatedText = res.data.url;
-            const allText = generatedText.map((item) => item.text);
-            const concatenatedText = allText.join(" ");
-
-            // const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
-            const prompt = `Summarize this theory in a teaching way, focusing on : ${concatenatedText}.`;
-            console.log(prompt);
-
-            await sendSummery(prompt, url, mTopic, mSubTopic, id);
-        } catch (error) {
-            console.warn(
-                "Error processing transcript response, retrying with fallback...",
-                error
-            );
-            const fallbackPrompt = `Explain the  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
-            console.log(fallbackPrompt);
-            //const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
-            if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                return sendTranscript(
-                    url,
-                    mTopic,
-                    mSubTopic,
-                    id,
-                    subtop,
-                    retries - 1,
-                    delay * 2
-                );
-            } else {
-                await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
-            }
-        }
-    } catch (error) {
-        console.warn(
-            "Error fetching transcript, retrying with fallback...",
-            error
-        );
-
-        const fallbackPrompt = `Explain the subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-        console.log(fallbackPrompt);
-        // const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
-        if (retries > 0) {
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            return sendTranscript(
-                url,
-                mTopic,
-                mSubTopic,
-                id,
-                subtop,
-                retries - 1,
-                delay * 2
-            );
-        } else {
-            toast.dismiss(id);
-            toast.error("Error in generating subtopic");
-            await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
-        }
-    }
-}
-
-async function sendSummery(
-  prompt,
-  url,
-  mTopic,
-  mSubTopic,
-  id,
-  retries = 3,
-  delay = 1000,
-  totalRetries = 0
-) {
-  const dataToSend = {
-
-      // prompt: `Provide a summary in JavaScript context: ${prompt}`,
-      prompt: `Provide a summary in context: ${prompt}`,
-
-  };
-
-  try {
-      const postURL = "/api/generate";
+      const postURL = "/api/transcript";
       const res = await axiosInstance.post(postURL, dataToSend);
 
-      // Process the generated summary text
+      // Process the response data
       try {
-          const generatedText = res.data.text;
-          const htmlContent = generatedText;
-          const parsedJson = htmlContent;
+        const generatedText = res.data.url;
+        const allText = generatedText.map((item) => item.text);
+        const concatenatedText = allText.join(" ");
 
-          await sendDataVideo(url, parsedJson, mTopic, mSubTopic, id);
+
+        // const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+        const prompt = `Summarize this theory in a teaching way, focusing on : ${concatenatedText}.`;
+        // console.log(prompt);
+
+
+        await sendSummery(prompt, url, mTopic, mSubTopic, id);
       } catch (error) {
-          console.warn("Error processing summary response, retrying...", error);
-          if (retries > 0) {
-              await new Promise((resolve) => setTimeout(resolve, delay));
-              return sendSummery(
-                  prompt,
-                  url,
-                  mTopic,
-                  mSubTopic,
-                  id,
-                  retries - 1,
-                  delay * 2,
-                  totalRetries + 1 // Increment total retries
-              );
-          } else {
-              throw new Error("Failed to process summary after multiple retries.");
-          }
+        console.warn(
+          "Error processing transcript response, retrying with fallback...",
+          error
+        );
+        const fallbackPrompt = `Explain the  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
+        // console.log(fallbackPrompt);
+        //const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
+        if (retries > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return sendTranscript(
+            url,
+            mTopic,
+            mSubTopic,
+            id,
+            subtop,
+            retries - 1,
+            delay * 2
+          );
+        } else {
+          await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
+        }
       }
-  } catch (error) {
-      console.warn("Error fetching summary, retrying...", error);
+    } catch (error) {
+      console.warn(
+        "Error fetching transcript, retrying with fallback...",
+        error
+      );
+
+      const fallbackPrompt = `Explain the subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+      // console.log(fallbackPrompt);
+      // const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+
       if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return sendTranscript(
+          url,
+          mTopic,
+          mSubTopic,
+          id,
+          subtop,
+          retries - 1,
+          delay * 2
+        );
+      } else {
+        toast.dismiss(id);
+        toast.error("Error in generating subtopic");
+        await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
+      }
+    }
+  }
+
+  async function sendSummery(
+    prompt,
+    url,
+    mTopic,
+    mSubTopic,
+    id,
+    retries = 3,
+    delay = 1000,
+    totalRetries = 0,
+    chunkSize = 1000,
+    overlap = 200
+  ) {
+    // Function to break prompt into smaller chunks with overlap
+    function chunkPrompt(text) {
+      const chunks = [];
+      for (let i = 0; i < text.length; i += chunkSize - overlap) {
+        chunks.push(text.slice(i, i + chunkSize));
+      }
+      return chunks;
+    }
+
+    const chunks = chunkPrompt(prompt);
+    const summaries = [];
+
+    for (const chunk of chunks) {
+      const dataToSend = {
+        prompt: `Provide a summary in context: ${chunk}`,
+      };
+
+      try {
+        const postURL = "/api/generate";
+        const res = await axiosInstance.post(postURL, dataToSend);
+        const generatedText = res.data.text;
+        summaries.push(generatedText);
+      } catch (error) {
+        console.warn("Error fetching summary for chunk, retrying...", error);
+        if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           return sendSummery(
-prompt,
-              url,
-              mTopic,
-              mSubTopic,
-              id,
-              retries - 1,
-              delay * 2,
-              totalRetries + 1 // Increment total retries
+            chunk,
+            url,
+            mTopic,
+            mSubTopic,
+            id,
+            retries - 1,
+            delay * 2,
+            totalRetries + 1,
+            chunkSize,
+            overlap
           );
-      } else {
-          throw new Error("Failed to generate summary after multiple retries.");
+        } else {
+          throw new Error(
+            "Failed to generate summary for chunk after multiple retries."
+          );
+        }
       }
+    }
+
+    // Combine the summaries into a final summary
+    const finalSummary = summaries.join(" ");
+
+    // Process the final summary
+    try {
+      await sendDataVideo(url, finalSummary, mTopic, mSubTopic, id);
+    } catch (error) {
+      console.warn(
+        "Error processing final summary response, retrying...",
+        error
+      );
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return sendSummery(
+          prompt,
+          url,
+          mTopic,
+          mSubTopic,
+          id,
+          retries - 1,
+          delay * 2,
+          totalRetries + 1,
+          chunkSize,
+          overlap
+        );
+      } else {
+        throw new Error(
+          "Failed to process final summary after multiple retries."
+        );
+      }
+    }
   }
-}
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -877,6 +950,10 @@ prompt,
                           key={subtopic.title}
                           onClick={() => {
                             handleSelect(topic.title, subtopic.title);
+
+                            setMtopicex(topic.title);
+                            setSubMtopicex(subtopic.title);
+
                             setShowQuiz(false);
                             setShowProjects(false);
                           }}
@@ -974,6 +1051,51 @@ prompt,
       );
     }
   };
+
+  // useEffect(() => {
+  //   console.log(mtopicex, msubtopicex, mainTopic)
+  //   console.log(jsonData)
+  // }, [mtopicex, msubtopicex, mainTopic, jsonData])
+  
+
+  const handleAIGeneratedExplanation = async () => {
+    setIsLoading(true);
+    const dataToSend = {
+      prompt: `Provide a detailed explanation of the subtopic "${msubtopicex}" under its parent topic "${mtopicex}" and the main title is "${mainTopic}". Format the explanation as valid HTML with headings, paragraphs, and code blocks where necessary. Include examples, avoid additional resources or images, and focus on clarity and simplicity for learners.`,
+      useUserApiKey: useUserApiKey,
+      apiKey: apiKey,
+    };    
+
+    try {
+      const response = await axiosInstance.post("/api/aiGeneratedExplanation", dataToSend);
+
+      if (response.data.success) {
+          const explanation = response.data.explanation;
+
+          // console.log(explanation)
+
+          setAiExplanation(explanation)
+
+          // Assuming jsonData is already structured and contains subtopics
+          const topicKey = mainTopic.toLowerCase();
+          const mTopic = jsonData[topicKey]?.find(topic => topic.title === mtopicex);
+          const mSubTopic = mTopic?.subtopics.find(subtopic => subtopic.title === msubtopicex);
+
+          if (mSubTopic) {
+              mSubTopic.aiExplanation = explanation; // Dynamically add the explanation to the existing subtopic
+          }
+
+          // Persist the updated jsonData back to the database
+          await updateCourse(); // Ensure this function sends the updated jsonData
+      } else {
+          console.log("Error generating explanation:", response.data.message);
+      }
+  } catch (error) {
+      console.error("Request failed:", error);
+  } finally {
+      setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     if (isComplete) {
@@ -1133,11 +1255,12 @@ prompt,
                               allowFullScreen
                             ></iframe>
                           </div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
+                          {/* <button>AI Generated Text</button> */}
                         </div>
                       ) : (
                         <div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
                           <img
                             className="overflow-hidden p-10"
                             src={media}
@@ -1233,11 +1356,13 @@ prompt,
                             ></iframe>
                           </div>
 
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
+
+                          
                         </div>
                       ) : (
                         <div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
                           <img
                             className="overflow-hidden p-10"
                             src={media}

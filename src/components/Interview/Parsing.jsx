@@ -50,23 +50,28 @@ const ResumeUpload = ({ onUploadComplete }) => {
       if (filteredData.length > 0) {
         const performanceData = filteredData[0];
 
+       try {
         const criteriaMet =
           performanceData.projectCount >= projectCountCriteria &&
           performanceData.courseCount >= courseCountCriteria &&
           performanceData.quizScoreAvg >= quizScoreAvgCriteria &&
           performanceData.averageProgress >= averageProgressCriteria;
+       } catch (error) {
+        console.log("Error in fetching the details :",err);
+       } 
 
-        setMeetsCriteria(criteriaMet);
+        setMeetsCriteria(!!criteriaMet);
+       // console.log('setMeetsCriteria', !!criteriaMet);
 
         // Show eligibility popup if criteria not met
         if (!criteriaMet) {
           setShowEligibilityPopup(true);
         }
-
-        console.log(criteriaMet);
+        console.log('criteriaMet',criteriaMet);
       } else {
         setMeetsCriteria(false);
-        console.log(false);
+        setShowEligibilityPopup(true);
+      console.log('No performance data for user:', userUID);
       }
 
       setLoading(false);
@@ -85,6 +90,10 @@ const ResumeUpload = ({ onUploadComplete }) => {
       console.error("User ID not found in session storage.");
       setLoading(false);
     }
+    console.log("meetsCriteria :",meetsCriteria);
+    console.log("selectedFile :",selectedFile);
+    console.log("isParsing :",isParsing);
+    console.log("showEligibilityPopup: :",showEligibilityPopup);
   }, [userUID]);
 
   const projectCountCriteria = 1;
@@ -96,7 +105,9 @@ const ResumeUpload = ({ onUploadComplete }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
         <div className="bg-white text-black max-w-md p-5 rounded-lg shadow-lg flex flex-col items-center justify-center">
-          <h2 className=" font-semibold text-red-600 text-xl">
+
+          <h2 className="font-semibold text-red-600 text-xl">
+
             Eligibility Check
           </h2>
           <p className="mt-2 text-center">
@@ -104,18 +115,18 @@ const ResumeUpload = ({ onUploadComplete }) => {
             your performance first.
           </p>
           <div className="w-full flex items-center justify-center gap-x-6 mt-5">
-            <a
-              href={`${import.meta.env.VITE_ORIGINAL_SITE}/home`}
+            <button
+              onClick={() => navigate("/home")}
               className="px-4 py-2 border border-red-600 text-red-600 rounded hover:bg-gray-100 transition duration-200"
             >
               Go to Home
-            </a>
-            <a
-              href={`${import.meta.env.VITE_ORIGINAL_SITE}/performance`}
+            </button>
+            <button
+              onClick={() => navigate("/performance")}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition duration-200"
             >
               Performance
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -631,12 +642,12 @@ const ResumeUpload = ({ onUploadComplete }) => {
             <button
               onClick={handleResumeUpload}
               className={`inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                isUploading || isParsing || !meetsCriteria
+                isUploading || isParsing ||!meetsCriteria
                   ? "bg-indigo-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
+                  : "bg-indigo-700 hover:bg-indigo-800"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               disabled={
-                isUploading || isParsing || !selectedFile  || !meetsCriteria
+                isUploading || isParsing || !selectedFile || !meetsCriteria
                
               }
             >
