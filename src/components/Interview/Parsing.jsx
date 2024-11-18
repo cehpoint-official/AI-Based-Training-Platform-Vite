@@ -42,7 +42,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   // ----- Eligiblitity:START -------- //
   const fetchPerformance = async () => {
     try {
-      const response = await axiosInstance.get(`/api/top-candidates-admin`);
+      const response = await axiosInstance.get(`/api/top-candidates-user`);
       const filteredData = response.data.data.filter(
         (item) => item.uid === userUID
       );
@@ -105,7 +105,9 @@ const ResumeUpload = ({ onUploadComplete }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
         <div className="bg-white text-black max-w-md p-5 rounded-lg shadow-lg flex flex-col items-center justify-center">
+
           <h2 className="font-semibold text-red-600 text-xl">
+
             Eligibility Check
           </h2>
           <p className="mt-2 text-center">
@@ -113,18 +115,18 @@ const ResumeUpload = ({ onUploadComplete }) => {
             your performance first.
           </p>
           <div className="w-full flex items-center justify-center gap-x-6 mt-5">
-            <a
-              href={`${import.meta.env.VITE_ORIGINAL_SITE}/home`}
+            <button
+              onClick={() => navigate("/home")}
               className="px-4 py-2 border border-red-600 text-red-600 rounded hover:bg-gray-100 transition duration-200"
             >
               Go to Home
-            </a>
-            <a
-              href={`${import.meta.env.VITE_ORIGINAL_SITE}/performance`}
+            </button>
+            <button
+              onClick={() => navigate("/performance")}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition duration-200"
             >
               Performance
-            </a>
+            </button>
           </div>
         </div>
       </div>

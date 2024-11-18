@@ -127,7 +127,7 @@ const UserCourses = ({ userId }) => {
                     >
                       Continue
                     </button>
-                    {course.completed ? (
+                    {/* {course.completed ? (
                       <button
                         onClick={() =>
                           handleCertificate(course.mainTopic, course.end)
@@ -138,7 +138,7 @@ const UserCourses = ({ userId }) => {
                       </button>
                     ) : (
                       <></>
-                    )}
+                    )} */}
                   </div>
                 </Card>
               ))}
