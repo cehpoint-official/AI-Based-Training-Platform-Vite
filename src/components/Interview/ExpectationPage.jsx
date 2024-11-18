@@ -298,7 +298,7 @@ const ExpectationPage = () => {
             type="text"
             name="learningOpportunities"
             id="learningOpportunities"
-            placeholder="e.g., Courses, conferences"
+            placeholder="e.g., Senior Developer, Corporate Training, AI based training"
             className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-100 transition-colors duration-300"
             value={expectations.learningOpportunities}
             onChange={handleInputChange}

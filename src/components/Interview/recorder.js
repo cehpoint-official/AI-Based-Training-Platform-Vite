@@ -83,7 +83,7 @@ export const startRecording = async () => {
 };
 
 // Stop recording and upload the video
-export const stopRecording = async (userName) => {
+export const stopRecording = async (userName,userId) => {
   try {
     console.log('Stopping recordings...');
 
@@ -103,7 +103,7 @@ export const stopRecording = async (userName) => {
     // Upload camera recording
     if (cameraChunks.length > 0) {
       const cameraBlob = new Blob(cameraChunks, { type: 'video/webm' });
-      await uploadRecording(userName, cameraBlob, 'camera');
+      await uploadRecording(userName, cameraBlob, 'camera',userId);
       cameraChunks = [];
       console.log('Camera recording uploaded.');
     }
@@ -111,7 +111,7 @@ export const stopRecording = async (userName) => {
     // Upload screen recording (if available)
     if (screenChunks.length > 0) {
       const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
-      await uploadRecording(userName, screenBlob, 'screen');
+      await uploadRecording(userName, screenBlob, 'screen',userId);
       screenChunks = [];
       console.log('Screen recording uploaded.');
     }
