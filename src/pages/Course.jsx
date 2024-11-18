@@ -353,7 +353,7 @@ const Course = () => {
 
     // If theory is not present, we need to generate it
     if (!theory) {
-        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English`;
+        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations.`;
         const id = toast.loading("Please wait...");
 
         if (type === "video & text course") {
@@ -413,7 +413,7 @@ const Course = () => {
         const parsedJson = htmlContent;
         await sendImage(parsedJson, promptImage, topics, sub, id);
       } catch (error) {
-        console.warn("Error in sendImage, retrying...", error);
+        // console.warn("Error in sendImage, retrying...", error);
         if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           return sendPrompt(
@@ -426,15 +426,15 @@ const Course = () => {
             delay * 2
           );
         } else {
-          console.error(
-            "Failed to send prompt after multiple attempts:",
-            error
-          );
+          // console.error(
+          //   "Failed to send prompt after multiple attempts:",
+          //   error
+          // );
           throw error;
         }
       }
     } catch (error) {
-      console.warn("Error in sendPrompt, retrying...", error);
+      // console.warn("Error in sendPrompt, retrying...", error);
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
         return sendPrompt(
@@ -447,7 +447,7 @@ const Course = () => {
           delay * 2
         );
       } else {
-        console.error("Failed to send prompt after multiple attempts:", error);
+        // console.error("Failed to send prompt after multiple attempts:", error);
 
         throw error;
       }
@@ -477,7 +477,7 @@ const Course = () => {
     } catch (error) {
       if (retries > 0) {
         showToast("Error while generating  image , retrying");
-        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        // console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
         await new Promise((resolve) => setTimeout(resolve, delay)); // Wait before retrying
         return sendImage(
           parsedJson,
@@ -489,7 +489,7 @@ const Course = () => {
           delay * 2
         );
       } else {
-        console.error("Failed to send image after multiple attempts:", error);
+        // console.error("Failed to send image after multiple attempts:", error);
         toast.error("Failed to generate image"); // Toast Failed to generate image
         throw error; // If retries are over then throw the error
       }
@@ -611,7 +611,7 @@ const Course = () => {
       const postURL = "/api/yt";
       const res = await axiosInstance.post(postURL, dataToSend);
       const generatedText = res.data.url;
-
+      // console.log("URL -> ", generatedText)
       //sending the transcript
       await sendTranscript(generatedText, mTopic, mSubTopic, id, subtop);
       // await handleAIGeneratedExplanation(
@@ -623,7 +623,7 @@ const Course = () => {
       // );
     } catch (error) {
       if (retries > 0) {
-        console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
+        // console.warn(`Retrying in ${delay}ms... (${retries} attempts left)`);
         await new Promise((resolve) => setTimeout(resolve, delay)); // Waiting before retrying
         return sendVideo(
           query,
@@ -1255,12 +1255,12 @@ const Course = () => {
                               allowFullScreen
                             ></iframe>
                           </div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
                           {/* <button>AI Generated Text</button> */}
                         </div>
                       ) : (
                         <div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
                           <img
                             className="overflow-hidden p-10"
                             src={media}
@@ -1362,7 +1362,7 @@ const Course = () => {
                         </div>
                       ) : (
                         <div>
-                          <StyledText text={theory} />
+                          <StyledText text={theory} aiExplanation={aiExplanation} handleAIGeneratedExplanation={handleAIGeneratedExplanation} isLoading={isLoading} type={type} />
                           <img
                             className="overflow-hidden p-10"
                             src={media}
