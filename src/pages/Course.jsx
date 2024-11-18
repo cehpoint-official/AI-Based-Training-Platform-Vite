@@ -664,9 +664,11 @@ const Course = () => {
         const allText = generatedText.map((item) => item.text);
         const concatenatedText = allText.join(" ");
 
+
         // const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
         const prompt = `Summarize this theory in a teaching way, focusing on : ${concatenatedText}.`;
         // console.log(prompt);
+
 
         await sendSummery(prompt, url, mTopic, mSubTopic, id);
       } catch (error) {
