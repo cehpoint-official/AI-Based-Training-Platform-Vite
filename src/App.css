@@ -13,6 +13,26 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Responsive styles for Prism code blocks */
+.responsive-code-block {
+  overflow-x: auto; /* Allow horizontal scrolling for long code lines */
+  padding: 1rem; /* Add some padding */
+  background-color: #2d2d2d; /* Match Prism dark theme */
+  border-radius: 8px; /* Rounded corners */
+  margin: 1rem 0; /* Spacing between blocks */
+  width: 100%; /* Ensure the block uses full width */
+}
+
+.responsive-code-block pre {
+  margin: 0;
+  white-space: pre-wrap; /* Allow wrapping for better responsiveness */
+  word-wrap: break-word; /* Break long words */
+  width: 100%;
+}
+
+
+
 .cerUserName {
   font-family: "Pinyon Script", Updock, cursive;
 }
