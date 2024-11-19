@@ -98,20 +98,23 @@ const SignUp = () => {
         apiKey: firebaseApiKey, // Use environment variable
         unsplashApiKey:unsplashApiKey,  // Use environment variable
       });
-      console.log()
+      //console.log()
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
         sessionStorage.setItem("mName", mName);
         sessionStorage.setItem("auth", true);
         sessionStorage.setItem("uid", uid);
+        sessionStorage.setItem("id", response.data._id);
         sessionStorage.setItem("type", "free");
         sessionStorage.setItem("apiKey", firebaseApiKey); // Store API key
         sessionStorage.setItem("uapiKey", unsplashApiKey); // Store API key
         sessionStorage.setItem("userapikey1", null); // Store user API key
-        sessionStorage.setItem("userapikey1", null); // Store user API key
+        sessionStorage.setItem("userapikey2", null); // Store user API key
+        sessionStorage.setItem("verified",false);//otp verification status
         await sendEmail(email, mName);
-        redirectHome();
+        navigate("/verify")
+        //redirectHome();
       } else {
         showToast(response.data.message);
       }
