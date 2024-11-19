@@ -22,7 +22,7 @@ import Contact from "./pages/Contact";
 import DashBoard from "./admin/Dashboard";
 import Users from "./admin/Users";
 import Courses from "./admin/Courses";
-
+import Verify from "./pages/Verify";
 import Admins from "./admin/Admins";
 import Contacts from "./admin/Contacts";
 
@@ -81,7 +81,7 @@ function App() {
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/home" element={<Home />} />
-
+          <Route path="/verify" element={<Verify></Verify>}/>
           <Route path="/myproject" element={<Myproject />} />
 
           <Route path="/quiz" element={<Quiz />} />
