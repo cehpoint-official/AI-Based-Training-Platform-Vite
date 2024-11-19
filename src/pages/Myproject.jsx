@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Header from "../components/header";
 import Footers from "../components/footers";
 import axiosInstance from "../axios";
+import found from "@/assets/found.svg";
 
 const MyProject = () => {
   const [user, setUser] = useState(null);
@@ -105,10 +106,10 @@ const MyProject = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-x-hidden">
       <Header isHome={true} className="sticky top-0 z-50" />
       <div className="dark:bg-black flex-1 dark:text-white p-4">
-        <h2 className="text-lg font-bold mb-4">My Projects</h2>
+        <h2 className="text-lg font-bold mb-4 w-screen text-center">My Projects</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {projects.length > 0 ? (
             projects.map((project) => (
@@ -181,7 +182,12 @@ const MyProject = () => {
               </div>
             ))
           ) : (
-            <p>No projects found.</p>
+            <div className="text-center h-center flex flex-col items-center justify-center w-screen ">
+              <img alt="img" src={found} className="max-w-sm h-3/6" />
+              <p className="text-black font-black dark:text-white text-xl">
+                Nothing Found
+              </p>
+            </div>
           )}
         </div>
       </div>

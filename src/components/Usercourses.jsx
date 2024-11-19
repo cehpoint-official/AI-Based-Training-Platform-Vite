@@ -67,10 +67,10 @@ const UserCourses = ({ userId }) => {
       href: "hover:bg-white dark:hover:bg-black",
     },
     img: {
-      base: "",
+      base: "  object-cover", // 1:1 aspect ratio with a fixed width of 10rem (40 Tailwind units)
       horizontal: {
-        off: "rounded-none",
-        on: "h-96 w-full rounded-none object-cover md:h-auto md:w-48 md:rounded-none md:rounded-l-lg",
+        off: "rounded-none  object-cover",
+        on: "rounded-none  object-cover", // Keeps the fixed width in horizontal mode
       },
     },
   };
@@ -78,11 +78,9 @@ const UserCourses = ({ userId }) => {
   return (
     <div className="my-4">
       {processing ? (
-        <>
-          <div className="text-center h-screen w-screen flex items-center justify-center">
-            <Spinner size="xl" className="fill-black dark:fill-white" />
-          </div>
-        </>
+        <div className="text-center h-screen w-screen flex items-center justify-center">
+          <Spinner size="xl" className="fill-black dark:fill-white" />
+        </div>
       ) : (
         <>
           {courses.length === 0 ? (
@@ -99,19 +97,40 @@ const UserCourses = ({ userId }) => {
               </button>
             </div>
           ) : (
-            <div className="my-4 flex flex-wrap">
+            <div className="grid grid-cols-1 max-sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 px-10">
               {courses.map((course) => (
-                <Card key={course._id} imgSrc={course.photo} theme={style}>
-                  <h5 className="text-xl font-black tracking-tight text-black dark:text-white">
-                    {course.mainTopic.toUpperCase()}
-                  </h5>
-                  <p className="font-normal text-sm capitalize text-black dark:text-white">
-                    {course.type}
-                  </p>
-                  <p className="font-normal  text-sm  text-black dark:text-white">
-                    {new Date(course.date).toLocaleDateString()}
-                  </p>
-                  <div className="flex-row flex space-x-4 ">
+                <div
+                  key={course._id}
+                  className="flex flex-col border border-black/40 dark:border-white/40 rounded-lg overflow-hidden h-full"
+                >
+                  {/* Image Portion */}
+                  <div className="w-full">
+                    <img
+                      src={
+                        course.photo && course.photo !== "default_image_url"
+                          ? course.photo
+                          : "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/ai2.jpeg?alt=media&token=b2b3eadd-29eb-4437-97e3-4709d90e4737"
+                      }
+                      alt={course.mainTopic}
+                      className="w-full object-cover sm:aspect-[5/4] sm:h-48 md:aspect-[2/1] md:h-auto"
+                    />
+                  </div>
+
+                  {/* Details Portion */}
+                  <div className="flex flex-col flex-grow p-4 justify-center items-center">
+                    <h5 className="text-lg font-bold tracking-tight text-black dark:text-white truncate">
+                      {course.mainTopic.toUpperCase()}
+                    </h5>
+                    <p className="font-normal text-sm capitalize text-black dark:text-white">
+                      {course.type}
+                    </p>
+                    <p className="font-normal text-sm text-black dark:text-white">
+                      {new Date(course.date).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Button Portion */}
+                  <div className="p-4 flex items-center justify-center">
                     <button
                       onClick={() =>
                         handleCourse(
@@ -123,24 +142,12 @@ const UserCourses = ({ userId }) => {
                           course.end
                         )
                       }
-                      className="bg-black text-white px-5 py-2 font-medium dark:bg-white dark:text-black"
+                      className="rounded-md w-full bg-black text-white px-4 py-2 font-medium dark:bg-white dark:text-black"
                     >
                       Continue
                     </button>
-                    {/* {course.completed ? (
-                      <button
-                        onClick={() =>
-                          handleCertificate(course.mainTopic, course.end)
-                        }
-                        className="border-black text-black border px-5 py-2 font-medium dark:border-white dark:text-white"
-                      >
-                        Certificate
-                      </button>
-                    ) : (
-                      <></>
-                    )} */}
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}

@@ -75,7 +75,7 @@ const StyledText = ({
                 onClick={handleAIGeneratedExplanation}
                 disabled={isLoading}
               >
-                {isLoading ? "Generating..." : "Generate AI Explanation"}
+                {isLoading ? "Generating..." : "Generate Text Notes"}
               </button>
             )}
           </div>

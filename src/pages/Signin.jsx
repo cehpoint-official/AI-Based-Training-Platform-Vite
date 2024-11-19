@@ -72,7 +72,7 @@ const SignIn = () => {
 
       // Send sign-in request to your server
       const res = await axiosInstance.post(postURL, { email, password, firebaseUid });
-      console.log(res.data);
+      // console.log(res.data);
       if (res.data.success) {
         showToast(res.data.message);
         sessionStorage.setItem("user", JSON.stringify(res.data.userData));
@@ -97,7 +97,7 @@ const SignIn = () => {
         showToast(res.data.message);
       }
     } catch (error) {
-      console.error("Error:", error.message);
+      // console.error("Error:", error.message);
       showToast("Sign-in failed. Please try again.");
     } finally {
       setProcessing(false);
@@ -131,7 +131,7 @@ const SignIn = () => {
                 Enter email & password to continue
               </p>
 
-              <div className="py-5">
+              <div className="py-5 max-md:px-10">
                 <div className="mb-6">
                   <div className="mb-2 block">
                     <Label
