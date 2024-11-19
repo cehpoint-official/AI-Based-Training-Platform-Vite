@@ -61,7 +61,7 @@ const Performance = () => {
   );
   const averageProgress = parseFloat(
     (data?.data[0]?.averageProgress / 500 || 0).toFixed(2)
-  ) ;
+  );
 
   // Ensure progress doesn't exceed 100% and calculate completion percentages
   const projectCountCompletion = projectCount >= projectCountCriteria ? 100 : 0;
@@ -267,6 +267,36 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
+        <Box className="mt-4 mb-8">
+          {Math.round(completionPercentage) === 100 ? (
+            <Typography variant="h6" className="text-green-500 text-sm">
+              Eligible for the Test round!
+            </Typography>
+          ) : (
+            <>
+              <p className="text-red-500 text-sm ">
+                Not eligible for the Test round.{" "}
+                <strong className="font-semibold">
+                  Practice more and try again!
+                </strong>
+              </p>
+              <p className="mt-2 text-white/80 text-sm">
+                You need to meet the following criteria to be eligible for the
+                test:
+              </p>
+              <ul className="list-disc list-inside text-white/70 mt-1 text-xs">
+                <li>
+                  Project Count: At least {projectCountCriteria} (Accepted)
+                </li>
+                <li>Course Count: At least {courseCountCriteria} or more</li>
+                <li>
+                  Quiz Score Average: At least {quizScoreAvgCriteria} or more
+                </li>
+                <li>Average Progress: 100</li>
+              </ul>
+            </>
+          )}
+        </Box>
       </div>
 
       <Footers />

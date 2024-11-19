@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import { Drawer, Navbar, Sidebar } from "flowbite-react";
 import React, { useEffect, useRef, useState } from "react";
 import LogoComponent from "../components/LogoComponent";
@@ -144,10 +145,10 @@ const Course = () => {
         if (certificateUrl) {
           window.open(certificateUrl, "_blank");
         } else {
-          console.error("Certificate URL is not available.");
+          // console.error("Certificate URL is not available.");
         }
       } catch (error) {
-        console.error("Error fetching project suggestions:", error);
+        // console.error("Error fetching project suggestions:", error);
         toast.error("Error in project suggestions"); // toast error in project suggestion
       }
     }
@@ -168,7 +169,7 @@ const Course = () => {
       const data = await response.json();
       return data.certificateUrl;
     } catch (error) {
-      console.error("Error fetching certificate URL:", error);
+      // console.error("Error fetching certificate URL:", error);
       toast.error("Error in generating certificate"); // Error in generating certificate
       return null;
     }
@@ -353,7 +354,7 @@ const Course = () => {
 
     // If theory is not present, we need to generate it
     if (!theory) {
-        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations.`;
+        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations and make sure it is in English. Avoid other languages except English.`;
         const id = toast.loading("Please wait...");
 
         if (type === "video & text course") {
@@ -587,7 +588,7 @@ const Course = () => {
           // Handle successful update (e.g., show a success message)
         }
       } catch (error) {
-        console.error("Error updating course chunk:", error);
+        // console.error("Error updating course chunk:", error);
         // Instead of recursive call, you might want to implement a retry mechanism
         // or handle the error more gracefully
         throw error; // This will stop the update process if any chunk fails
@@ -635,13 +636,38 @@ const Course = () => {
           delay * 2
         ); // Exponential backoff
       } else {
-        console.error("Failed to send video after multiple attempts:", error);
+        // console.error("Failed to send video after multiple attempts:", error);
         toast.error("Failed to generate video"); // toast erorr in video
         throw error; // If retries are over then throw the error
       }
     }
   }
 
+  async function fetchWithRetries(url, retries = 3, delay = 800) {
+    while (retries > 0) {
+      try {
+        const postURL = "/api/transcript";
+        // console.log("Actual before");
+        
+        // Sending the POST request
+        const res = await axiosInstance.post(postURL, { prompt: url });
+        // console.log("Actual");
+        // console.log(res.data);
+  
+        return res.data; // Return the response data when the request is successful
+      } catch (error) {
+        // console.warn(`Error during request, retrying... (${3 - retries + 1})`, error);
+  
+        // Retry if the error is temporary
+        if (retries === 1) {
+          throw error; // After the last retry, throw the error to be handled in the main function
+        }
+        await new Promise(resolve => setTimeout(resolve, delay));
+        retries--;
+      }
+    }
+  }
+  
   async function sendTranscript(
     url,
     mTopic,
@@ -654,69 +680,41 @@ const Course = () => {
     const dataToSend = {
       prompt: url,
     };
+  
     try {
-      const postURL = "/api/transcript";
-      const res = await axiosInstance.post(postURL, dataToSend);
-
+      // Use fetchWithRetries for retry logic
+      const resData = await fetchWithRetries(url, retries, delay);
+      
+      // console.log("Response Data:", resData);
+  
       // Process the response data
       try {
-        const generatedText = res.data.url;
-        const allText = generatedText.map((item) => item.text);
+        const generatedText = resData.url; // Assuming response contains a `url` key with the transcript
+        const allText = generatedText.map((item) => item.text); // Assuming `generatedText` is an array
         const concatenatedText = allText.join(" ");
-
-
-        // const prompt = `Summarize this theory in a teaching way, focusing on JavaScript: ${concatenatedText}.`;
+  
         const prompt = `Summarize this theory in a teaching way, focusing on : ${concatenatedText}.`;
-        // console.log(prompt);
-
-
         await sendSummery(prompt, url, mTopic, mSubTopic, id);
       } catch (error) {
-        console.warn(
-          "Error processing transcript response, retrying with fallback...",
-          error
-        );
-        const fallbackPrompt = `Explain the  subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
-        // console.log(fallbackPrompt);
-        //const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
+        // console.warn("Error processing transcript response, retrying with fallback...", error);
+  
+        const fallbackPrompt = `Explain the subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
+  
         if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
-          return sendTranscript(
-            url,
-            mTopic,
-            mSubTopic,
-            id,
-            subtop,
-            retries - 1,
-            delay * 2
-          );
+          return sendTranscript(url, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2);
         } else {
           await sendSummery(fallbackPrompt, url, mTopic, mSubTopic, id);
         }
       }
     } catch (error) {
-      console.warn(
-        "Error fetching transcript, retrying with fallback...",
-        error
-      );
-
+      // console.warn("Error fetching transcript, retrying with fallback...", error);
+  
       const fallbackPrompt = `Explain the subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-      // console.log(fallbackPrompt);
-      // const fallbackPrompt = `Explain the JavaScript function subtopic of ${mTopic} with examples: ${subtop}. Please strictly avoid additional resources and images.`;
-
+  
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return sendTranscript(
-          url,
-          mTopic,
-          mSubTopic,
-          id,
-          subtop,
-          retries - 1,
-          delay * 2
-        );
+        return sendTranscript(url, mTopic, mSubTopic, id, subtop, retries - 1, delay * 2);
       } else {
         toast.dismiss(id);
         toast.error("Error in generating subtopic");
@@ -724,6 +722,7 @@ const Course = () => {
       }
     }
   }
+  
 
   async function sendSummery(
     prompt,
@@ -760,7 +759,7 @@ const Course = () => {
         const generatedText = res.data.text;
         summaries.push(generatedText);
       } catch (error) {
-        console.warn("Error fetching summary for chunk, retrying...", error);
+        // console.warn("Error fetching summary for chunk, retrying...", error);
         if (retries > 0) {
           await new Promise((resolve) => setTimeout(resolve, delay));
           return sendSummery(
@@ -790,10 +789,10 @@ const Course = () => {
     try {
       await sendDataVideo(url, finalSummary, mTopic, mSubTopic, id);
     } catch (error) {
-      console.warn(
-        "Error processing final summary response, retrying...",
-        error
-      );
+      // console.warn(
+      //   "Error processing final summary response, retrying...",
+      //   error
+      // );
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
         return sendSummery(
@@ -870,7 +869,7 @@ const Course = () => {
         const response = await axiosInstance.post(url, dataToSend);
 
         if (response.data.success === false) {
-          console.warn("Request failed, retrying...");
+          // console.warn("Request failed, retrying...");
           attempts++;
         } else {
           const botMessage = { text: response.data.text, sender: "bot" };
@@ -881,14 +880,14 @@ const Course = () => {
         }
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          console.error("Resource not found (404):", error.response.data);
+          // console.error("Resource not found (404):", error.response.data);
           alert("The resource you are trying to access does not exist.");
           return;
         } else {
-          console.error(
-            "Error sending message:",
-            error.response ? error.response.data : error.message
-          );
+          // console.error(
+          //   "Error sending message:",
+          //   error.response ? error.response.data : error.message
+          // );
         }
         attempts++;
       }
@@ -1088,10 +1087,10 @@ const Course = () => {
           // Persist the updated jsonData back to the database
           await updateCourse(); // Ensure this function sends the updated jsonData
       } else {
-          console.log("Error generating explanation:", response.data.message);
+          // console.log("Error generating explanation:", response.data.message);
       }
   } catch (error) {
-      console.error("Request failed:", error);
+      // console.error("Request failed:", error);
   } finally {
       setIsLoading(false);
   }
@@ -1114,7 +1113,7 @@ const Course = () => {
             "To submit your project, please create a GitHub repository and share the link with us via email."
           );
         } catch (error) {
-          console.error("Error fetching project suggestions:", error);
+          // console.error("Error fetching project suggestions:", error);
         }
       };
 

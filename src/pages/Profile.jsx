@@ -240,18 +240,18 @@ const Profile = () => {
               Profile
             </h1>
 
-            <div className="bg-gray-800 dark:bg-white/20 p-6 rounded-lg text-white flex items-center justify-between shadow-lg transition-transform transform ">
-              <div className="flex items-center justify-start">
-                <span className="bg-white rounded-lg aspect-square overflow-hidden w-20 shadow-md">
+            <div className="bg-gray-800 dark:bg-white/20 p-6 rounded-lg text-white flex items-center justify-center shadow-lg transition-transform transform ">
+              <div className="flex items-center justify-start max-md:flex-col max-md:items-center max-md:justify-center">
+                <span className="bg-white rounded-lg aspect-square overflow-hidden w-20 shadow-md flex items-center justify-center">
                   <img
                     src={profileImg}
                     alt="Profile Picture"
                     className="w-full object-cover rounded-md"
                   />
                 </span>
-                <span className="ml-3">
-                  <h1 className="text-2xl font-bold capitalize">{mName}</h1>
-                  <p className="text-sm font-semibold">{email}</p>
+                <span className="ml-3 flex flex-col justify-center items-center max-md:ml-0">
+                  <h1 className="text-2xl font-bold capitalize w-full truncate max-md:text-center">{mName}</h1>
+                  <p className="text-sm font-semibold w-full truncate max-md:text-center">{email}</p>
                 </span>
               </div>
             </div>
