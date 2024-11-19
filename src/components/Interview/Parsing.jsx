@@ -78,6 +78,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
     } catch (error) {
       console.error("Error fetching projects:", error);
       setLoading(false);
+      setShowEligibilityPopup(true);
       setOpenSnackbar(true);
     }
   };
