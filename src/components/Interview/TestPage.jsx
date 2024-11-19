@@ -54,15 +54,23 @@ const TestPage = () => {
         try {
           const combinedSkills = Array.from(new Set([...resumeData.skills, 'Corporate']));
           const fetchedQuestions = await fetchQuestionsBySkills(combinedSkills);
-          const initializedQuestions = fetchedQuestions.map((question) => ({
+        
+          // Filter only text-based questions
+          const textOnlyQuestions = fetchedQuestions.filter(
+            (question) => question.type === 'text'
+          );
+        
+          const initializedQuestions = textOnlyQuestions.map((question) => ({
             ...question,
-            userAnswer: '', // For multiple-choice
+            userAnswer: '', // For multiple-choice (not used for text questions but kept for consistency)
             userTextAnswer: '', // For text-based answers
           }));
+        
           setQuestions(initializedQuestions);
         } catch (error) {
           errorToast("Sorry! Questions are not available right now");
         }
+        
       }
     };
     fetchQuestions();
