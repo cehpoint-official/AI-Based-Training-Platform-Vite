@@ -54,23 +54,15 @@ const TestPage = () => {
         try {
           const combinedSkills = Array.from(new Set([...resumeData.skills, 'Corporate']));
           const fetchedQuestions = await fetchQuestionsBySkills(combinedSkills);
-        
-          // Filter only text-based questions
-          const textOnlyQuestions = fetchedQuestions.filter(
-            (question) => question.type === 'text'
-          );
-        
-          const initializedQuestions = textOnlyQuestions.map((question) => ({
+          const initializedQuestions = fetchedQuestions.map((question) => ({
             ...question,
-            userAnswer: '', // For multiple-choice (not used for text questions but kept for consistency)
+            userAnswer: '', // For multiple-choice
             userTextAnswer: '', // For text-based answers
           }));
-        
           setQuestions(initializedQuestions);
         } catch (error) {
           errorToast("Sorry! Questions are not available right now");
         }
-        
       }
     };
     fetchQuestions();
@@ -108,7 +100,7 @@ const TestPage = () => {
     };
   }, [testStarted]);
 
-  const handleSelectAnswer = (choice) => {
+  const handleSelectAnswer = (choice) =>{
     const currentTime = Date.now();
     const questionTime = currentTime - questionStartTime;
     setTimePerQuestion((prev) => ({
@@ -280,14 +272,41 @@ const TestPage = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={handleSubmitTest}
-                    className={`bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium ${
-                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    disabled={isSubmitting}
-                  >
-                    Submit Test
-                  </button>
+  onClick={handleSubmitTest}
+  className={`bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium flex items-center justify-center ${
+    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+  }`}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <>
+      <svg
+        className="animate-spin h-5 w-5 mr-2 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291l1.414-1.414C6.148 14.953 5 13.067 5 11h4v9.708c-1.342.09-2.607-.63-3.5-1.709z"
+        ></path>
+      </svg>
+      Submitting...
+    </>
+  ) : (
+    'Submit Test'
+  )}
+</button>
+
                 )}
               </div>
             </div>
