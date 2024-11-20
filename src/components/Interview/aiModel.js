@@ -1,12 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const analyzeReportWithAI = async (report) => {
+
   // Filter out questions with 'Corporate' skill and ensure type is 'mcq' or 'text'
   const questionsToEvaluate = report.questions.filter(
     (q) =>
-      (q.type === 'mcq' || q.type === 'text') &&
-      !(q.skills && q.skills.includes('Corporate'))
+      (q.type === 'text')
+      //    || q.type === 'text') &&
+      // !(q.skills && q.skills.includes('Corporate'))
   );
+  
 
   const totalQuestions = questionsToEvaluate.length;
 
