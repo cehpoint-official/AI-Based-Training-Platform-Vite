@@ -34,7 +34,7 @@ const SignUp = () => {
     if (sessionStorage.getItem("auth")) {
       navigate("/home");
     } else {
-      console.error("Not authenticated");
+      // console.error("Not authenticated");
     }
   };
 
@@ -98,7 +98,9 @@ const SignUp = () => {
         apiKey: firebaseApiKey, // Use environment variable
         unsplashApiKey:unsplashApiKey,  // Use environment variable
       });
+
       //console.log()
+
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
@@ -119,10 +121,10 @@ const SignUp = () => {
         showToast(response.data.message);
       }
     } catch (error) {
-      console.error(
-        "Signup error:",
-        error.response ? error.response.data : error
-      );
+      // console.error(
+      //   "Signup error:",
+      //   error.response ? error.response.data : error
+      // );
       showToast("Signup failed. Please try again.");
     } finally {
       setProcessing(false);
@@ -135,7 +137,7 @@ const SignUp = () => {
   };
 
   async function sendEmail(mEmail, mName) {
-    console.log("Sending email to:", mEmail);
+    // console.log("Sending email to:", mEmail);
     try {
       const dataToSend = {
         subject: `Welcome to ${name}`,
@@ -217,7 +219,7 @@ const SignUp = () => {
                 Enter email & password to continue
               </p>
 
-              <div className="py-6">
+              <div className="py-6 max-md:px-10">
                 <div className="mb-6">
                   <div className="mb-2 block">
                     <Label
