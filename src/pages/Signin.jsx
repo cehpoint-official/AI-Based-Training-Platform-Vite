@@ -84,6 +84,7 @@ const SignIn = () => {
         sessionStorage.setItem("uapiKey",res.data.userData.unsplashApiKey);
         sessionStorage.setItem("userapikey1", res.data.userData.userapikey1 || null);
         sessionStorage.setItem("apiKey", res.data.userData.apiKey || null);
+        sessionStorage.setItem("verified",true);
         // Check if both userapikey1 and userapikey2 are null
         if (!res.data.userData.userapikey1 && !res.data.userData.userapikey2) {
           showToast("please fill out the api keys");
