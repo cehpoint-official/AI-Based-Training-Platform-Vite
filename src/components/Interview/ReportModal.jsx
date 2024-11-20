@@ -187,30 +187,29 @@ const ReportModal = ({
           )}
 
 <SectionCard title="Questions and Answers">
-  {questionsData.filter(question => question.type === 'text').length === 0 ? (
-    <p className="text-center">No text-based questions available to display.</p>
-  ) : (
-    <div className="space-y-4">
-      {questionsData
-        .filter(question => question.type === 'text') // Filter only text-type questions
-        .map((question, index) => (
-          <div key={index} className="bg-gray-600 p-4 rounded-lg">
-            <h4 className="text-lg font-medium mb-2">
-              {index + 1}. {question.question || "No question available"}
-            </h4>
-            <p>
-              <span className="font-semibold">Your Answer:</span>{" "}
-              {question.userAnswer || question.userTextAnswer || "N/A"}
-            </p>
-            <p>
-              <span className="font-semibold">Correct Answer:</span>{" "}
-              {question.correctAnswer || "N/A"}
-            </p>
-          </div>
-        ))}
-    </div>
-  )}
-</SectionCard>
+            {questionsData.length === 0 ? (
+              <p className="text-center">No questions available to display.</p>
+            ) : (
+              <div className="space-y-4">
+                {questionsData.map((question, index) => (
+                  <div key={index} className="bg-gray-600 p-4 rounded-lg">
+                    <h4 className="text-lg font-medium mb-2">
+                      {index + 1}.{" "}
+                      {question.question || " No question available"}
+                    </h4>
+                    <p>
+                      <span className="font-semibold">Your Answer:</span>{" "}
+                      {question.userAnswer || question.userTextAnswer || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Correct Answer:</span>{" "}
+                      {question.correctAnswer || "N/A"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
 
         </div>
 

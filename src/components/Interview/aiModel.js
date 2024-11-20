@@ -9,9 +9,10 @@ export const analyzeReportWithAI = async (report) => {
       //    || q.type === 'text') &&
       // !(q.skills && q.skills.includes('Corporate'))
   );
+  const mcqQuestions = report.questions.filter((q)=>(q.type ==='mcq'));
   
 
-  const totalQuestions = questionsToEvaluate.length;
+  const totalQuestions = report.questions.length;
 
   if (totalQuestions === 0) {
     console.warn('No evaluable questions found in the report.');
@@ -30,7 +31,7 @@ export const analyzeReportWithAI = async (report) => {
     }
 
     try {
-      if (question.type === 'mcq') {
+      if (question.type !== 'text') {
         // Evaluate MCQ questions
         const isCorrect = userAnswer === question.correctAnswer;
         return { isCorrect, type: 'mcq' };
@@ -50,13 +51,32 @@ export const analyzeReportWithAI = async (report) => {
   });
 
   // Wait for all evaluations to complete
-  const evaluationResults = await Promise.all(evaluationPromises);
+  //const evaluationResults = await Promise.all(evaluationPromises);
+  
 
   // Aggregate the results
   let correctAnswers = 0;
   let mcqCorrect = 0;
   let textCorrect = 0;
 
+ // Evaluate MCQs using index and question
+ mcqQuestions.forEach((question, index) => {
+  console.log(`Evaluating Question ${index + 1}: ${question.question}`);
+  console.log(`User Answer: ${question.userAnswer}`);
+  console.log(`Correct Answer: ${question.correctAnswer}`);
+
+  // Compare userAnswer with correctAnswer
+  if (question.userAnswer && question.userAnswer === question.correctAnswer) {
+    correctAnswers++;
+    // console.log(`Question ${index + 1}: Correct`);
+  } else {
+    // console.log(`Question ${index + 1}: Incorrect`);
+  }
+});
+
+
+
+  const evaluationResults = await Promise.all(evaluationPromises);
   evaluationResults.forEach((result) => {
     if (result.isCorrect) {
       correctAnswers++;
@@ -67,7 +87,6 @@ export const analyzeReportWithAI = async (report) => {
       }
     }
   });
-
   // Calculate the total score percentage
   const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
