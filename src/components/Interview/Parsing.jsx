@@ -633,8 +633,8 @@ const ResumeUpload = ({ onUploadComplete }) => {
           {/* Parsing Stage Indicator */}
           {isParsing && (
             <div className="mt-4 flex items-center">
-              <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
-              <span className="text-gray-700">Parsing...</span>
+              <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin text-gray-400" />
+              <span className="text-gray-400">Parsing...</span>
             </div>
           )}
 
