@@ -84,7 +84,6 @@ const SignIn = () => {
         sessionStorage.setItem("uapiKey",res.data.userData.unsplashApiKey);
         sessionStorage.setItem("userapikey1", res.data.userData.userapikey1 || null);
         sessionStorage.setItem("apiKey", res.data.userData.apiKey || null);
-        sessionStorage.setItem("verified",true);
         // Check if both userapikey1 and userapikey2 are null
         if (!res.data.userData.userapikey1 && !res.data.userData.userapikey2) {
           showToast("please fill out the api keys");
@@ -128,8 +127,8 @@ const SignIn = () => {
               <h1 className="text-center font-black text-5xl text-black dark:text-white">
                 SignIn
               </h1>
-              <p className="text-center font-normal text-black py-4 dark:text-white">
-                Enter email & password to continue
+              <p className="text-center font-normal text-red-600 py-4 dark:text-red-400 animate-pulse">
+                Email and password login is temporarily unavailable.
               </p>
 
               <div className="py-5 max-md:px-10">
@@ -139,6 +138,7 @@ const SignIn = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="email1"
                       value="Email"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -146,6 +146,7 @@ const SignIn = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="email1"
                     type="email"
+                    disabled={true}
                   />
                 </div>
                 <div className="mb-4">
@@ -154,6 +155,8 @@ const SignIn = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="password1"
                       value="Password"
+                      disabled={true}
+                      
                     />
                   </div>
                   <input
@@ -161,15 +164,17 @@ const SignIn = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="password1"
                     type="password"
+                    disabled={true}
                   />
                 </div>
                 <div className="flex items-center mb-7">
-                  <p
+                  <button
                     onClick={redirectForgot}
-                    className="text-center font-normal text-black underline dark:text-white"
+                    className={`text-center font-normal text-black underline dark:text-white disabled:text-gray-400 dark:disabled:text-gray-400`}
+                    disabled={true}
                   >
                     Forgot Password ?
-                  </p>
+                  </button>
                 </div>
                 <Button
                   isProcessing={processing}
@@ -178,6 +183,7 @@ const SignIn = () => {
                   }
                   className="items-center justify-center text-center dark:bg-white dark:text-black bg-black text-white font-bold rounded-none w-full enabled:hover:bg-black enabled:focus:bg-black enabled:focus:ring-transparent dark:enabled:hover:bg-white dark:enabled:focus:bg-white dark:enabled:focus:ring-transparent"
                   type="submit"
+                  disabled={true}
                 >
                   Submit
                 </Button>
