@@ -17,15 +17,15 @@ const SlideFive = () => {
                 </Rating>
             </div>
             <Blockquote>
-                <p className="text-1xl max-md:text-lg max-md:px-2 font-bold text-black dark:text-white text-center">
+                <p className="text-xs lg:text-sm max-md:px-2 font-bold text-black dark:text-white text-center">
                   {review}
                 </p>
             </Blockquote>
-            <figcaption className="mt-6 flex items-center space-x-3">
+            <figcaption className="mt-6 flex items-center space-x-3 max-lg:px-3">
                 <Avatar rounded size="xs" img={photoURL} alt="profile picture" />
                 <div className="flex items-center divide-x-2 divide-black dark:divide-white">
-                    <cite className="pr-3 font-bold text-black dark:text-white">{from}</cite>
-                    <cite className="pl-3 text-sm font-normal text-black dark:text-white">{profession}</cite>
+                    <cite className="pr-3 font-bold text-black dark:text-white max-sm:text-xs text-sm">{from}</cite>
+                    <cite className="pl-3 text-sm font-normal text-black dark:text-white max-md:text-xs">{profession}</cite>
                 </div>
             </figcaption>
         </figure>

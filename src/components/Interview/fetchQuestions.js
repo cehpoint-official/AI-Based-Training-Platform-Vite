@@ -18,7 +18,7 @@ export const fetchQuestionsBySkills = async (skills) => {
 
     // Attempt to parse the response as JSON
     const data = await res.json();
-    console.log('Fetched questions:', data); // Log the received data for debugging
+    // console.log('Fetched questions:', data); // Log the received data for debugging
 
     return data;
   } catch (error) {

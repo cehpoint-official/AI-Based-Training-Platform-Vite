@@ -123,7 +123,7 @@ const Create = () => {
       setShowUpdateKeyPrompt(true);
       setProcessing(false);
       showToast(
-        "You have exceeded the daily limit of 5 courses. Redirecting to update your API key."
+        "You have exceeded the limit of 5 courses. Provide your API key."
       );
       navigate("/Profile");
     }
