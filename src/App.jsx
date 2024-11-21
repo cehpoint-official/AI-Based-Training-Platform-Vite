@@ -22,10 +22,10 @@ import Contact from "./pages/Contact";
 import DashBoard from "./admin/Dashboard";
 import Users from "./admin/Users";
 import Courses from "./admin/Courses";
-import Verify from "./pages/Verify";
+
 import Admins from "./admin/Admins";
 import Contacts from "./admin/Contacts";
-import ProtectedRoutes from "./pages/ProtectedRoutes";
+
 import ErrorPage from "./pages/ErrorPage";
 
 import "./App.css";
@@ -80,23 +80,17 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/verify" element={<Verify></Verify>}/>
+          <Route path="/home" element={<Home />} />
+
           <Route path="/myproject" element={<Myproject />} />
 
-          {/* protected routes accessibel after verification */}
-          <Route element={<ProtectedRoutes></ProtectedRoutes>} >
-            <Route path="/home" element={<Home />} />
-            <Route path="/create" element={<Create />} />
-            <Route path="/profile" element={<Profile />} />
-          </Route>
-
-
           <Route path="/quiz" element={<Quiz />} />
+          <Route path="/create" element={<Create />} />
           <Route path="/topics" element={<Topics />} />
           <Route path="/course" element={<Course />} />
           <Route path="/certificate" element={<Certificate />} />
           <Route path="/performance" element={<Performance />} />
-
+          <Route path="/profile" element={<Profile />} />
           <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />

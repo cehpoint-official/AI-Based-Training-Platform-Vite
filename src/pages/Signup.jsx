@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/signup.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { company, logo, mainname, subname, name, websiteURL } from "../constants";
+import {
+  company,
+  logo,
+  mainname,
+  subname,
+  name,
+  websiteURL,
+} from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { toast } from "react-toastify";
@@ -96,27 +103,22 @@ const SignUp = () => {
         uid,
         profile,
         apiKey: firebaseApiKey, // Use environment variable
-        unsplashApiKey:unsplashApiKey,  // Use environment variable
+        unsplashApiKey: unsplashApiKey, // Use environment variable
       });
-
-      //console.log()
-
+      // console.log()
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
         sessionStorage.setItem("mName", mName);
         sessionStorage.setItem("auth", true);
         sessionStorage.setItem("uid", uid);
-        sessionStorage.setItem("id", response.data._id);
         sessionStorage.setItem("type", "free");
         sessionStorage.setItem("apiKey", firebaseApiKey); // Store API key
         sessionStorage.setItem("uapiKey", unsplashApiKey); // Store API key
         sessionStorage.setItem("userapikey1", null); // Store user API key
-        sessionStorage.setItem("userapikey2", null); // Store user API key
-        sessionStorage.setItem("verified",false);//otp verification status
+        sessionStorage.setItem("userapikey1", null); // Store user API key
         await sendEmail(email, mName);
-        navigate("/verify")
-        //redirectHome();
+        redirectHome();
       } else {
         showToast(response.data.message);
       }
@@ -167,7 +169,7 @@ const SignUp = () => {
                           <table align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation" width="100%" style="margin-bottom:32px;margin-top:32px;text-align:center">
                             <tbody>
                               <tr>
-                                <td><a href="https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in/" target="_blank" style="p-x:20px;p-y:12px;line-height:100%;text-decoration:none;display:inline-block;max-width:100%;padding:12px 20px;border-radius:0.25rem;background-color:rgb(0,0,0);text-align:center;font-size:12px;font-weight:600;color:rgb(255,255,255);text-decoration-line:none"><span></span><span style="p-x:20px;p-y:12px;max-width:100%;display:inline-block;line-height:120%;text-decoration:none;text-transform:none;mso-padding-alt:0px;mso-text-raise:9px"><span>Get Started</span></a></td>
+                                <td><a href="${websiteURL}" target="_blank" style="p-x:20px;p-y:12px;line-height:100%;text-decoration:none;display:inline-block;max-width:100%;padding:12px 20px;border-radius:0.25rem;background-color:rgb(0,0,0);text-align:center;font-size:12px;font-weight:600;color:rgb(255,255,255);text-decoration-line:none"><span></span><span style="p-x:20px;p-y:12px;max-width:100%;display:inline-block;line-height:120%;text-decoration:none;text-transform:none;mso-padding-alt:0px;mso-text-raise:9px"><span>Get Started</span></a></td>
                               </tr>
                             </tbody>
                           </table>
@@ -176,6 +178,7 @@ const SignUp = () => {
                       </tr>
                     </table>
                   </body>
+                
                 </html>`,
       };
       const postURL = "/api/data";
@@ -201,9 +204,9 @@ const SignUp = () => {
               <Navbar.Brand href={websiteURL} className="ml-1">
                 <LogoComponent isDarkMode={storedTheme} />
                 <span className="self-center whitespace-nowrap text-2xl flex items-start justify-center flex-col font-black dark:text-white ">
-                <h1 className="font-black">{mainname}</h1>
-                <em className="text-sm font-semibold">{subname}</em>
-              </span>
+                  <h1 className="font-black">{mainname}</h1>
+                  <em className="text-sm font-semibold">{subname}</em>
+                </span>
               </Navbar.Brand>
               <DarkModeToggle />
             </Navbar>
@@ -215,8 +218,12 @@ const SignUp = () => {
               <h1 className="text-center font-black text-5xl text-black dark:text-white">
                 SignUp
               </h1>
-              <p className="text-center font-normal text-black py-4 dark:text-white">
+              {/* <p className="text-center font-normal text-black py-4 dark:text-white">
                 Enter email & password to continue
+              </p> */}
+
+              <p className="text-center font-normal text-red-600 py-4 dark:text-red-400 animate-pulse">
+                Email and password signup is temporarily unavailable.
               </p>
 
               <div className="py-6 max-md:px-10">
@@ -226,6 +233,7 @@ const SignUp = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="name1"
                       value="Name"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -234,6 +242,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="name1"
                     type="text"
+                    disabled={true}
                   />
                 </div>
                 <div className="mb-6">
@@ -242,6 +251,7 @@ const SignUp = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="email1"
                       value="Email"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -250,6 +260,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="email1"
                     type="email"
+                    disabled={true}
                   />
                 </div>
                 <div className="mb-7">
@@ -258,6 +269,7 @@ const SignUp = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="password1"
                       value="Password"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -266,6 +278,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="password1"
                     type="password"
+                    disabled={true}
                   />
                 </div>
 
@@ -277,6 +290,7 @@ const SignUp = () => {
                     }
                     className="items-center justify-center text-center dark:bg-white dark:text-black bg-black text-white font-bold rounded-none w-full enabled:hover:bg-black enabled:focus:bg-black enabled:focus:ring-transparent dark:enabled:hover:bg-white dark:enabled:focus:bg-white dark:enabled:focus:ring-transparent"
                     type="submit"
+                    disabled={true}
                   >
                     Submit
                   </Button>

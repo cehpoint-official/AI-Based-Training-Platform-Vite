@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Navigate, useNavigate } from 'react-router-dom';
+import axiosInstance from '../axios';
 const Verify = () => {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +36,7 @@ const Verify = () => {
     if (otp.length === 4 && userId) {
       setProcessing(true);
       try {
-        const response = await axios.post('http://localhost:5000/api/verifyOTP', {
+        const response = await axiosInstance.post(`/api/verifyOTP`, {
           otp:otp,
           userid: userId, // Send OTP and user ID (_id)
         });

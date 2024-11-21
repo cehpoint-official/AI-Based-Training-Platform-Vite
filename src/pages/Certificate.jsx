@@ -174,7 +174,7 @@ const Certificate = ({ userName, userEmail, courseTitle, userId }) => {
         )}
         <div
           ref={pdfRef}
-          className={`bg-[url('/Certificate.png')] w-[1000px] bg-contain bg-center flex justify-center items-center aspect-[4.3/3] relative`}
+          className={`bg-[url('https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/Certificate.png?alt=media&token=5b76d165-92a8-444e-9b1e-66e0df4caeec')] w-[1000px] bg-contain bg-center flex justify-center items-center aspect-[4.3/3] relative`}
         >
           <div className="certificate w-full h-full py-12 px-16 text-center">
             <div className=" absolute top-[44%] left-[25.5%] w-[30.7rem]">
