@@ -11,7 +11,7 @@ import { GoCrossReference } from "react-icons/go";
 import Tooltip from "./Tooltip";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import debounce from "lodash/debounce";
-import backgroundImage from "../../assets/image3.png";
+import backgroundImage from "../../assets/image3.svg";
 import { db } from "../../../firebaseConfig";
 
 const ExpectationPage = () => {
@@ -203,8 +203,8 @@ const ExpectationPage = () => {
 
   return (
     <div
-      className="flex flex-col items-center p-4 bg-cover text-gray-300 min-h-screen"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      className="flex flex-col items-center p-4 bg-cover text-gray-300 min-h-screen bg-gray-300"
+     
     >
       <form
         className="w-full max-w-2xl mt-8 bg-gradient-to-t from-slate-50 to-white shadow-lg rounded-lg p-8 sm:p-10 md:p-12 shadow-gray-500"

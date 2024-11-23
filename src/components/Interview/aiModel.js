@@ -320,3 +320,179 @@ const generateEmptyReport = (report) => ({
   headers: report.headers || [], // Include headers from the original report
   urls: report.urls || [], // Include URLs from the original report
 });
+
+// import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// /**
+//  * Main function to analyze a report using AI
+//  * @param {Object} report - The report object containing questions, answers, and other metadata
+//  * @returns {Object} - Final report with evaluation results
+//  */
+// export const analyzeReportWithAI = async (report) => {
+//   const questionsToEvaluate = report.questions.filter((q) => q.type === 'text');
+//   const mcqQuestions = report.questions.filter((q) => q.type === 'mcq');
+//   const totalQuestions = report.questions.length;
+
+//   if (totalQuestions === 0) {
+//     console.warn('No evaluable questions found in the report.');
+//     return generateEmptyReport(report);
+//   }
+
+//   // Evaluate MCQs
+//   let mcqCorrect = 0;
+//   mcqQuestions.forEach((question) => {
+//     if (question.userAnswer && question.userAnswer === question.correctAnswer) {
+//       mcqCorrect++;
+//     }
+//   });
+
+//   // Evaluate text-based questions
+//   const textEvaluationResults = [];
+//   for (const question of questionsToEvaluate) {
+//     const userAnswer = question.userTextAnswer;
+
+//     if (!userAnswer || userAnswer.toLowerCase() === 'n/a') {
+//       console.warn(`No valid answer for question ID: ${question.id}`);
+//       textEvaluationResults.push({ isCorrect: false, type: 'text' });
+//       continue;
+//     }
+
+//     try {
+//       const evaluation = await evaluateTextAnswerAI(question.question, userAnswer);
+//       textEvaluationResults.push({
+//         isCorrect: evaluation === 'correct',
+//         type: 'text',
+//       });
+//     } catch (error) {
+//       console.error(`Error evaluating text question ID: ${question.id}`, error);
+//       textEvaluationResults.push({ isCorrect: false, type: 'text' });
+//     }
+
+//     // Add increased delay to prevent rate-limiting errors
+//     await delay(3000); // 3 seconds delay
+//   }
+
+//   // Aggregate results
+//   const correctAnswers = mcqCorrect + textEvaluationResults.filter((r) => r.isCorrect).length;
+//   const textCorrect = textEvaluationResults.filter((r) => r.isCorrect).length;
+//   const scorePercentage = (correctAnswers / totalQuestions) * 100;
+//   const employabilityScore = calculateEmployabilityScore(scorePercentage);
+
+//   // Generate feedback and suggestions
+//   const feedback = await generateAIReportFeedback(report, scorePercentage, correctAnswers, totalQuestions);
+
+//   // Final report
+//   const finalReport = {
+//     totalQuestions,
+//     correctAnswers,
+//     mcqCorrect,
+//     textCorrect,
+//     scorePercentage: parseFloat(scorePercentage.toFixed(2)),
+//     employabilityScore,
+//     feedback,
+//     suggestions: generateSuggestions(scorePercentage),
+//     additionalNotes: generateAdditionalNotes(scorePercentage),
+//     aiWords: generateAiWords(scorePercentage),
+//     fakePercentage: calculateFakePercentage(report),
+//     isHuman: determineIfHuman(report),
+//     timestamp: new Date(),
+//     headers: report.headers || [],
+//     urls: report.urls || [],
+//   };
+
+//   return finalReport;
+// };
+
+// /**
+//  * Function to evaluate text-based answers using AI
+//  * @param {string} question - The question text
+//  * @param {string} userAnswer - The user's answer
+//  * @returns {Promise<string>} - 'correct' or 'wrong'
+//  */
+// const evaluateTextAnswerAI = async (question, userAnswer) => {
+//   try {
+//     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+//     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+//     const prompt = `
+// Evaluate the user's answer to the given question and respond with either "correct" or "wrong" without explanation.
+
+// Examples:
+// Question: "What is the capital of India?"
+// User's Answer: "New Delhi is the capital of India"
+// Response: "correct"
+
+// Question: "What is the capital of India?"
+// User's Answer: "India is the capital of India"
+// Response: "wrong"
+
+// Now evaluate:
+// Question: ${question}
+// User's Answer: ${userAnswer}
+// Response:
+// `;
+
+//     const result = await model.generateContent(prompt);
+//     const evaluation = result?.response?.text()?.trim().toLowerCase() || 'wrong';
+//     return evaluation;
+//   } catch (error) {
+//     console.error('Error evaluating text answer:', error.message);
+//     return 'wrong'; // Default to "wrong" in case of an error
+//   }
+// };
+
+// /**
+//  * Generate AI-based feedback
+//  */
+// const generateAIReportFeedback = async (report, scorePercentage, correctAnswers, totalQuestions) => {
+//   const query = `User answered ${correctAnswers} out of ${totalQuestions} correctly, scoring ${scorePercentage}%. Job expectations: ${JSON.stringify(
+//     report.expectations
+//   )}. Provide feedback and study suggestions.`;
+
+//   try {
+//     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+//     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+//     const result = await model.generateContent(query);
+//     return result?.response?.text()?.trim() || 'Feedback could not be generated.';
+//   } catch (error) {
+//     console.error('Error generating feedback:', error.message);
+//     return 'Error generating feedback. Please try again.';
+//   }
+// };
+
+// /**
+//  * Delay execution to avoid rate-limiting
+//  * @param {number} ms - Milliseconds to delay
+//  */
+// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// /**
+//  * Helper functions for report generation
+//  */
+// const calculateEmployabilityScore = (scorePercentage) =>
+//   scorePercentage >= 70 ? 'High' : scorePercentage >= 50 ? 'Medium' : 'Low';
+// const generateSuggestions = (scorePercentage) =>
+//   scorePercentage >= 90 ? ['Excellent work!'] : ['Review materials.', 'Practice questions.'];
+// const generateAdditionalNotes = (scorePercentage) =>
+//   scorePercentage >= 90 ? 'Great job!' : 'Keep working hard!';
+// const generateAiWords = (scorePercentage) =>
+//   scorePercentage >= 90 ? 'Exceptional' : scorePercentage >= 70 ? 'Proficient' : 'Needs Improvement';
+// const calculateFakePercentage = () => 0; // Placeholder for actual logic
+// const determineIfHuman = () => true; // Placeholder for actual logic;
+
+// const generateEmptyReport = (report) => ({
+//   totalQuestions: 0,
+//   correctAnswers: 0,
+//   mcqCorrect: 0,
+//   textCorrect: 0,
+//   scorePercentage: 0,
+//   employabilityScore: 'Low',
+//   feedback: 'No evaluable questions.',
+//   suggestions: [],
+//   additionalNotes: '',
+//   aiWords: '',
+//   fakePercentage: null,
+//   isHuman: null,
+//   timestamp: new Date(),
+//   headers: report.headers || [],
+//   urls: report.urls || [],
+// });

@@ -12,6 +12,7 @@ import UserDetailsModal from './UserDetailsModal';
 import skillsContext from '../../Context/skills';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 
+
 const TestPage = () => {
   const [userName, setUserName] = useState(sessionStorage.getItem("mName"));
   const [userEmail, setUserEmail] = useState(sessionStorage.getItem("email"));
@@ -169,7 +170,7 @@ const TestPage = () => {
     : 0;
 
   return (
-    <div className="p-6 bg-[url('.\assets\image3.png')] bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
+    <div className="p-6 bg-gray-200 bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
       {showModal && (
         <UserDetailsModal
           setUserDetails={setUserDetails}
