@@ -12,6 +12,9 @@ import { FaCheckCircle } from "react-icons/fa";
 import Header from "../components/header";
 import Footers from "../components/footers";
 import axiosInstance from "../axios";
+import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
+import moment from "moment";
 
 const Performance = () => {
   const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
@@ -88,6 +91,21 @@ const Performance = () => {
 
   const completionPercentage = totalCompletionPercentage.toFixed(2);
 
+  // Simulated daily data for the calendar heatmap
+  const courseCompletionData = data?.data[0]?.dailyCourseCompletion || [
+    // Example data (replace with real API data if available)
+    { date: "2023-11-20", count: 1 },
+    { date: "2023-11-21", count: 2 },
+    { date: "2023-11-22", count: 0 },
+    { date: "2023-11-23", count: 3 },
+  ];
+
+  // Transform data to match the heatmap format
+  const heatmapData = courseCompletionData.map((entry) => ({
+    date: moment(entry.date).format("YYYY-MM-DD"), // Format date
+    count: entry.count, // Number of courses completed on that date
+  }));
+
   return (
     <div className="h-screen flex flex-col overflow-x-hidden">
       <Header isHome={true} className="sticky top-0 z-50" />
@@ -118,7 +136,6 @@ const Performance = () => {
                 width="100%"
               >
                 <div className="flex items-center justify-center max-md:flex-col gap-x-10">
-                  {/* Circular Progress */}
                   <Box position="relative" mr={2}>
                     <CircularProgress
                       variant="determinate"
@@ -165,7 +182,6 @@ const Performance = () => {
                     </Box>
                   </Box>
 
-                  {/* Linear Progress Bars */}
                   <Box
                     display="flex"
                     flexDirection="column"
@@ -196,6 +212,7 @@ const Performance = () => {
                       </Box>
                     </Box>
 
+                    {/* Other Progress Details */}
                     {/* Course Count */}
                     <Box display="flex" flexDirection="column" width="100%">
                       <Typography
@@ -267,36 +284,48 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
-        <Box className="mt-4 mb-8">
-          {Math.round(completionPercentage) === 100 ? (
-            <Typography variant="h6" className="text-green-500 text-sm">
-              Eligible for the Test round!
-            </Typography>
-          ) : (
-            <>
-              <p className="text-red-500 text-sm ">
-                Not eligible for the Test round.{" "}
-                <strong className="font-semibold">
-                  Practice more and try again!
-                </strong>
-              </p>
-              <p className="mt-2 text-white/80 text-sm">
-                You need to meet the following criteria to be eligible for the
-                test:
-              </p>
-              <ul className="list-disc list-inside text-white/70 mt-1 text-xs">
-                <li>
-                  Project Count: At least {projectCountCriteria} (Accepted)
-                </li>
-                <li>Course Count: At least {courseCountCriteria} or more</li>
-                <li>
-                  Quiz Score Average: At least {quizScoreAvgCriteria} or more
-                </li>
-                <li>Average Progress: 100</li>
-              </ul>
-            </>
-          )}
-        </Box>
+
+        {/* Calendar Heatmap Feature */}
+        <h3 className="text-lg font-bold mb-4 mt-8">Your Learning Activity</h3>
+        <CalendarHeatmap
+          startDate={moment().subtract(1, "year").format("YYYY-MM-DD")}
+          endDate={moment().format("YYYY-MM-DD")}
+          values={heatmapData}
+          classForValue={(value) => {
+            if (!value || value.count === 0) {
+              return "color-empty";
+            }
+            if (value.count <= 2) {
+              return "color-scale-1";
+            }
+            if (value.count <= 4) {
+              return "color-scale-2";
+            }
+            return "color-scale-3";
+          }}
+          tooltipDataAttrs={(value) => ({
+            "data-tip": value
+              ? `${value.date}: ${value.count} courses completed`
+              : "No data",
+          })}
+          showWeekdayLabels={true}
+        />
+        <style>
+          {`
+            .color-empty {
+              fill: #ebedf0;
+            }
+            .color-scale-1 {
+              fill: #c6e48b;
+            }
+            .color-scale-2 {
+              fill: #7bc96f;
+            }
+            .color-scale-3 {
+              fill: #239a3b;
+            }
+          `}
+        </style>
       </div>
 
       <Footers />

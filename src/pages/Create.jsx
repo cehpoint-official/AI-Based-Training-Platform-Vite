@@ -225,7 +225,7 @@ Please output the list in the following JSON format strictly in English:
             .replace(/```json/g, "")
             .replace(/```/g, "");
             
-        const parsedJson = JSON.parse(cleanedJsonString);
+         const parsedJson = JSON.parse(cleanedJsonString);
         setProcessing(false);
         navigate("/topics", {
             state: {
