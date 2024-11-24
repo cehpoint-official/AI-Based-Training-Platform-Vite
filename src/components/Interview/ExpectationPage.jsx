@@ -11,7 +11,7 @@ import { GoCrossReference } from "react-icons/go";
 import Tooltip from "./Tooltip";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import debounce from "lodash/debounce";
-import backgroundImage from "../../assets/image3.svg";
+import Image2 from "../../assets/image2.svg";
 import { db } from "../../../firebaseConfig";
 
 const ExpectationPage = () => {
@@ -96,7 +96,7 @@ const ExpectationPage = () => {
       navigate(`/${uid}/final`);
     } catch (error) {
       setError("Failed to submit expectations or generate analysis.");
-      console.error('Submit error:', error);
+      console.error("Submit error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,22 +202,18 @@ const ExpectationPage = () => {
   }
 
   return (
-    <div
-      className="flex flex-col items-center p-4 bg-cover text-gray-300 min-h-screen bg-gray-300"
-     
-    >
+    <div className="flex flex-col md:flex-row items-stretch p-6 gap-8 text-gray-300 min-h-screen bg-gray-100">
+      {/* Form Section */}
       <form
-        className="w-full max-w-2xl mt-8 bg-gradient-to-t from-slate-50 to-white shadow-lg rounded-lg p-8 sm:p-10 md:p-12 shadow-gray-500"
+        className="w-full max-w-2xl mx-12 my-10 rounded-lg bg-white p-6 sm:p-8 md:p-10 lg:p-12 shadow-gray-300 space-y-8 flex-1 h-full"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-4xl font-bold mb-6 text-gray-900">
+        <h2 className="text-3xl font-bold mb-6 text-gray-900 text-center">
           Job Expectations
         </h2>
-
-        <div
-          className="mb-6 relative group tooltip-container"
-          data-field="salary"
-        >
+  
+        {/* Salary Expectation */}
+        <div className="relative group tooltip-container">
           <label className="block text-gray-900 mb-2" htmlFor="salary">
             Salary Expectation
           </label>
@@ -226,7 +222,7 @@ const ExpectationPage = () => {
             name="salary"
             id="salary"
             placeholder="e.g. 3-4 LPA"
-            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-100 transition-colors duration-300"
+            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300"
             value={expectations.salary}
             onChange={handleInputChange}
             required
@@ -248,11 +244,9 @@ const ExpectationPage = () => {
             </button>
           </div>
         </div>
-
-        <div
-          className="mb-6 relative group tooltip-container"
-          data-field="careerGrowth"
-        >
+  
+        {/* Career Growth */}
+        <div className="relative group tooltip-container">
           <label className="block text-gray-900 mb-2" htmlFor="careerGrowth">
             Career Growth
           </label>
@@ -261,7 +255,7 @@ const ExpectationPage = () => {
             name="careerGrowth"
             id="careerGrowth"
             placeholder="e.g., Promotions, responsibilities"
-            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-100 transition-colors duration-300"
+            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300"
             value={expectations.careerGrowth}
             onChange={handleInputChange}
             required
@@ -283,11 +277,9 @@ const ExpectationPage = () => {
             </button>
           </div>
         </div>
-
-        <div
-          className="mb-6 relative group tooltip-container"
-          data-field="learningOpportunities"
-        >
+  
+        {/* Learning Opportunities */}
+        <div className="relative group tooltip-container">
           <label
             className="block text-gray-900 mb-2"
             htmlFor="learningOpportunities"
@@ -299,7 +291,7 @@ const ExpectationPage = () => {
             name="learningOpportunities"
             id="learningOpportunities"
             placeholder="e.g., Senior Developer, Corporate Training, AI based training"
-            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-100 transition-colors duration-300"
+            className="w-full p-3 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300"
             value={expectations.learningOpportunities}
             onChange={handleInputChange}
             required
@@ -322,10 +314,10 @@ const ExpectationPage = () => {
             </button>
           </div>
         </div>
-
+  
         <button
           type="submit"
-          className="w-full py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-300"
+          className="w-full py-3 mt-10 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -335,8 +327,18 @@ const ExpectationPage = () => {
           )}
         </button>
       </form>
+  
+      {/* Image Section */}
+      <div className="hidden md:block flex-1 h-[350px] max-h-[500px] mx-auto my-44">
+        <img
+          src={Image2}
+          alt="Background Illustration"
+          className="w-full h-full max-h-full object-contain "
+        />
+      </div>
     </div>
   );
+  
 };
 
 export default ExpectationPage;

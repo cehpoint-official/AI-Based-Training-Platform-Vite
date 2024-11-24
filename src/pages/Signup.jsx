@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import img from "@/assets/signup.svg";
 import { Flowbite, Navbar } from "flowbite-react";
 import { Button, Label } from "flowbite-react";
-import { company, logo, mainname, subname, name, websiteURL } from "../constants";
+import {
+  company,
+  logo,
+  mainname,
+  subname,
+  name,
+  websiteURL,
+} from "../constants";
 import DarkModeToggle from "../components/DarkModeToggle";
 import LogoComponent from "../components/LogoComponent";
 import { toast } from "react-toastify";
@@ -34,7 +41,7 @@ const SignUp = () => {
     if (sessionStorage.getItem("auth")) {
       navigate("/home");
     } else {
-      console.error("Not authenticated");
+      // console.error("Not authenticated");
     }
   };
 
@@ -96,9 +103,9 @@ const SignUp = () => {
         uid,
         profile,
         apiKey: firebaseApiKey, // Use environment variable
-        unsplashApiKey:unsplashApiKey,  // Use environment variable
+        unsplashApiKey: unsplashApiKey, // Use environment variable
       });
-      console.log()
+      // console.log()
       if (response.data.success) {
         showToast(response.data.message);
         sessionStorage.setItem("email", email);
@@ -116,10 +123,10 @@ const SignUp = () => {
         showToast(response.data.message);
       }
     } catch (error) {
-      console.error(
-        "Signup error:",
-        error.response ? error.response.data : error
-      );
+      // console.error(
+      //   "Signup error:",
+      //   error.response ? error.response.data : error
+      // );
       showToast("Signup failed. Please try again.");
     } finally {
       setProcessing(false);
@@ -132,7 +139,7 @@ const SignUp = () => {
   };
 
   async function sendEmail(mEmail, mName) {
-    console.log("Sending email to:", mEmail);
+    // console.log("Sending email to:", mEmail);
     try {
       const dataToSend = {
         subject: `Welcome to ${name}`,
@@ -197,9 +204,9 @@ const SignUp = () => {
               <Navbar.Brand href={websiteURL} className="ml-1">
                 <LogoComponent isDarkMode={storedTheme} />
                 <span className="self-center whitespace-nowrap text-2xl flex items-start justify-center flex-col font-black dark:text-white ">
-                <h1 className="font-black">{mainname}</h1>
-                <em className="text-sm font-semibold">{subname}</em>
-              </span>
+                  <h1 className="font-black">{mainname}</h1>
+                  <em className="text-sm font-semibold">{subname}</em>
+                </span>
               </Navbar.Brand>
               <DarkModeToggle />
             </Navbar>
@@ -211,17 +218,22 @@ const SignUp = () => {
               <h1 className="text-center font-black text-5xl text-black dark:text-white">
                 SignUp
               </h1>
-              <p className="text-center font-normal text-black py-4 dark:text-white">
+              {/* <p className="text-center font-normal text-black py-4 dark:text-white">
                 Enter email & password to continue
+              </p> */}
+
+              <p className="text-center font-normal text-red-600 py-4 dark:text-red-400 animate-pulse">
+                Email and password signup is temporarily unavailable.
               </p>
 
-              <div className="py-6">
+              <div className="py-6 max-md:px-10">
                 <div className="mb-6">
                   <div className="mb-2 block">
                     <Label
                       className="font-bold text-black dark:text-white"
                       htmlFor="name1"
                       value="Name"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -230,6 +242,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="name1"
                     type="text"
+                    disabled={true}
                   />
                 </div>
                 <div className="mb-6">
@@ -238,6 +251,7 @@ const SignUp = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="email1"
                       value="Email"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -246,6 +260,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="email1"
                     type="email"
+                    disabled={true}
                   />
                 </div>
                 <div className="mb-7">
@@ -254,6 +269,7 @@ const SignUp = () => {
                       className="font-bold text-black dark:text-white"
                       htmlFor="password1"
                       value="Password"
+                      disabled={true}
                     />
                   </div>
                   <input
@@ -262,6 +278,7 @@ const SignUp = () => {
                     className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
                     id="password1"
                     type="password"
+                    disabled={true}
                   />
                 </div>
 
@@ -273,6 +290,7 @@ const SignUp = () => {
                     }
                     className="items-center justify-center text-center dark:bg-white dark:text-black bg-black text-white font-bold rounded-none w-full enabled:hover:bg-black enabled:focus:bg-black enabled:focus:ring-transparent dark:enabled:hover:bg-white dark:enabled:focus:bg-white dark:enabled:focus:ring-transparent"
                     type="submit"
+                    disabled={true}
                   >
                     Submit
                   </Button>

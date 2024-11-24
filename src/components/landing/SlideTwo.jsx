@@ -7,7 +7,7 @@ const SlideTwo = () => {
     <div className="px-7 justify-center items-center pb-10 dark:bg-black">
       <div className="flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 h-full p-4 flex flex-col items-center md:items-start justify-center">
-          <h2 className="text-4xl font-black mb-2 max-md:text-2xl dark:text-white">
+          <h2 className="text-4xl font-black mb-2 max-md:text-2xl dark:text-white max-md:text-center">
             Unlock Infinite Knowledge
           </h2>
 

@@ -14,11 +14,11 @@ const SlideOne = () => {
 
   return (
     <div className="flex flex-col items-center dark:bg-black">
-      <h1 className="text-4xl font-black mt-20 max-md:text-3xl dark:text-white">
+      <h1 className="text-4xl max-md:text-2xl font-black text-center mt-20 max-xl:px-4 dark:text-white">
         AI Learning Made Easy: Get Certified, Get Hired, Get Ahead
       </h1>
 
-      <p className="text-center text-1xl text-black mt-6 max-w-1xl font-medium max-md:text-xs dark:text-white mx-20">
+      <p className="text-center text-1xl text-black mt-6 max-w-1xl font-medium max-md:text-xs dark:text-white mx-20 max-md:mx-6">
         {/* Revolutionize your learning journey with our AI Course Generator SaaS
                 Effortlessly create engaging and personalized courses tailored to your needs */}
         learning experience with our AI-powered platform designed for students,

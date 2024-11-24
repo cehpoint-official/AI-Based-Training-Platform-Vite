@@ -61,9 +61,9 @@ export const analyzeReportWithAI = async (report) => {
 
  // Evaluate MCQs using index and question
  mcqQuestions.forEach((question, index) => {
-  console.log(`Evaluating Question ${index + 1}: ${question.question}`);
-  console.log(`User Answer: ${question.userAnswer}`);
-  console.log(`Correct Answer: ${question.correctAnswer}`);
+  // console.log(`Evaluating Question ${index + 1}: ${question.question}`);
+  // console.log(`User Answer: ${question.userAnswer}`);
+  // console.log(`Correct Answer: ${question.correctAnswer}`);
 
   // Compare userAnswer with correctAnswer
   if (question.userAnswer && question.userAnswer === question.correctAnswer) {
@@ -189,7 +189,7 @@ const generateAIReportFeedback = async (
   correctAnswers,
   totalQuestions
 ) => {
-  const query = `User ID: ${report.id} answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
+  const query = `User answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
 
   try {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);

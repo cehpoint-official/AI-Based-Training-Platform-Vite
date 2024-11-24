@@ -170,7 +170,7 @@ const TestPage = () => {
     : 0;
 
   return (
-    <div className="p-6 bg-gray-200 bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
+    <div className="p-6 bg-gray-100 bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
       {showModal && (
         <UserDetailsModal
           setUserDetails={setUserDetails}
@@ -316,15 +316,39 @@ const TestPage = () => {
           )}
         </div>
       ) : (
-        <div className="bg-gradient-to-br from-gray-50 to-white text-gray-800 rounded-lg shadow-xl p-10 max-w-3xl w-full text-center shadow-gray-500">
-          <h1 className="text-4xl font-semibold mb-6">Welcome to the Skill Assessment Test</h1>
-          <button
-            onClick={handleStartTest}
-            className="mt-6 bg-green-600 text-white px-8 py-4 rounded-lg hover:bg-green-700 transition text-xl font-medium"
-          >
-            Start Test
-          </button>
-        </div>
+        <div className="bg-white  text-gray-800  p-10 max-w-3xl w-full text-center rounded-lg shadow-lg ">
+  {/* Title Section */}
+  <h1 className="text-4xl font-semibold mb-10 mt-3">
+    Welcome to the Skill Assessment Test
+  </h1>
+
+  {/* Warnings and Precautions Section */}
+  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+    <h2 className="text-xl font-semibold">⚠️ Important Warnings:</h2>
+    <ul className="mt-6 text-sm text-left list-disc list-inside space-y-2">
+      <li>No external devices or assistance is allowed during the test.</li>
+      <li>Switching tabs or windows will be flagged as suspicious activity.</li>
+      <li>Any form of cheating will result in disqualification.</li>
+    </ul>
+  </div>
+  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-lg">
+    <h2 className="text-xl font-semibold">🛡️ Precautions Before Starting:</h2>
+    <ul className="mt-6 space-y-2 text-sm text-left list-disc list-inside">
+      <li>Ensure your webcam and microphone are functioning properly.</li>
+      <li>Make sure you have a stable internet connection.</li>
+      <li>Find a quiet, well-lit environment for the test.</li>
+    </ul>
+  </div>
+
+  {/* Start Test Button */}
+  <button
+    onClick={handleStartTest}
+    className="mt-6 bg-green-600 text-white px-8 py-4 rounded-lg hover:bg-green-700 transition text-xl font-medium"
+  >
+    Start Test
+  </button>
+</div>
+
       )}
       <ToastContainer />
     </div>
