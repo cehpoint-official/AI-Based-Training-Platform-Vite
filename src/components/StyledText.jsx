@@ -46,7 +46,7 @@ const StyledText = ({
       )}
 
       <div
-        className="text-black dark:text-white"
+        className="text-black dark:text-white text-wrap"
         dangerouslySetInnerHTML={{ __html: text }}
       />
 
