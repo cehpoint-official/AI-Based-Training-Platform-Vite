@@ -13,7 +13,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* Responsive styles for Prism code blocks */
 .responsive-code-block {
   overflow-x: auto; /* Allow horizontal scrolling for long code lines */
@@ -113,3 +112,21 @@ h2 {
 --shadow-card-default: #0000001a;
 --shadow-card-large: #00000059;
 --shadow-card-large-dark: #00000073; */
+
+
+.color-empty {
+  fill: #ebedf0; /* Light grey color for empty/zero-score days */
+}
+
+.color-scale-1 {
+  fill: #c6e48b; /* Light green for lower scores */
+}
+
+.color-scale-2 {
+  fill: #7bc96f; /* Medium green for higher scores */
+}
+
+.color-scale-3 {
+  fill: #239a3b; /* Dark green for completed days */
+}
+
