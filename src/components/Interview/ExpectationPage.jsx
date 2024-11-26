@@ -13,10 +13,12 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import debounce from "lodash/debounce";
 import Image2 from "../../assets/image2.svg";
 import { db } from "../../../firebaseConfig";
+import axiosInstance from '../../axios';
+import axios from "axios";
+
 
 const ExpectationPage = () => {
   const { uid } = useParams();
-
   const [report, setReport] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [isFetching, setIsFetching] = useState(true);
@@ -91,7 +93,18 @@ const ExpectationPage = () => {
         suggestions: aiAnalysis.suggestions,
       };
 
-      await updateTestReportInFirebase(uid, fullReportData);
+      const testScore = (aiAnalysis.correctAnswers/aiAnalysis.totalQuestions)*100 || 0;
+
+      try {
+        await axiosInstance.put('/api/update-test-score', {
+          uid,
+          testScore,
+        });
+        console.log('Test score updated successfully');
+      } catch(err){
+          console.error('Error in updating the score : ',err);
+      }
+        await updateTestReportInFirebase(uid, fullReportData);
 
       navigate(`/${uid}/final`);
     } catch (error) {

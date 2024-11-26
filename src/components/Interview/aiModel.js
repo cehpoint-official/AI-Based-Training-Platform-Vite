@@ -135,45 +135,64 @@ export const analyzeReportWithAI = async (report) => {
  * @returns {Promise<string>} - 'correct' or 'wrong'
  */
 const evaluateTextAnswerAI = async (question, userAnswer) => {
+  const maxRetries = 3; // Maximum number of retries
+  const delayBetweenRetries = 2000; // Delay in milliseconds between retries (2 seconds)
+  
+  // Helper function to delay execution for a specified time
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  try {
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const prompt = `
-Evaluate the user's answer to the given question and respond with either "correct" or "wrong" without explanation.
+  // Retry logic
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `
+      Evaluate the user's answer to the given question and respond with either "correct" or "wrong" without explanation.
+  
+      Examples:
+      Question: "What is the capital of India?"
+      User's Answer: "New Delhi is the capital of India"
+      Response: "correct"
+  
+      Question: "What is the capital of India?"
+      User's Answer: "India is the capital of India"
+      Response: "wrong"
+  
+      Now evaluate:
+      Question: ${question}
+      User's Answer: ${userAnswer}
+      Response:
+      `;
+  
+      const result = await model.generateContent(prompt);
+      console.log(result);
+  
+      // Extract evaluation from the response
+      let evaluation = 'wrong'; // Default to 'wrong'
+      if (result && result.response.text()) {
+        evaluation = result.response.text().trim().toLowerCase();
+        console.log('AI Evaluation:', evaluation);
+      } else {
+        console.error('AI did not return a valid evaluation:', result);
+      }
+  
+      return evaluation === 'correct' ? 'correct' : 'wrong';
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error.message);
+      
+      // If it is the last attempt, throw the error after retries are exhausted
+      if (attempt === maxRetries) {
+        console.error('Max retries reached. Returning default response (wrong).');
+        return 'wrong'; // Return 'wrong' as default in case of failure
+      }
 
-Examples:
-Question: "What is the capital of India?"
-User's Answer: "New Delhi is the capital of India"
-Response: "correct"
-
-Question: "What is the capital of India?"
-User's Answer: "India is the capital of India"
-Response: "wrong"
-
-Now evaluate:
-Question: ${question}
-User's Answer: ${userAnswer}
-Response:
-`;
-
-  const result = await model.generateContent(prompt);
-    console.log(result);
-    // Extract evaluation from the response
-    let evaluation = 'wrong'; // Default to 'wrong'
-    if (result && result.response.text()) {
-      evaluation = result.response.text().trim().toLowerCase();
-      console.log('AI Evaluation:', evaluation);
-    } else {
-      console.error('AI did not return a valid evaluation:', result);
+      // Wait before retrying
+      console.log(`Retrying in ${delayBetweenRetries / 1000} seconds...`);
+      await delay(delayBetweenRetries);
     }
-
-    return evaluation === 'correct' ? 'correct' : 'wrong';
-  } catch (error) {
-    console.error('Error evaluating text answer:', error.message);
-    return 'wrong'; // Treat errors as wrong
   }
 };
+
 
 /**
  * Function to generate AI-based feedback based on performance
@@ -189,25 +208,43 @@ const generateAIReportFeedback = async (
   correctAnswers,
   totalQuestions
 ) => {
-  const query = `User answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
+  const maxRetries = 3; // Maximum number of retries
+  const delayBetweenRetries = 2000; // Delay in milliseconds between retries (2 seconds)
+  
+  // Helper function to delay execution for a specified time
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  try {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(query);
+  // Retry logic
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const query = `User answered ${correctAnswers} out of ${totalQuestions} questions correctly, resulting in a score of ${scorePercentage}%. The user had the following job expectations: ${JSON.stringify(report.expectations)}. Provide performance feedback and suggest areas to study if necessary.`;
 
-    // console.log('Raw AI Feedback Result:', result); // Debug log
+    try {
+      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(query);
 
-    let feedback = 'Could not generate feedback.';
-    if (result && result.response && result.response.text()) {
-      feedback = result.response.text().trim();
-    } else {
-      console.error('AI feedback generation failed. No valid response:', result);
+      // console.log('Raw AI Feedback Result:', result); // Debug log
+
+      let feedback = 'Could not generate feedback.';
+      if (result && result.response && result.response.text()) {
+        feedback = result.response.text().trim();
+      } else {
+        console.error('AI feedback generation failed. No valid response:', result);
+      }
+      return feedback;
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error.message);
+      
+      // If it is the last attempt, throw the error after retries are exhausted
+      if (attempt === maxRetries) {
+        console.error('Max retries reached. Returning default response.');
+        return 'Error generating feedback. Please try again.'; // Return fallback message after all retries fail
+      }
+
+      // Wait before retrying
+      console.log(`Retrying in ${delayBetweenRetries / 1000} seconds...`);
+      await delay(delayBetweenRetries);
     }
-    return feedback;
-  } catch (error) {
-    console.error('Error generating feedback:', error.message);
-    return 'Error generating feedback. Please try again.';
   }
 };
 
@@ -320,179 +357,3 @@ const generateEmptyReport = (report) => ({
   headers: report.headers || [], // Include headers from the original report
   urls: report.urls || [], // Include URLs from the original report
 });
-
-// import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// /**
-//  * Main function to analyze a report using AI
-//  * @param {Object} report - The report object containing questions, answers, and other metadata
-//  * @returns {Object} - Final report with evaluation results
-//  */
-// export const analyzeReportWithAI = async (report) => {
-//   const questionsToEvaluate = report.questions.filter((q) => q.type === 'text');
-//   const mcqQuestions = report.questions.filter((q) => q.type === 'mcq');
-//   const totalQuestions = report.questions.length;
-
-//   if (totalQuestions === 0) {
-//     console.warn('No evaluable questions found in the report.');
-//     return generateEmptyReport(report);
-//   }
-
-//   // Evaluate MCQs
-//   let mcqCorrect = 0;
-//   mcqQuestions.forEach((question) => {
-//     if (question.userAnswer && question.userAnswer === question.correctAnswer) {
-//       mcqCorrect++;
-//     }
-//   });
-
-//   // Evaluate text-based questions
-//   const textEvaluationResults = [];
-//   for (const question of questionsToEvaluate) {
-//     const userAnswer = question.userTextAnswer;
-
-//     if (!userAnswer || userAnswer.toLowerCase() === 'n/a') {
-//       console.warn(`No valid answer for question ID: ${question.id}`);
-//       textEvaluationResults.push({ isCorrect: false, type: 'text' });
-//       continue;
-//     }
-
-//     try {
-//       const evaluation = await evaluateTextAnswerAI(question.question, userAnswer);
-//       textEvaluationResults.push({
-//         isCorrect: evaluation === 'correct',
-//         type: 'text',
-//       });
-//     } catch (error) {
-//       console.error(`Error evaluating text question ID: ${question.id}`, error);
-//       textEvaluationResults.push({ isCorrect: false, type: 'text' });
-//     }
-
-//     // Add increased delay to prevent rate-limiting errors
-//     await delay(3000); // 3 seconds delay
-//   }
-
-//   // Aggregate results
-//   const correctAnswers = mcqCorrect + textEvaluationResults.filter((r) => r.isCorrect).length;
-//   const textCorrect = textEvaluationResults.filter((r) => r.isCorrect).length;
-//   const scorePercentage = (correctAnswers / totalQuestions) * 100;
-//   const employabilityScore = calculateEmployabilityScore(scorePercentage);
-
-//   // Generate feedback and suggestions
-//   const feedback = await generateAIReportFeedback(report, scorePercentage, correctAnswers, totalQuestions);
-
-//   // Final report
-//   const finalReport = {
-//     totalQuestions,
-//     correctAnswers,
-//     mcqCorrect,
-//     textCorrect,
-//     scorePercentage: parseFloat(scorePercentage.toFixed(2)),
-//     employabilityScore,
-//     feedback,
-//     suggestions: generateSuggestions(scorePercentage),
-//     additionalNotes: generateAdditionalNotes(scorePercentage),
-//     aiWords: generateAiWords(scorePercentage),
-//     fakePercentage: calculateFakePercentage(report),
-//     isHuman: determineIfHuman(report),
-//     timestamp: new Date(),
-//     headers: report.headers || [],
-//     urls: report.urls || [],
-//   };
-
-//   return finalReport;
-// };
-
-// /**
-//  * Function to evaluate text-based answers using AI
-//  * @param {string} question - The question text
-//  * @param {string} userAnswer - The user's answer
-//  * @returns {Promise<string>} - 'correct' or 'wrong'
-//  */
-// const evaluateTextAnswerAI = async (question, userAnswer) => {
-//   try {
-//     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
-//     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-//     const prompt = `
-// Evaluate the user's answer to the given question and respond with either "correct" or "wrong" without explanation.
-
-// Examples:
-// Question: "What is the capital of India?"
-// User's Answer: "New Delhi is the capital of India"
-// Response: "correct"
-
-// Question: "What is the capital of India?"
-// User's Answer: "India is the capital of India"
-// Response: "wrong"
-
-// Now evaluate:
-// Question: ${question}
-// User's Answer: ${userAnswer}
-// Response:
-// `;
-
-//     const result = await model.generateContent(prompt);
-//     const evaluation = result?.response?.text()?.trim().toLowerCase() || 'wrong';
-//     return evaluation;
-//   } catch (error) {
-//     console.error('Error evaluating text answer:', error.message);
-//     return 'wrong'; // Default to "wrong" in case of an error
-//   }
-// };
-
-// /**
-//  * Generate AI-based feedback
-//  */
-// const generateAIReportFeedback = async (report, scorePercentage, correctAnswers, totalQuestions) => {
-//   const query = `User answered ${correctAnswers} out of ${totalQuestions} correctly, scoring ${scorePercentage}%. Job expectations: ${JSON.stringify(
-//     report.expectations
-//   )}. Provide feedback and study suggestions.`;
-
-//   try {
-//     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
-//     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-//     const result = await model.generateContent(query);
-//     return result?.response?.text()?.trim() || 'Feedback could not be generated.';
-//   } catch (error) {
-//     console.error('Error generating feedback:', error.message);
-//     return 'Error generating feedback. Please try again.';
-//   }
-// };
-
-// /**
-//  * Delay execution to avoid rate-limiting
-//  * @param {number} ms - Milliseconds to delay
-//  */
-// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// /**
-//  * Helper functions for report generation
-//  */
-// const calculateEmployabilityScore = (scorePercentage) =>
-//   scorePercentage >= 70 ? 'High' : scorePercentage >= 50 ? 'Medium' : 'Low';
-// const generateSuggestions = (scorePercentage) =>
-//   scorePercentage >= 90 ? ['Excellent work!'] : ['Review materials.', 'Practice questions.'];
-// const generateAdditionalNotes = (scorePercentage) =>
-//   scorePercentage >= 90 ? 'Great job!' : 'Keep working hard!';
-// const generateAiWords = (scorePercentage) =>
-//   scorePercentage >= 90 ? 'Exceptional' : scorePercentage >= 70 ? 'Proficient' : 'Needs Improvement';
-// const calculateFakePercentage = () => 0; // Placeholder for actual logic
-// const determineIfHuman = () => true; // Placeholder for actual logic;
-
-// const generateEmptyReport = (report) => ({
-//   totalQuestions: 0,
-//   correctAnswers: 0,
-//   mcqCorrect: 0,
-//   textCorrect: 0,
-//   scorePercentage: 0,
-//   employabilityScore: 'Low',
-//   feedback: 'No evaluable questions.',
-//   suggestions: [],
-//   additionalNotes: '',
-//   aiWords: '',
-//   fakePercentage: null,
-//   isHuman: null,
-//   timestamp: new Date(),
-//   headers: report.headers || [],
-//   urls: report.urls || [],
-// });
