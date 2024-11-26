@@ -35,19 +35,19 @@ const Create = () => {
 
   // }, []);
   //checks and sets setCoursesCreatedToday
-  useEffect(() => {
-    const lastReset = sessionStorage.getItem("lastReset");
-    if (
-      lastReset &&
-      new Date().toDateString() !== new Date(parseInt(lastReset)).toDateString()
-    ) {
-      sessionStorage.setItem("coursesCreatedToday", "0");
-    }
-    sessionStorage.setItem("lastReset", new Date().getTime().toString());
-    setCoursesCreatedToday(
-      parseInt(sessionStorage.getItem("coursesCreatedToday") || "0")
-    );
-  }, []);
+  // useEffect(() => {
+  //   const lastReset = sessionStorage.getItem("lastReset");
+  //   if (
+  //     lastReset &&
+  //     new Date().toDateString() !== new Date(parseInt(lastReset)).toDateString()
+  //   ) {
+  //     sessionStorage.setItem("coursesCreatedToday", "0");
+  //   }
+  //   sessionStorage.setItem("lastReset", new Date().getTime().toString());
+  //   setCoursesCreatedToday(
+  //     parseInt(sessionStorage.getItem("coursesCreatedToday") || "0")
+  //   );
+  // }, []);
 
   let handleChange = (i, e) => {
     let newFormValues = [...formValues];

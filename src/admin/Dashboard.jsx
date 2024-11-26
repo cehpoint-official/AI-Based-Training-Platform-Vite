@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Navbar } from "flowbite-react";
-
 import React, { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import AdminSidebar from "./components/adminsidebar";
@@ -13,6 +12,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     sessionStorage.setItem("darkMode", false);
@@ -20,24 +20,28 @@ const Dashboard = () => {
       try {
         const postURL = `/api/dashboard`;
         const response = await axiosInstance.post(postURL);
-        // console.log(response.data);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {
         setLoading(false);
       }
-      //         // sessionStorage.setItem('terms', response.data.admin.terms)
-      //         // sessionStorage.setItem('privacy', response.data.admin.privacy)
-      //         // sessionStorage.setItem('cancel', response.data.admin.cancel)
-      //         // sessionStorage.setItem('refund', response.data.admin.refund)
-      //         // sessionStorage.setItem('billing', response.data.admin.billing)
     }
     dashboardData();
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleInputSubmit = async () => {
+    try{
+      const postURL = `/api/key`;
+      const response = await axiosInstance.post(postURL,{ key: inputValue });
+      setInputValue('');
+    }catch(error){
+      console.log(error);
+    }
   };
 
   return (
@@ -95,10 +99,31 @@ const Dashboard = () => {
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
             <DashboardCards datas={data} loading={loading} />
+            <div className="p-4">
+              <div className="bg-gray-200 dark:bg-gray-800 rounded-md p-4 shadow-md">
+                <h2 className="mb-2">
+                  change api key for all users
+                </h2>
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Enter your key here"
+                  className="px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 w-full mb-2"
+                />
+                <button
+                  onClick={handleInputSubmit}
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-blue-600"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </>
   );
 };
+
 export default Dashboard;
