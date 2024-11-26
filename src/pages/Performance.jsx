@@ -37,30 +37,31 @@ const Performance = () => {
   const fetchPerformance = async () => {
     try {
       const response = await axiosInstance.get(`/api/performance/${userUID}`);
-      const re = await axiosInstance.post('/api/updateCountsForAllUsers');
+      const re = await axiosInstance.post("/api/updateCountsForAllUsers");
       const performanceData = response?.data?.data;
-  
+
       if (response?.data?.success && performanceData) {
-        setData({ success: true, data: performanceData });
+        // console.log(performanceData.max_strick)
+        setData({ success: true, ...performanceData });
         setPerformanceScore(performanceData?.performanceScore);
-  
+
         // Extract daily performance and sort by date
         const dailyPerformance = performanceData?.dailyPerformance || [];
         // console.log(dailyPerformance);
         dailyPerformance.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
+
         // Map data to include a `color` field for visualization
         const updatedCourseCompletionData = dailyPerformance.map((entry) => ({
           date: moment(entry.date).format("YYYY-MM-DD"), // Format the date
           count: entry.count || 0, // Use the `count` field from the backend
           color: entry.count > 0 ? "green" : "red", // Assign color based on count
         }));
-  
+
         setCourseCompletionData(updatedCourseCompletionData); // Update the state with new data
       } else {
         setData({ success: false, data: [] });
       }
-  
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching user performance data:", error);
@@ -68,8 +69,6 @@ const Performance = () => {
       setOpenSnackbar(true); // Show error notification
     }
   };
-  
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -304,20 +303,30 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
-        <div className="w-[80%] overflow-x-auto overflow-y-hidden flex items-center justify-center">
+        <div className="w-[80%] overflow-x-auto overflow-y-hidden flex items-center justify-center flex-col ">
+          <div className="w-full flex items-center justify-center gap-x-10 mt-4 mb-8">
+            <span className="px-8 py-3 bg-green-600 font-bold rounded-md uppercase">
+              Max Strick: {data?.max_strick}
+            </span>
+            <span className="px-8 py-3 bg-green-500 font-bold rounded-md uppercase">
+              Current Strick: {data?.strick}
+            </span>
+          </div>
           <CalendarHeatmap
             startDate={moment().startOf("year").toDate()}
             endDate={moment().endOf("year").toDate()}
-            values={heatmapData}
+            values={generateFullYearData()}
             gutterSize={2}
             showWeekdayLabels
-            classForValue={(value) =>
-              value && value.count > 0 ? "fill-green-500" : "fill-gray-300"
-            }
+            classForValue={(value) => {
+              if (!value) return "fill-gray-300";
+              return value.count > 0 ? "fill-green-500" : "fill-gray-300";
+            }}
             tooltipDataAttrs={(value) => ({
-              "data-tip": `Date: ${value.date} | Projects: ${value.count}`,
+              "data-tip": value
+                ? `Date: ${value.date} | Count: ${value.count}`
+                : "No data",
             })}
-            className="w-[50rem]"
           />
         </div>
 

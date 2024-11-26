@@ -22,7 +22,7 @@ const Topcandidate = () => {
     async function dashboardData() {
       try {
 
-        const postURL = `/api/top-candidates-admin`;
+        const postURL = `/api/performance/all`;
         const response = await axiosInstance.get(postURL);
         console.log("GGGG", response.data.data);
         setData(response.data.data);
