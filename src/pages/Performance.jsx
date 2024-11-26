@@ -37,52 +37,30 @@ const Performance = () => {
   const fetchPerformance = async () => {
     try {
       const response = await axiosInstance.get(`/api/performance/${userUID}`);
+      const re = await axiosInstance.post('/api/updateCountsForAllUsers');
       const performanceData = response?.data?.data;
-
+  
       if (response?.data?.success && performanceData) {
         setData({ success: true, data: performanceData });
         setPerformanceScore(performanceData?.performanceScore);
-
+  
         // Extract daily performance and sort by date
         const dailyPerformance = performanceData?.dailyPerformance || [];
+        // console.log(dailyPerformance);
         dailyPerformance.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        // Get the first and last date of the year
-        const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
-        const endOfYear = moment().endOf("year").format("YYYY-MM-DD");
-
-        // Create a list of all dates for the year
-        const allDatesOfYear = [];
-        let currentDate = moment(startOfYear);
-        while (
-          currentDate.isBefore(endOfYear) ||
-          currentDate.isSame(endOfYear, "day")
-        ) {
-          allDatesOfYear.push(currentDate.format("YYYY-MM-DD"));
-          currentDate.add(1, "days");
-        }
-
-        // Create or update course completion data based on daily performance for the whole year
-        const updatedCourseCompletionData = allDatesOfYear.map((date) => {
-          // Find the record for the specific date
-          const entry = dailyPerformance.find(
-            (entry) => moment(entry.date).format("YYYY-MM-DD") === date
-          );
-
-          // Set count based on the presence of the entry
-          const count = entry ? 1 : 0;
-
-          return {
-            date: date,
-            count: count,
-          };
-        });
-
+  
+        // Map data to include a `color` field for visualization
+        const updatedCourseCompletionData = dailyPerformance.map((entry) => ({
+          date: moment(entry.date).format("YYYY-MM-DD"), // Format the date
+          count: entry.count || 0, // Use the `count` field from the backend
+          color: entry.count > 0 ? "green" : "red", // Assign color based on count
+        }));
+  
         setCourseCompletionData(updatedCourseCompletionData); // Update the state with new data
       } else {
         setData({ success: false, data: [] });
       }
-
+  
       setLoading(false);
     } catch (error) {
       console.error("Error fetching user performance data:", error);
@@ -90,6 +68,8 @@ const Performance = () => {
       setOpenSnackbar(true); // Show error notification
     }
   };
+  
+  
 
   useEffect(() => {
     const fetchData = async () => {
