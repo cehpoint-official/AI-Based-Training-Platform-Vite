@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import ResumeUpload from './Parsing'; // Ensure the correct import path
 import { AiOutlineCheckCircle, AiOutlineLoading3Quarters } from 'react-icons/ai';
+import image from '../../assets/image3.svg'
+import SvgSection from './SvgSection';
 
 const UserDetailsModal = ({ setUserDetails, setResumeData, onClose }) => {
   const [resumeUploaded, setResumeUploaded] = useState(false);
@@ -30,39 +32,51 @@ const UserDetailsModal = ({ setUserDetails, setResumeData, onClose }) => {
     setLoading(true);
   };
 
+  
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 w-full h-full bg-[url('.\assets\image3.png')] bg-cover">
-      <div className="relative bg-gradient-to-b from-gray-50 to-white rounded-lg shadow-lg p-8 w-fit max-w-full z-10 cursor-pointer shadow-gray-900">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-          One Step Closer to Your Dream Offer
-          <div className="text-center text-sm mt-2 text-gray-800">
+    <div className="fixed inset-0 flex flex-col md:flex-row z-50 w-full h-full bg-gray-50">
+      {/* Content Section */}
+      <div className=" bg- md:p-10 w-full md:w-1/2 flex justify-center items-center">
+        <div className="flex flex-col justify-center items-center bg-white px-5 w-full h-full rounded-lg ">
+          <div className='space-y-1'>
+          <h2 className="text-xl md:text-2xl font-bold  text-gray-800 text-center">
+            One Step Closer to Your Dream Offer
+          </h2>
+          <p className="text-center text-sm md:text-base text-gray-600">
             Take a step ahead in your career
+          </p>
           </div>
-        </h2>
-
-        <div className="mb-6">
+          
+          <div>
           <ResumeUpload
             onUploadStart={handleResumeUploadStart}
             onUploadComplete={handleResumeUploadComplete}
           />
+          </div>
+          
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="flex justify-center mt-4">
+              <AiOutlineLoading3Quarters className="animate-spin h-6 w-6 text-indigo-500" />
+            </div>
+          )}
+
+          {/* Success Message */}
+          {/* {resumeUploaded && parsedData && (
+            <div className="flex items-center justify-center">
+              <AiOutlineCheckCircle className="w-6 h-6 text-green-500 mr-2" />
+              <span className="text-green-600 font-medium">
+                Resume uploaded successfully!
+              </span>
+            </div>
+          )} */}
         </div>
+      </div>
 
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex justify-center mb-4">
-            <AiOutlineLoading3Quarters className="animate-spin h-6 w-6 text-indigo-500" />
-          </div>
-        )}
-
-        {/* Success Message */}
-        {resumeUploaded && parsedData && (
-          <div className="mt-4 flex items-center justify-center">
-            <AiOutlineCheckCircle className="w-6 h-6 text-green-500 mr-3" />
-            <span className="text-green-600 font-medium">
-              Resume uploaded successfully!
-            </span>
-          </div>
-        )}
+      {/* SVG Section */}
+      <div className="flex-1 flex justify-center items-center bg-gray-100 p-4 md:p-14">
+        <SvgSection image={image} />
       </div>
     </div>
   );
