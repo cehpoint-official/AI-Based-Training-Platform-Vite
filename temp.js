@@ -22,72 +22,52 @@ const Performance = () => {
   const [performanceScore, setPerformanceScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [globalUpdateDone, setGlobalUpdateDone] = useState(false);
-  const [courseCompletionData, setCourseCompletionData] = useState([]);
 
   const fetchPerformanceAll = async () => {
     try {
       const response = await axiosInstance.get(`/api/performance/all`);
-      setGlobalUpdateDone(true); // Mark global update as done
     } catch (error) {
-      console.error("Error updating all user performance data:", error);
+      console.error("Error fetching data:", error);;
     }
   };
 
   const fetchPerformance = async () => {
     try {
+      // Use the userUID directly in the URL for the GET request
       const response = await axiosInstance.get(`/api/performance/${userUID}`);
-      const re = await axiosInstance.post('/api/updateCountsForAllUsers');
       const performanceData = response?.data?.data;
-  
+
       if (response?.data?.success && performanceData) {
         setData({ success: true, data: performanceData });
         setPerformanceScore(performanceData?.performanceScore);
-  
-        // Extract daily performance and sort by date
-        const dailyPerformance = performanceData?.dailyPerformance || [];
-        // console.log(dailyPerformance);
-        dailyPerformance.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-        // Map data to include a `color` field for visualization
-        const updatedCourseCompletionData = dailyPerformance.map((entry) => ({
-          date: moment(entry.date).format("YYYY-MM-DD"), // Format the date
-          count: entry.count || 0, // Use the `count` field from the backend
-          color: entry.count > 0 ? "green" : "red", // Assign color based on count
-        }));
-  
-        setCourseCompletionData(updatedCourseCompletionData); // Update the state with new data
       } else {
         setData({ success: false, data: [] });
       }
-  
+
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching user performance data:", error);
+      console.error("Error fetching data:", error);
       setLoading(false);
       setOpenSnackbar(true); // Show error notification
     }
   };
-  
-  
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!userUID) {
-        console.error("User ID not found in session storage.");
-        setLoading(false);
-        return;
-      }
+    if (userUID) {
+      fetchPerformanceAll();
+      fetchPerformance();
+    } else {
+      console.error("User ID not found in session storage.");
+      setLoading(false);
+    }
+  }, [userUID]);
 
-      if (!globalUpdateDone) {
-        await fetchPerformanceAll();
-      }
-
-      await fetchPerformance();
-    };
-
-    fetchData();
-  }, [userUID, globalUpdateDone]);
+  // Log whenever performanceScore is updated
+  // useEffect(() => {
+  //   if (performanceScore) {
+  //     console.log("PerformanceScore updated:", performanceScore);
+  //   }
+  // }, [performanceScore]);
 
   const projectCountCriteria = 1;
   const courseCountCriteria = 5;
@@ -103,6 +83,7 @@ const Performance = () => {
     (performanceScore?.averageProgress / 500 || 0).toFixed(2)
   );
 
+  // Ensure progress doesn't exceed 100% and calculate completion percentages
   const projectCountCompletion = projectCount >= projectCountCriteria ? 100 : 0;
   const courseCountCompletion = Math.min(
     (courseCount / courseCountCriteria) * 100,
@@ -117,6 +98,7 @@ const Performance = () => {
     100
   );
 
+  // Calculate the total completion percentage
   const totalCompletionPercentage =
     (projectCountCompletion +
       courseCountCompletion +
@@ -126,29 +108,20 @@ const Performance = () => {
 
   const completionPercentage = totalCompletionPercentage.toFixed(2);
 
-  // Generate all dates in the past year
-  const generateFullYearData = () => {
-    const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
-    const endOfYear = moment().endOf("year").format("YYYY-MM-DD");
+  // Simulated daily data for the calendar heatmap
+  const courseCompletionData = data?.data[0]?.dailyCourseCompletion || [
+    // Example data (replace with real API data if available)
+    { date: "2023-11-20", count: 1 },
+    { date: "2023-11-21", count: 2 },
+    { date: "2023-11-22", count: 0 },
+    { date: "2023-11-23", count: 3 },
+  ];
 
-    const fullYearData = [];
-    for (
-      let date = moment(startOfYear);
-      date.isBefore(endOfYear);
-      date.add(1, "days")
-    ) {
-      const foundEntry = courseCompletionData.find(
-        (entry) => entry.date === date.format("YYYY-MM-DD")
-      );
-      fullYearData.push(
-        foundEntry || { date: date.format("YYYY-MM-DD"), count: 0 } // Fill missing days with count: 0
-      );
-    }
-    return fullYearData;
-  };
-
-  // Use this data to update heatmapData
-  const heatmapData = generateFullYearData();
+  // Transform data to match the heatmap format
+  const heatmapData = courseCompletionData.map((entry) => ({
+    date: moment(entry.date).format("YYYY-MM-DD"), // Format date
+    count: entry.count, // Number of courses completed on that date
+  }));
 
   return (
     <div className="h-screen flex flex-col overflow-x-hidden">
@@ -248,8 +221,15 @@ const Performance = () => {
                           value={projectCountCompletion}
                           style={{ width: "300px", height: "10px" }}
                         />
+                        {projectCountCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
                       </Box>
                     </Box>
+
+                    {/* Other Progress Details */}
                     {/* Course Count */}
                     <Box display="flex" flexDirection="column" width="100%">
                       <Typography
@@ -264,15 +244,21 @@ const Performance = () => {
                           value={courseCountCompletion}
                           style={{ width: "300px", height: "10px" }}
                         />
+                        {courseCountCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
                       </Box>
                     </Box>
+
                     {/* Quiz Score Average */}
                     <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Quiz Score Average: {quizScoreAvg}%
+                        Quiz Score Average: {quizScoreAvg}
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -280,15 +266,21 @@ const Performance = () => {
                           value={quizScoreAvgCompletion}
                           style={{ width: "300px", height: "10px" }}
                         />
+                        {quizScoreAvgCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
                       </Box>
                     </Box>
+
                     {/* Average Progress */}
                     <Box display="flex" flexDirection="column" width="100%">
                       <Typography
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Average Progress: {averageProgress}%
+                        Average Progress: {averageProgress}
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -296,6 +288,11 @@ const Performance = () => {
                           value={averageProgressCompletion}
                           style={{ width: "300px", height: "10px" }}
                         />
+                        {averageProgressCompletion === 100 && (
+                          <FaCheckCircle
+                            style={{ color: "green", marginLeft: "8px" }}
+                          />
+                        )}
                       </Box>
                     </Box>
                   </Box>
@@ -304,31 +301,57 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
-        <div className="w-[80%] overflow-x-auto overflow-y-hidden flex items-center justify-center">
-          <CalendarHeatmap
-            startDate={moment().startOf("year").toDate()}
-            endDate={moment().endOf("year").toDate()}
-            values={heatmapData}
-            gutterSize={2}
-            showWeekdayLabels
-            classForValue={(value) =>
-              value && value.count > 0 ? "fill-green-500" : "fill-gray-300"
-            }
-            tooltipDataAttrs={(value) => ({
-              "data-tip": `Date: ${value.date} | Projects: ${value.count}`,
-            })}
-            className="w-[50rem]"
-          />
-        </div>
 
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={() => setOpenSnackbar(false)}
-          message="Error fetching performance data"
+        {/* Calendar Heatmap Feature */}
+        <h3 className="text-lg font-bold mb-4 mt-8">Your Learning Activity</h3>
+        <CalendarHeatmap
+          startDate={moment().subtract(1, "year").format("YYYY-MM-DD")}
+          endDate={moment().format("YYYY-MM-DD")}
+          values={heatmapData}
+          classForValue={(value) => {
+            if (!value || value.count === 0) {
+              return "color-empty";
+            }
+            if (value.count <= 2) {
+              return "color-scale-1";
+            }
+            if (value.count <= 4) {
+              return "color-scale-2";
+            }
+            return "color-scale-3";
+          }}
+          tooltipDataAttrs={(value) => ({
+            "data-tip": value
+              ? `${value.date}: ${value.count} courses completed`
+              : "No data",
+          })}
+          showWeekdayLabels={true}
         />
+        <style>
+          {`
+            .color-empty {
+              fill: #ebedf0;
+            }
+            .color-scale-1 {
+              fill: #c6e48b;
+            }
+            .color-scale-2 {
+              fill: #7bc96f;
+            }
+            .color-scale-3 {
+              fill: #239a3b;
+            }
+          `}
+        </style>
       </div>
+
       <Footers />
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+        message="There was an issue fetching the data."
+      />
     </div>
   );
 };
