@@ -32,35 +32,54 @@ const Slider = () => {
                                 index === currentIndex ? 'translate-x-0' : index > currentIndex ? 'translate-x-full' : '-translate-x-full'
                             }`}
                         >
-                            <div className="w-full sm:w-1/4 p-4 sm:p-8 flex flex-col justify-center items-center">
-                                <p className="mb-6 px-4 text-lg sm:text-2xl sm:px-0 font-bold text-black dark:text-white text-center">
-                                    {text[currentIndex]}
-                                </p>
-                                <button 
-                                    className="px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-opacity-80 transition duration-300 bg-black text-white dark:bg-white dark:text-black text-sm sm:text-base"
+                            {/* Mobile View: Single div with background image and button */}
+                            <div
+                                className="block sm:hidden w-full h-full relative"
+                                style={{
+                                    backgroundImage: `url(${url})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                }}
+                            >
+                                <button
+                                    className="absolute bottom-9 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-md hover:bg-opacity-80 transition duration-300 bg-black text-white dark:bg-white dark:text-black text-sm"
                                     onClick={handleClick}
                                 >
                                     {buttons[currentIndex]}
                                 </button>
                             </div>
-                            <div className="hidden sm:block w-full sm:w-3/4 h-full">
-                                <img 
-                                    src={url} 
-                                    alt={`Slide ${index}`} 
-                                    className="w-full h-full object-cover"
-                                />
+                            {/* Desktop View: Image and Text/Button separate */}
+                            <div className="hidden sm:flex w-full">
+                                <div className="w-full sm:w-1/4 p-4 sm:p-8 flex flex-col justify-center items-center">
+                                    <p className="mb-6 px-4 text-lg sm:text-2xl sm:px-0 font-bold text-black dark:text-white text-center">
+                                        {text[currentIndex]}
+                                    </p>
+                                    <button
+                                        className="px-3 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-opacity-80 transition duration-300 bg-black text-white dark:bg-white dark:text-black text-sm sm:text-base"
+                                        onClick={handleClick}
+                                    >
+                                        {buttons[currentIndex]}
+                                    </button>
+                                </div>
+                                <div className="w-full sm:w-3/4 h-full">
+                                    <img
+                                        src={url}
+                                        alt={`Slide ${index}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
-                <button 
-                    onClick={handlePrev} 
+                <button
+                    onClick={handlePrev}
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 focus:outline-none text-gray-900 dark:bg-black dark:text-white"
                 >
                     ❮
                 </button>
-                <button 
-                    onClick={handleNext} 
+                <button
+                    onClick={handleNext}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 focus:outline-none text-gray-900 dark:bg-black dark:text-white"
                 >
                     ❯

@@ -566,7 +566,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   };
 
   return (
-    <div className="bg-white rounded-md p-8 shadow-sm max-w-2xl mx-auto mt-10">
+    <div className="bg-white  p-8  max-w-2xl mx-auto mt-5">
 
       {showEligibilityPopup && (
         <EligibilityPopup/>
@@ -631,24 +631,25 @@ const ResumeUpload = ({ onUploadComplete }) => {
           )}
 
           {/* Parsing Stage Indicator */}
-          {isParsing && (
+          {/* {isParsing && (
             <div className="mt-4 flex items-center">
               <AiOutlineLoading3Quarters className="w-5 h-5 mr-2 animate-spin" />
-              <span className="text-gray-700">Parsing...</span>
+              <span className="text-gray-500">Parsing...</span>
             </div>
-          )}
+          )} */}
 
           {/* Upload Button */}
           <div className="mt-8">
             <button
               onClick={handleResumeUpload}
-              className={`inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                isUploading || isParsing || !meetsCriteria
+              className={`inline-flex ml-20 items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                isUploading || isParsing ||!meetsCriteria
                   ? "bg-indigo-400 cursor-not-allowed"
                   : "bg-indigo-700 hover:bg-indigo-800"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               disabled={
                 isUploading || isParsing || !selectedFile || !meetsCriteria
+               
               }
             >
               {isUploading || isParsing ? (
@@ -665,11 +666,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
       ) : (
         <div className="mt-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md">
           <div className="flex items-center">
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <svg className="w-5 h-5 mr-2"  fill="currentColor"  viewBox="0 0 20 20">
               <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM10 3.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13z" />
             </svg>
             <p className="font-semibold">
