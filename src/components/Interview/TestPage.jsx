@@ -170,7 +170,7 @@ const TestPage = () => {
     : 0;
 
   return (
-    <div className="p-6 bg-gray-100 bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
+    <div className="p-6 bg-gray-200 bg-cover min-h-screen flex flex-col items-center justify-center font-poppins text-gray-100 transition duration-300">
       {showModal && (
         <UserDetailsModal
           setUserDetails={setUserDetails}

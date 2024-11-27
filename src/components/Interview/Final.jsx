@@ -21,8 +21,8 @@ const Final = () => {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [reportData, setReportData] = useState(null); 
-  
+  const [reportData, setReportData] = useState(null);
+  const [testScore,setTestScore] = useState(0); 
   const [personalDataFromResume, setPersonalDataFromResume] = useState(null); 
   const [resumeData, setResumeData] = useState(null); 
 
