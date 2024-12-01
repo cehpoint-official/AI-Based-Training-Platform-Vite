@@ -354,7 +354,8 @@ const Course = () => {
 
     // If theory is not present, we need to generate it
     if (!theory) {
-        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations and make sure it is in English. Avoid other languages except English.`;
+        //const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations and make sure it is in English. Avoid other languages except English.`;
+        const query = `${mSubTopic.title} tutorial in ${mainTopic} in English.`;
         const id = toast.loading("Please wait...");
 
         if (type === "video & text course") {
