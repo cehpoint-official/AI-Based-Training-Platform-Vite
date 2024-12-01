@@ -53,8 +53,12 @@ const StyledText = ({
       {/* AI Explanation Section */}
 
       {type === "video & text course" && (
-        <section id="generate-ai-section" ref={aiSectionRef} className="mt-10">
-          <div className="w-full flex items-center justify-center">
+        <section
+          id="generate-ai-section"
+          ref={aiSectionRef}
+          className="mt-10 relative"
+        >
+          <div className="w-full flex items-center justify-center mb-16">
             {aiExplanation ? (
               <div className="w-full flex items-start justify-start flex-col">
                 <div className="w-full flex items-center justify-center flex-col">
@@ -79,6 +83,11 @@ const StyledText = ({
               </button>
             )}
           </div>
+          <p className="absolute w-full text-center text-xs text-gray-500 dark:text-gray-400 ">
+            Note: AI strives to fetch accurate YouTube videos, but mistakes can
+            happen. If the results are incorrect, we sincerely apologize for any
+            inconvenience.
+          </p>
         </section>
       )}
     </div>

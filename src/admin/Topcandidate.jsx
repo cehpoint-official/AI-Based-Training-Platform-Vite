@@ -22,10 +22,11 @@ const Topcandidate = () => {
     async function dashboardData() {
       try {
 
-        const postURL = `/api/performance/all`;
+        const postURL = `/api/performance`;
         const response = await axiosInstance.get(postURL);
         console.log("GGGG", response.data.data);
         setData(response.data.data);
+        // setProjects(response.data.data);
 
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -37,18 +38,18 @@ const Topcandidate = () => {
   }, []);
 
   // Fetch projects
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const response = await axiosInstance.get(`/api/getprojectsAdmin`);
-        console.log(response.data.data)
-        setProjects(response.data.data);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    }
-    fetchProjects();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchProjects() {
+  //     try {
+  //       const response = await axiosInstance.get(`/api/getprojectsAdmin`);
+  //       console.log(response.data.data)
+  //       setProjects(response.data.data);
+  //     } catch (error) {
+  //       console.error("Error fetching projects:", error);
+  //     }
+  //   }
+  //   fetchProjects();
+  // }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -100,7 +101,7 @@ const Topcandidate = () => {
                 </div>
               </Navbar>
 
-              <TopcandidateTable datas={data} loading={loading} projects={projects} />
+              <TopcandidateTable datas={data} loading={loading}  />
 
             </div>
             <AdminSidebarMobile isSidebarOpen={isSidebarOpen} />
@@ -110,7 +111,7 @@ const Topcandidate = () => {
           <AdminSidebar />
           <div className="overflow-y-auto flex-grow flex-col dark:bg-black">
             <AdminHead />
-            <TopcandidateTable datas={data} loading={loading} projects={projects} />
+            <TopcandidateTable datas={data} loading={loading} />
           </div>
         </div>
       </div>
