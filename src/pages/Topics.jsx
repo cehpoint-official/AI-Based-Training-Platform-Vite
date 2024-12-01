@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../axios";
 
 const Topics = () => {
+  const location = useLocation();
   const { state } = useLocation();
   const [processing, setProcessing] = useState(false);
   const { jsonData, mainTopic, type , useUserApiKey, apiKey,userunsplashkey, subtopic } = state || {};
@@ -26,6 +27,13 @@ const Topics = () => {
     navigate("/create");
   }
 
+  useEffect(() => {
+    // Check if the current pathname is "/topics"
+    if (location.pathname === "/course") {
+      setProcessing(false);
+    }
+  }, [location.pathname]);
+
   const showToast = async (msg) => {
     toast(msg, {
       position: "bottom-center",
@@ -38,15 +46,35 @@ const Topics = () => {
     });
   };
 
+  const generatePrompt = (firstSubtopicTitle, mainTopic) => {
+    // Define the maximum number of words allowed in the prompt
+    const maxWords = 10;
+  
+    // Function to split the string into words and trim if necessary
+    const truncateText = (text, maxWords) => {
+      const words = text.split(' ');
+      return words.slice(0, maxWords).join(' ');
+    };
+  
+    // Combine the titles and check if the word count exceeds the limit
+    const combinedTitle = `${firstSubtopicTitle} related to ${mainTopic} in English.`;
+    const wordsInPrompt = combinedTitle.split(' ');
+  
+    // If the word count exceeds the limit, use a truncated version
+    if (wordsInPrompt.length > maxWords) {
+      return `tutorials on ${truncateText(firstSubtopicTitle, maxWords)} related to ${mainTopic} in English.`;
+    } else {
+      return combinedTitle;
+    }
+  };
+
   function redirectCourse() {
     const mainTopicData = jsonData[mainTopic][0];
-
     const firstSubtopic = mainTopicData.subtopics[0];
-
     if (type === "video & text course") {
-      const query = `Watch tutorials on ${firstSubtopic.title} related to ${mainTopic} in English. Learn the best practices and insights!`;
-
-      sendVideo(`tutorials on ${firstSubtopic.title} related to ${mainTopic} in English.`, `${firstSubtopic.title} related to ${mainTopic}`);
+      const query = generatePrompt(firstSubtopic.title, mainTopic);
+      sendVideo(query);
+      console.log(query)
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
@@ -279,7 +307,7 @@ const Topics = () => {
       const htmlContent = generatedText;
 
       const parsedJson = htmlContent; // Ensure this is the expected format
-      setProcessing(false);
+      // setProcessing(false);
       sendDataVideo(url, parsedJson);
     } catch (error) {
       if (error.response) {

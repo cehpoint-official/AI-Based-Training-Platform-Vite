@@ -5,10 +5,11 @@ import Footers from "../components/Footers";
 import { Button, Label, Radio } from "flowbite-react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../axios";
 
 const Create = () => {
+  const location = useLocation();
   const maxSubtopics = 5;
   const maxCoursesPerDay = 5;
   const [formValues, setFormValues] = useState([{ sub: "5" }]);
@@ -34,6 +35,34 @@ const Create = () => {
   //     }
 
   // }, []);
+
+  const maxTopicLength = 30; // Max characters for the main topic
+const maxSubTopicLength = 50; // Max characters for each subtopic
+
+const [topic, setTopic] = useState(""); // Main topic value
+
+// Handle changes for main topic input
+const handleInputChange = (e, setState, maxLength) => {
+  const value = e.target.value.slice(0, maxLength); // Ensure it doesn't exceed max length
+  setState(value);
+};
+
+// Handle changes for subtopic inputs
+const handleSubtopicChange = (index, e) => {
+  const value = e.target.value.slice(0, maxSubTopicLength);
+  const updatedFormValues = [...formValues];
+  updatedFormValues[index].subtopic = value;
+  setFormValues(updatedFormValues);
+};
+
+
+  useEffect(() => {
+    // Check if the current pathname is "/topics"
+    if (location.pathname === "/topics") {
+      setProcessing(false);
+    }
+  }, [location.pathname]);
+
   //checks and sets setCoursesCreatedToday
   // useEffect(() => {
   //   const lastReset = sessionStorage.getItem("lastReset");
@@ -119,7 +148,10 @@ const Create = () => {
       return;
     }
 
-    if (coursesCreatedToday >= maxCoursesPerDay && sessionStorage.getItem("userapikey1")==null) {
+    if (
+      coursesCreatedToday >= maxCoursesPerDay &&
+      sessionStorage.getItem("userapikey1") == null
+    ) {
       setShowUpdateKeyPrompt(true);
       setProcessing(false);
       showToast(
@@ -129,8 +161,8 @@ const Create = () => {
     }
 
     const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
-    .join(", ")
-    .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", "image", and "aiExplanation" empty. 
+      .join(", ")
+      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", "image", and "aiExplanation" empty. 
 
 Please output the list in the following JSON format strictly in English:
 {
@@ -144,7 +176,7 @@ Please output the list in the following JSON format strictly in English:
         "youtube": "",
         "image": "",
         "done": false,
-        "aiExplanation": "" // New field for AI-generated explanation
+        "aiExplanation": "", // New field for AI-generated explanation
       },
       {
         "title": "Sub Topic Title",
@@ -152,7 +184,7 @@ Please output the list in the following JSON format strictly in English:
         "youtube": "",
         "image": "",
         "done": false,
-        "aiExplanation": "" // New field for AI-generated explanation
+        "aiExplanation": "", // New field for AI-generated explanation
       }
     ]
   },
@@ -165,7 +197,7 @@ Please output the list in the following JSON format strictly in English:
         "youtube": "",
         "image": "",
         "done": false,
-        "aiExplanation": "" // New field for AI-generated explanation
+        "aiExplanation": "", // New field for AI-generated explanation
       },
       {
         "title": "Sub Topic Title",
@@ -173,31 +205,38 @@ Please output the list in the following JSON format strictly in English:
         "youtube": "",
         "image": "",
         "done": false,
-        "aiExplanation": "" // New field for AI-generated explanation
+        "aiExplanation": "", // New field for AI-generated explanation
       }
     ]
   }
 ]
 }`;
 
-
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
     //update to use userprovided api keys after 5 courses.
     const userApiKey = sessionStorage.getItem("userapikey1");
-    const userunsplashkey=sessionStorage.getItem("currentUnsplashApiKey");
+    const userunsplashkey = sessionStorage.getItem("currentUnsplashApiKey");
     if (coursesCreatedToday >= maxCoursesPerDay) {
-        if (userApiKey!==null) {
-          // Call sendPrompt with additional parameter indicating to use user API key
-          await sendPrompt(prompt, mainTopic, selectedType, true, userApiKey,userunsplashkey);
-        } else {
-          // in case both are not available navigate to /profile
-          setShowUpdateKeyPrompt(true);
-          setProcessing(false);
-          showToast("You have exceeded the daily limit of 5 courses. Please update your API key.");
-          navigate("/profile");
+      if (userApiKey !== null) {
+        // Call sendPrompt with additional parameter indicating to use user API key
+        await sendPrompt(
+          prompt,
+          mainTopic,
+          selectedType,
+          true,
+          userApiKey,
+          userunsplashkey
+        );
+      } else {
+        // in case both are not available navigate to /profile
+        setShowUpdateKeyPrompt(true);
+        setProcessing(false);
+        showToast(
+          "You have exceeded the daily limit of 5 courses. Please update your API key."
+        );
+        navigate("/profile");
       }
-    }
-    else{
+    } else {
       await sendPrompt(prompt, mainTopic, selectedType, false);
     }
     // await sendPrompt(prompt, mainTopic, selectedType);
@@ -209,82 +248,116 @@ Please output the list in the following JSON format strictly in English:
     setProcessing(false);
   };
 
-  async function sendPrompt(prompt, mainTopic, selectedType, useUserApiKey = false, userApiKey = null, userunsplashkey = null) {
+  async function sendPrompt(
+    prompt,
+    mainTopic,
+    selectedType,
+    useUserApiKey = false,
+    userApiKey = null,
+    userunsplashkey = null
+  ) {
     try {
-        const dataToSend = {
-            prompt: prompt,
-            useUserApiKey: useUserApiKey,
-            userApiKey: userApiKey,
-        };
+      const dataToSend = {
+        prompt: prompt,
+        useUserApiKey: useUserApiKey,
+        userApiKey: userApiKey,
+      };
 
-        const postURL = "/api/prompt";
-        const res = await axiosInstance.post(postURL, dataToSend);
-        
-        const generatedText = res.data.generatedText;
-        const cleanedJsonString = generatedText
-            .replace(/```json/g, "")
-            .replace(/```/g, "");
-            
-        const parsedJson = JSON.parse(cleanedJsonString);
-        setProcessing(false);
-        navigate("/topics", {
-            state: {
-                jsonData: parsedJson,
-                mainTopic: mainTopic.toLowerCase(),
-                type: selectedType.toLowerCase(),
-                useUserApiKey: useUserApiKey,
-                userApiKey: userApiKey,
-                userunsplashkey: userunsplashkey
-            },
-        });
+      const postURL = "/api/prompt";
+      const res = await axiosInstance.post(postURL, dataToSend);
+
+      const generatedText = res.data.generatedText;
+      const cleanedJsonString = generatedText
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+      console.log(cleanedJsonString);
+
+      const parsedJson = JSON.parse(cleanedJsonString);
+      // setProcessing(false);
+      navigate("/topics", {
+        state: {
+          jsonData: parsedJson,
+          mainTopic: mainTopic.toLowerCase(),
+          type: selectedType.toLowerCase(),
+          useUserApiKey: useUserApiKey,
+          userApiKey: userApiKey,
+          userunsplashkey: userunsplashkey,
+        },
+      });
     } catch (error) {
-      console.error('Error in sendPrompt:', error);
+      console.error("Error in sendPrompt:", error);
       setProcessing(false);
 
       if (error.response) {
-          const errorMessage = error.response.data.error;
-          if (errorMessage.includes('The provided API key is invalid or has expired. Please check your API key and try again.') || errorMessage.includes('Permission denied')) {
-              // This is where you open the popup
-              setShowApiKeyErrorPopup(true);
-          } else {
-              showToast(errorMessage || "An error occurred while generating the course. Please try again.");
-          }
+        const errorMessage = error.response.data.error;
+        if (
+          errorMessage.includes(
+            "The provided API key is invalid or has expired. Please check your API key and try again."
+          ) ||
+          errorMessage.includes("Permission denied")
+        ) {
+          // This is where you open the popup
+          setShowApiKeyErrorPopup(true);
+        } else {
+          showToast(
+            errorMessage ||
+              "An error occurred while generating the course. Please try again."
+          );
+        }
       } else if (error instanceof SyntaxError) {
-          // console.log('JSON parsing error, retrying in 5 seconds...');
-          setTimeout(() => sendPrompt(prompt, mainTopic, selectedType, useUserApiKey, userApiKey, userunsplashkey), 5000);
+        // console.log('JSON parsing error, retrying in 5 seconds...');
+        setTimeout(
+          () =>
+            sendPrompt(
+              prompt,
+              mainTopic,
+              selectedType,
+              useUserApiKey,
+              userApiKey,
+              userunsplashkey
+            ),
+          5000
+        );
       } else {
-          showToast("An error occurred while generating the course. Please try again.");
+        showToast(
+          "An error occurred while generating the course. Please try again."
+        );
       }
+    }
   }
-}
 
-const ApiKeyErrorPopup = ({ isVisible, onClose }) => {
-  if (!isVisible) return null;
+  const ApiKeyErrorPopup = ({ isVisible, onClose }) => {
+    if (!isVisible) return null;
 
-  return (
+    return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-sm w-full">
-              <h2 className="text-xl font-bold mb-4 text-black dark:text-white text-center">Invalid API Key</h2>
-              <p className="mb-4 text-black dark:text-white text-center">Your API key is invalid or has expired. Please update it in your profile to continue generating courses.</p>
-              <div className="flex justify-center  space-x-4">
-                  <Button
-                      onClick={() => navigate("/profile")}
-                      className="bg-black text-white dark:bg-white dark:text-black font-bold rounded-none"
-                  >
-                      Go to Profile
-                  </Button>
-                  <Button
-                      onClick={onClose}
-                      className="bg-gray-300 text-black dark:bg-gray-600 dark:text-white font-bold rounded-none"
-                  >
-                      Close
-                  </Button>
-              </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-sm w-full">
+          <h2 className="text-xl font-bold mb-4 text-black dark:text-white text-center">
+            Invalid API Key
+          </h2>
+          <p className="mb-4 text-black dark:text-white text-center">
+            Your API key is invalid or has expired. Please update it in your
+            profile to continue generating courses.
+          </p>
+          <div className="flex justify-center  space-x-4">
+            <Button
+              onClick={() => navigate("/profile")}
+              className="bg-black text-white dark:bg-white dark:text-black font-bold rounded-none"
+            >
+              Go to Profile
+            </Button>
+            <Button
+              onClick={onClose}
+              className="bg-gray-300 text-black dark:bg-gray-600 dark:text-white font-bold rounded-none"
+            >
+              Close
+            </Button>
           </div>
+        </div>
       </div>
-  );
-};
-
+    );
+  };
 
   // eslint-disable-next-line
   const handleRadioChange = (event) => {
@@ -299,65 +372,99 @@ const ApiKeyErrorPopup = ({ isVisible, onClose }) => {
     <div className="h-screen flex flex-col">
       <Header isHome={true} className="sticky top-0 z-50" />
 
-      
-{showApiKeyErrorPopup && (
-  <ApiKeyErrorPopup 
-            isVisible={showApiKeyErrorPopup} 
-            onClose={() => setShowApiKeyErrorPopup(false)} 
+      {showApiKeyErrorPopup && (
+        <ApiKeyErrorPopup
+          isVisible={showApiKeyErrorPopup}
+          onClose={() => setShowApiKeyErrorPopup(false)}
         />
-)}
-      
+      )}
 
       <div className="dark:bg-black flex-1">
         <div className="flex-1 flex items-center justify-center py-10">
           <form
             onSubmit={handleSubmit}
-            className="max-w-sm m-auto py-4 no-scrollbar"
+            className="max-w-lg m-auto p-4 no-scrollbar"
           >
-            <p className="text-center font-black text-4xl text-black dark:text-white">
+            <h2 className="text-center font-black text-4xl text-black dark:text-white">
               Generate Course
-            </p>
+            </h2>
             <p className="text-center font-normal text-black py-4 dark:text-white">
               Type the topic on which you want to Generate course.
               <br />
               Also, you can enter a list of subtopics, which are the specifics
               you want to learn.
             </p>
+
+            <div className="text-start text-xs bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-300 py-4 w-full p-4 relative">
+              <span>
+              <p>
+                <strong>Note:</strong> Please keep the main topic simple and to
+                the point. For example, for a React course, write "React", or
+                for topics like MongoDB, Express, React, Node, just use "MERN".
+              </p>
+              <p>Subtopics can be entered separately, for example:</p>
+              <ul className="list-disc list-inside">
+                <li>Main topic - Firebase</li>
+                <li>Sub topic 1 - How to connect with React.js</li>
+                <li>Sub topic 2 - How to update the data</li>
+              </ul>
+              <p>
+                This helps in creating more efficient results.
+              </p>
+              </span>
+              <div className="h-4 w-4 rounded-full bg-red-600 animate-pulse absolute -left-1 -top-1"></div>
+            </div>
+
             <div className="py-6">
-              <div className="mb-6">
-                <div className="mb-2 block">
-                  <Label
-                    className="font-bold text-black dark:text-white"
-                    htmlFor="topic1"
-                    value="Topic"
-                  />
-                </div>
-                <input
-                  className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white"
-                  id="topic1"
-                  type="text"
-                />
-              </div>
-              <div className="mb-6">
-                <div className="mb-2 block">
-                  <Label
-                    className="font-bold text-black dark:text-white"
-                    htmlFor="subtopic"
-                    value="Sub Topic"
-                  />
-                </div>
-                {formValues.map((element, index) => (
-                  <div key={index}>
-                    <input
-                      onChange={(e) => handleChange(index, e)}
-                      className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white mb-6"
-                      id="subtopic"
-                      type="text"
-                      name="subtopic"
-                    />
-                  </div>
-                ))}
-              </div>
+            <div className="mb-6">
+  <div className="mb-2 block">
+    <Label
+      className="font-bold text-black dark:text-white"
+      htmlFor="topic1"
+      value="Topic"
+    />
+  </div>
+  <div className="relative">
+    <input
+      className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
+      id="topic1"
+      type="text"
+      maxLength={maxTopicLength}
+      value={topic}
+      onChange={(e) => handleInputChange(e, setTopic, maxTopicLength)}
+    />
+    <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
+      {maxTopicLength - topic.length} chars left
+    </span>
+  </div>
+</div>
+
+<div className="mb-6">
+  <div className="mb-2 block">
+    <Label
+      className="font-bold text-black dark:text-white"
+      htmlFor="subtopic"
+      value="Sub Topic"
+    />
+  </div>
+  {formValues.map((element, index) => (
+    <div key={index} className="relative mb-4">
+      <input
+        className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
+        id="subtopic"
+        type="text"
+        name="subtopic"
+        value={element.subtopic || ""}
+        maxLength={maxSubTopicLength}
+        onChange={(e) => handleSubtopicChange(index, e)}
+      />
+      <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
+        {maxSubTopicLength - (element.subtopic || "").length} chars left
+      </span>
+    </div>
+  ))}
+</div>
+
 
               <Button
                 type="button"
@@ -406,7 +513,7 @@ const ApiKeyErrorPopup = ({ isVisible, onClose }) => {
 
                             <Label className="font-bold text-black dark:text-white" htmlFor="nosubtopic" value="Select Course Type" /> */}
 
-              <fieldset className="flex max-w-md flex-col gap-4 mt-2">
+              <fieldset className="flex flex-col gap-4 mt-2">
                 <div className="flex items-center gap-2 px-2 h-11 focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none w-full dark:bg-black dark:border-white dark:text-white">
                   <Radio
                     onChange={handleRadioChangeType}

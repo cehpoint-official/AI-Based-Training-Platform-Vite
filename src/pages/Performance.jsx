@@ -28,6 +28,7 @@ const Performance = () => {
   const fetchPerformanceAll = async () => {
     try {
       const response = await axiosInstance.get(`/api/performance/all`);
+      const re = await axiosInstance.post("/api/updateCountsForAllUsers");
       setGlobalUpdateDone(true); // Mark global update as done
     } catch (error) {
       console.error("Error updating all user performance data:", error);
@@ -37,7 +38,6 @@ const Performance = () => {
   const fetchPerformance = async () => {
     try {
       const response = await axiosInstance.get(`/api/performance/${userUID}`);
-      const re = await axiosInstance.post("/api/updateCountsForAllUsers");
       const performanceData = response?.data?.data;
 
       if (response?.data?.success && performanceData) {
@@ -303,31 +303,33 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
-        <div className="w-[80%] overflow-x-auto overflow-y-hidden flex items-center justify-center flex-col ">
-          <div className="w-full flex items-center justify-center gap-x-10 mt-4 mb-8">
-            <span className="px-8 py-3 bg-green-600 font-bold rounded-md uppercase">
-              Max Strick: {data?.max_strick}
-            </span>
-            <span className="px-8 py-3 bg-green-500 font-bold rounded-md uppercase">
-              Current Strick: {data?.strick}
-            </span>
+        <div className="w-full text-sm text-center flex max-md:flex-col items-center justify-center gap-y-3 gap-x-10 mt-4 mb-8">
+          <span className="px-8 py-3 bg-green-600 font-bold rounded-md uppercase">
+            Max Strick: {data?.max_strick}
+          </span>
+          <span className="px-8 py-3 bg-green-500 font-bold rounded-md uppercase">
+            Current Strick: {data?.strick}
+          </span>
+        </div>
+        <div className="flex items-center justify-center overflow-x-auto overflow-y-hidden w-full">
+          <div className="w-[200%] md:w-[80%] flex items-center justify-center flex-col">
+            <CalendarHeatmap
+              startDate={moment().startOf("year").toDate()}
+              endDate={moment().endOf("year").toDate()}
+              values={generateFullYearData()}
+              gutterSize={1}
+              showWeekdayLabels
+              classForValue={(value) => {
+                if (!value) return "fill-gray-300";
+                return value.count > 0 ? "fill-green-500" : "fill-gray-300";
+              }}
+              tooltipDataAttrs={(value) => ({
+                "data-tip": value
+                  ? `Date: ${value.date} | Count: ${value.count}`
+                  : "No data",
+              })}
+            />
           </div>
-          <CalendarHeatmap
-            startDate={moment().startOf("year").toDate()}
-            endDate={moment().endOf("year").toDate()}
-            values={generateFullYearData()}
-            gutterSize={2}
-            showWeekdayLabels
-            classForValue={(value) => {
-              if (!value) return "fill-gray-300";
-              return value.count > 0 ? "fill-green-500" : "fill-gray-300";
-            }}
-            tooltipDataAttrs={(value) => ({
-              "data-tip": value
-                ? `Date: ${value.date} | Count: ${value.count}`
-                : "No data",
-            })}
-          />
         </div>
 
         <Snackbar
