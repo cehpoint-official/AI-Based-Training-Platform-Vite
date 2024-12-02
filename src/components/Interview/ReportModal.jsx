@@ -201,10 +201,13 @@ const ReportModal = ({
                       <span className="font-semibold">Your Answer:</span>{" "}
                       {question.userAnswer || question.userTextAnswer || "N/A"}
                     </p>
-                    <p>
+                    {question.correctAnswer&&(
+                      <p>
                       <span className="font-semibold">Correct Answer:</span>{" "}
                       {question.correctAnswer || "N/A"}
                     </p>
+                    )}
+                    
                   </div>
                 ))}
               </div>

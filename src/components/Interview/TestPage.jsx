@@ -134,6 +134,22 @@ const TestPage = () => {
   };
 
   const handleNextQuestion = () => {
+  // check if the current question is answered or not 
+  const currentQuestion = questions[currentQuestionIndex];
+  let isAnswered = false;
+
+    if(currentQuestion.type==='mcq'){
+      isAnswered = currentQuestion.userAnswer !=='';
+    }
+    else {
+      isAnswered = currentQuestion.userTextAnswer.trim()!=='';
+    }
+
+    if (!isAnswered) {
+      errorToast("Please answer the current question before proceeding.");
+      return;
+    }
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setQuestionStartTime(Date.now());
@@ -141,6 +157,24 @@ const TestPage = () => {
   };
 
   const handleSubmitTest = async () => {
+
+    //check if all answers are answered
+   const currentQuestion = questions[currentQuestionIndex];
+    let isAnswered = false;
+
+   if(currentQuestion.type==='mcq'){
+    isAnswered =currentQuestion.userAnswer!=='';
+   }
+   else{
+    isAnswered =currentQuestion.userTextAnswer!=='';
+   }
+
+    if(!isAnswered){
+      errorToast('Please Answer this question before submitting test !');
+      return;
+    }
+
+
     setIsSubmitting(true);
     try {
       await stopRecording(userName,userUID);
