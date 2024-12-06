@@ -3,6 +3,7 @@ import { Spinner, Table, Button } from "flowbite-react";
 import React from "react";
 import axiosInstance from "../../axios";
 import UserTableProjectDetails from "./userTableProjectDetails";
+import { toast } from "react-toastify";
 
 const UserTable = ({ datas=[], loading, projects = [] }) => {
   const [selectedUser, setSelectedUser] = useState(null); // State to manage which user's projects are being viewed
@@ -10,6 +11,7 @@ const UserTable = ({ datas=[], loading, projects = [] }) => {
   const [completedUsers, setCompletedUsers] = useState([]); // State to store users with completed projects
   const [usersWithProjects, setUsersWithProjects] = useState([]); // State to store users with any projects
   const [filter, setFilter] = useState("all"); // State to manage which filter is applied
+  const [userPermissions, setUserPermissions] = useState({});
 
   // Function to fetch projects and filter completed ones
   const fetchProjects = async () => {
@@ -105,6 +107,29 @@ const UserTable = ({ datas=[], loading, projects = [] }) => {
     return true; // Default: show all users
   });
 
+  const handlePermissionChange = async (e, email) => {
+    const newPermission = e.target.checked;
+    setUserPermissions((prev) => ({
+      ...prev,
+      [email]: newPermission, // Optimistic UI Update: update the local state first
+    }));
+
+    try {
+      // Call the API to update the permission
+      await axiosInstance.put(`/api/user/permission/`, {
+        email,
+        permission: newPermission,
+      });
+
+      toast.success("Permission updated successfully.");
+    } catch (error) {
+      setUserPermissions((prev) => ({
+        ...prev,
+        [email]: !newPermission, // Revert to previous state if there's an error
+      }));
+      toast.error(error.response?.data?.message || "Error updating permission");
+    }
+  };
   
 
   return (
@@ -148,6 +173,7 @@ const UserTable = ({ datas=[], loading, projects = [] }) => {
             <Table.HeadCell className="font-black">Type</Table.HeadCell>
             <Table.HeadCell className="font-black">ID</Table.HeadCell>
             <Table.HeadCell className="font-black">Projects</Table.HeadCell>
+            <Table.HeadCell className="font-black">Permissions</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {filteredUsers?.map((user) => (
@@ -179,6 +205,15 @@ const UserTable = ({ datas=[], loading, projects = [] }) => {
                     "No Project"
                   )}
                 </Table.Cell>
+                <Table.Cell className="whitespace-normal font-normal text-black dark:text-white">
+                <input
+                    type="checkbox"
+                    name="permission"
+                    id={`permission-${user.email}`}
+                    checked={userPermissions[user.email] ?? user.permission} // Use local state
+                    onChange={(e) => handlePermissionChange(e, user.email)} // Pass user email
+                  />
+</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>

@@ -37,6 +37,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   const [userExists, setUserExists] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [permission,setPermission] = useState(null);
 
 
   // ----- Eligiblitity:START -------- //
@@ -83,9 +84,39 @@ const ResumeUpload = ({ onUploadComplete }) => {
     }
   };
 
+  const checkSpecialPermission = async () => {
+    try {
+      // Fetch users
+      const response = await axiosInstance.get(`/api/getusers`);
+  
+      // Filter the data based on `uid`
+      const filteredData = response.data.filter(
+        (item) => item.uid === userUID
+      );
+  
+      // Check if a matching user is found
+      if (filteredData.length > 0) {
+        // Assuming `permission` is a property of the user object
+        const userPermission = filteredData[0].permission;
+  
+        setPermission(userPermission);
+        if (userPermission) {
+          setShowEligibilityPopup(false);
+          setMeetsCriteria(true);
+        }
+      } else {
+        console.warn(`No user found with UID: ${userUID}`);
+      }
+    } catch (error) {
+      console.error("Error fetching users or processing data:", error);
+    }
+  };
+  
+
   useEffect(() => {
     if (userUID) {
       fetchPerformance();
+      checkSpecialPermission();
       // console.log(performance.data[0])
     } else {
       console.error("User ID not found in session storage.");
@@ -95,6 +126,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
     console.log("selectedFile :",selectedFile);
     console.log("isParsing :",isParsing);
     console.log("showEligibilityPopup: :",showEligibilityPopup);
+    console.log("permission :",permission);
   }, [userUID]);
 
   const projectCountCriteria = 1;
@@ -210,7 +242,7 @@ const ResumeUpload = ({ onUploadComplete }) => {
   }, [selectedFile, extractedData, skills.skills]);
 
   const handleFileChange = (e) => {
-    const file = event.target.files[0];
+    const file = e.target.files[0];
     if (file && file.type === "application/pdf") {
       setSelectedFile(file);
       setError(null);
