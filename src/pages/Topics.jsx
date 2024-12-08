@@ -56,7 +56,6 @@ const Topics = () => {
       return words.slice(0, maxWords).join(' ');
     };
   
-    // Combine the titles and check if the word count exceeds the limit
     const combinedTitle = `${firstSubtopicTitle} related to ${mainTopic} in English.`;
     const wordsInPrompt = combinedTitle.split(' ');
   
@@ -74,7 +73,7 @@ const Topics = () => {
     if (type === "video & text course") {
       const query = generatePrompt(firstSubtopic.title, mainTopic);
       sendVideo(query);
-      console.log(query)
+      // console.log(query)
       setProcessing(true);
     } else {
       const prompt = `Explain me about this subtopic of ${mainTopic} with examples :- ${firstSubtopic.title}. Please Strictly Don't Give Additional Resources And Images.`;
