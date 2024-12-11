@@ -919,7 +919,7 @@ const Course = () => {
                 Projects
               </button>
             </Sidebar.ItemGroup>
-          )}
+          
         </div>
       );
     } catch (error) {
