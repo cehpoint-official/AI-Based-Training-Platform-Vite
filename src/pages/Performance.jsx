@@ -239,7 +239,7 @@ const Performance = () => {
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Project Count: {projectCount}
+                        Project Count: {projectCount}/{projectCountCriteria}
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -255,7 +255,7 @@ const Performance = () => {
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Course Count: {courseCount}
+                        Course Count: {courseCount}/{courseCountCriteria}
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -271,7 +271,7 @@ const Performance = () => {
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Quiz Score Average: {quizScoreAvg}%
+                        Quiz Score Average: {quizScoreAvg}/{quizScoreAvgCriteria} %
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -287,7 +287,7 @@ const Performance = () => {
                         variant="subtitle1"
                         className="mb-1 text-white"
                       >
-                        Average Progress: {averageProgress}%
+                        Average Progress: {averageProgress}/{averageProgressCriteria} %
                       </Typography>
                       <Box display="flex" alignItems="center">
                         <LinearProgress
@@ -303,6 +303,34 @@ const Performance = () => {
             </CardContent>
           </Card>
         )}
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg shadow-md my-4">
+          <h3 className="text-md font-semibold mb-2">Important Note:</h3>
+          <p className="text-xs mb-2">
+            To proceed with the test, you need to meet the following criteria:
+          </p>
+          <ul className="list-disc list-inside pl-4 text-xs">
+            <li>
+              <span className="font-medium">Project Count:</span> Complete at
+              least <strong>1 project</strong>.
+            </li>
+            <li>
+              <span className="font-medium">Course Count:</span> Complete at
+              least <strong>5 courses</strong>.
+            </li>
+            <li>
+              <span className="font-medium">Average Quiz Score:</span> Achieve a
+              minimum score of <strong>25</strong>.
+            </li>
+            <li>
+              <span className="font-medium">Average Progress:</span> Maintain{" "}
+              <strong>100% progress</strong> in your courses.
+            </li>
+          </ul>
+          <p className="text-xs mt-2">
+            Please ensure these requirements are met before starting the test.
+            Good luck!
+          </p>
+        </div>
         <div className="w-full text-sm text-center flex max-md:flex-col items-center justify-center gap-y-3 gap-x-10 mt-4 mb-8">
           <span className="px-8 py-3 bg-green-600 font-bold rounded-md uppercase">
             Max Strick: {data?.max_strick}

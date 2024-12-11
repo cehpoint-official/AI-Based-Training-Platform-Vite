@@ -229,6 +229,28 @@ const Course = () => {
     // eslint-disable-next-line
   }, []);
 
+  const generatePrompt = (firstSubtopicTitle, mTopic, mainTopic) => {
+    // Define the maximum number of words allowed in the prompt
+    const maxWords = 10;
+  
+    // Function to split the string into words and trim if necessary
+    const truncateText = (text, maxWords) => {
+      const words = text.split(' ');
+      return words.slice(0, maxWords).join(' ');
+    };
+  
+    // Combine the titles and check if the word count exceeds the limit
+    const combinedTitle = `${firstSubtopicTitle} related to mTopic ${mTopic} on ${mainTopic} in English.`;
+    const wordsInPrompt = combinedTitle.split(' ');
+  
+    // If the word count exceeds the limit, use a truncated version
+    if (wordsInPrompt.length > maxWords) {
+      return `tutorials on ${truncateText(firstSubtopicTitle, maxWords)} related to ${truncateText(mainTopic, maxWords)} on ${mainTopic} in English.`;
+    } else {
+      return combinedTitle;
+    }
+  };
+
   const handleSelect = (selectedTopics, selectedSub) => {
     const topicKey = mainTopic.toLowerCase();
     const mTopic = jsonData[topicKey]?.find(
@@ -247,17 +269,15 @@ const Course = () => {
 
     // If theory is not present, we need to generate it
     if (!theory) {
-        const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations and make sure it is in English. Avoid other languages except English.`;
+        // const query = `"${mSubTopic.title}" tutorial in "${mTopic.title}" for "${mainTopic}" in English. Provide examples and explanations and make sure it is in English. Avoid other languages except English.`;
+        const query = generatePrompt(mSubTopic.title, mTopic.title, mainTopic);
         const id = toast.loading("Please wait...");
 
         if (type === "video & text course") {
-            // console.log(query);
-            // INITIALIZING AI GENERATED TEXTS
             setMtopicex(mTopic.title);
             setSubMtopicex(mSubTopic.title);
             setidex(id);
             seturlex(query);
-
             sendVideo(query, selectedTopics, selectedSub, id, mSubTopic.title);
         } else {
             const prompt = `Explain me about this subtopic of ${mTopic.title} with examples: ${mSubTopic.title}. Please strictly don't give additional resources and images.`;
@@ -866,7 +886,6 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          { (
             <Sidebar.ItemGroup>
               <button
                 onClick={() => {if (percentage < 100) {

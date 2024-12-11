@@ -17,10 +17,10 @@ const Home = () => {
                 const postURL = `/api/courses?userId=${userId}`;
                 const res=await axiosInstance.get(postURL);
                 sessionStorage.setItem("coursesCreatedToday",res.data.length);
-                console.log(res.data);
+                // console.log(res.data);
     
             }catch(error){
-                console.log(error);
+                // console.log(error);
             }
         }
         fetch();
