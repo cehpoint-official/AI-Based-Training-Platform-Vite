@@ -128,31 +128,37 @@ const Course = () => {
   };
 
   const finish = async () => {
-    if (percentage === 100) {
-      try {
-        const dataToSend = {
-          prompt: `Suggest a mini project based on the topics covered in this course. Include the following details: project description, objectives, and key points.`,
-        };
-        const postURL = "/api/project-suggestions";
-        const res = await axiosInstance.post(postURL, dataToSend);
-        setProjectSuggestions(res.data.suggestions);
-
-        setSubmissionInstructions(
-          `To submit your project, please push your code to a GitHub repository and share the repository link with us via email at assessment@cehpoint.co.in. Additionally, you can send a short video explaining your project to our submission email. Thank you!`
-        );
-        const certificateUrl = await getCertificateUrl();
-
-        if (certificateUrl) {
-          window.open(certificateUrl, "_blank");
-        } else {
-          // console.error("Certificate URL is not available.");
-        }
-      } catch (error) {
-        // console.error("Error fetching project suggestions:", error);
-        toast.error("Error in project suggestions"); // toast error in project suggestion
+    if (percentage < 100) {
+      toast.warning(
+        "Warning: Your progress is below 100%, but you have to take project forcefully."
+      );
+    }
+  
+    try {
+      
+      const dataToSend = {
+        prompt: `Suggest a mini project based on the topics covered in this course. Include the following details: project description, objectives, and key points.`,
+      };
+      const postURL = "/api/project-suggestions";
+      const res = await axiosInstance.post(postURL, dataToSend);
+      setProjectSuggestions(res.data.suggestions);
+  
+      setSubmissionInstructions(
+        `To submit your project, please push your code to a GitHub repository and share the repository link with us via email at assessment@cehpoint.co.in. Additionally, you can send a short video explaining your project to our submission email. Thank you!`
+      );
+      const certificateUrl = await getCertificateUrl();
+  
+      if (certificateUrl) {
+        window.open(certificateUrl, "_blank");
+      } else {
+        // console.error("Certificate URL is not available.");
       }
+    } catch (error) {
+      // console.error("Error fetching project suggestions:", error);
+      toast.error("Error in project suggestions"); // toast error in project suggestion
     }
   };
+  
 
   const getCertificateUrl = async () => {
     try {
@@ -175,120 +181,7 @@ const Course = () => {
     }
   };
 
-  // async function sendEmail(formattedDate) {
-  //   const userName = sessionStorage.getItem("mName");
-  //   const email = sessionStorage.getItem("email");
-  //   const html = `<!DOCTYPE html>
-  //       <html lang="en">
-  //       <head>
-  //           <meta charset="UTF-8">
-  //           <meta name="viewport" content="initial-scale=1.0">
-  //           <title>Certificate of Completion</title>
-  //           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
-  //           <style>
-  //           body {
-  //               font-family: 'Roboto', sans-serif;
-  //               text-align: center;
-  //               background-color: #fff;
-  //               margin: 0;
-  //               display: flex;
-  //               justify-content: center;
-  //               align-items: center;
-  //               height: 100vh;
-  //           }
 
-  //           .certificate {
-  //               border: 10px solid #000;
-  //               max-width: 600px;
-  //               margin: 20px auto;
-  //               padding: 50px;
-  //               background-color: #fff;
-  //               position: relative;
-  //               color: #000;
-  //               text-align: center;
-  //           }
-
-  //           h1 {
-  //               font-weight: 900;
-  //               font-size: 24px;
-  //               margin-bottom: 10px;
-  //           }
-
-  //           h4 {
-  //               font-weight: 900;
-  //               text-align: center;
-  //               font-size: 20px;
-  //           }
-
-  //           h2 {
-  //               font-weight: 700;
-  //               font-size: 18px;
-  //               margin-top: 10px;
-  //               margin-bottom: 5px;
-  //               text-decoration: underline;
-  //           }
-
-  //           h3 {
-  //               font-weight: 700;
-  //               text-decoration: underline;
-  //               font-size: 16px;
-  //               margin-top: 5px;
-  //               margin-bottom: 10px;
-  //           }
-
-  //           p {
-  //               font-weight: 400;
-  //               line-height: 1.5;
-  //           }
-
-  //           img {
-  //               width: 40px;
-  //               height: 40px;
-  //               margin-right: 10px;
-  //               text-align: center;
-  //               align-self: center;
-  //           }
-  //           </style>
-  //       </head>
-  //       <body>
-
-  //       <div class="certificate">
-  //       <h1>Certificate of Completion 🥇</h1>
-  //       <p>This is to certify that</p>
-  //       <h2>${userName}</h2>
-  //       <p>has successfully completed the course on</p>
-  //       <h3>${mainTopic}</h3>
-  //       <p>on ${formattedDate}.</p>
-
-  //       <div class="signature">
-  //           <img src=${logo}>
-  //           <h4>${name}</h4>
-  //       </div>
-  //   </div>
-
-  //       </body>
-  //       </html>`;
-
-  //   try {
-  //     const postURL = "/api/sendcertificate";
-  //     await axiosInstance
-  //       .post(postURL, { html, email })
-  //       .then((res) => {
-  //         navigate("/certificate", {
-  //           state: { courseTitle: mainTopic, end: formattedDate },
-  //         });
-  //       })
-  //       .catch((error) => {
-  //         navigate("/certificate", {
-  //           state: { courseTitle: mainTopic, end: formattedDate },
-  //         });
-  //       });
-  //   } catch (error) {
-  //     navigate("/certificate", {
-  //       state: { courseTitle: mainTopic, end: formattedDate },
-  //     });
-  //   }
-  // }
 
   useEffect(() => {
     loadMessages();
@@ -993,12 +886,16 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {!isComplete && (
             <Sidebar.ItemGroup>
               <button
-                onClick={() => {
+                onClick={() => {if (percentage < 100) {
+                  toast.warning(
+                    "Warning: Your progress is below 100%, but you are taking Quiz forcefully."
+                  );
                   setShowQuiz(true);
                   setShowProjects(false);
+                }
+                  
                 }}
                 className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between"
               >
@@ -1009,8 +906,13 @@ const Course = () => {
               <div className="w-full bg-black/70 dark:bg-white/70 h-[1px]"></div>
               <button
                 onClick={() => {
-                  setShowProjects(true);
-                  setShowQuiz(false);
+                  if (percentage < 100) {
+                    toast.warning(
+                      "Warning: Your progress is below 100%, but you are taking Project forcefully."
+                    );
+                    setShowQuiz(false);
+                    setShowProjects(true);
+                  }
                 }}
                 className="text-start text-base w-full px-3 py-2 font-bold text-white dark:text-white bg-gray-900 rounded-lg flex items-center justify-between mb-10"
               >
