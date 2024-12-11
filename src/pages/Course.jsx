@@ -993,7 +993,7 @@ const Course = () => {
               </div>
             </Sidebar.ItemGroup>
           ))}
-          {isComplete && (
+          {!isComplete && (
             <Sidebar.ItemGroup>
               <button
                 onClick={() => {
