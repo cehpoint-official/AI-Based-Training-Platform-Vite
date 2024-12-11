@@ -37,24 +37,23 @@ const Create = () => {
   // }, []);
 
   const maxTopicLength = 30; // Max characters for the main topic
-const maxSubTopicLength = 50; // Max characters for each subtopic
+  const maxSubTopicLength = 50; // Max characters for each subtopic
 
-const [topic, setTopic] = useState(""); // Main topic value
+  const [topic, setTopic] = useState(""); // Main topic value
 
-// Handle changes for main topic input
-const handleInputChange = (e, setState, maxLength) => {
-  const value = e.target.value.slice(0, maxLength); // Ensure it doesn't exceed max length
-  setState(value);
-};
+  // Handle changes for main topic input
+  const handleInputChange = (e, setState, maxLength) => {
+    const value = e.target.value.slice(0, maxLength); // Ensure it doesn't exceed max length
+    setState(value);
+  };
 
-// Handle changes for subtopic inputs
-const handleSubtopicChange = (index, e) => {
-  const value = e.target.value.slice(0, maxSubTopicLength);
-  const updatedFormValues = [...formValues];
-  updatedFormValues[index].subtopic = value;
-  setFormValues(updatedFormValues);
-};
-
+  // Handle changes for subtopic inputs
+  const handleSubtopicChange = (index, e) => {
+    const value = e.target.value.slice(0, maxSubTopicLength);
+    const updatedFormValues = [...formValues];
+    updatedFormValues[index].subtopic = value;
+    setFormValues(updatedFormValues);
+  };
 
   useEffect(() => {
     // Check if the current pathname is "/topics"
@@ -64,19 +63,19 @@ const handleSubtopicChange = (index, e) => {
   }, [location.pathname]);
 
   //checks and sets setCoursesCreatedToday
-  // useEffect(() => {
-  //   const lastReset = sessionStorage.getItem("lastReset");
-  //   if (
-  //     lastReset &&
-  //     new Date().toDateString() !== new Date(parseInt(lastReset)).toDateString()
-  //   ) {
-  //     sessionStorage.setItem("coursesCreatedToday", "0");
-  //   }
-  //   sessionStorage.setItem("lastReset", new Date().getTime().toString());
-  //   setCoursesCreatedToday(
-  //     parseInt(sessionStorage.getItem("coursesCreatedToday") || "0")
-  //   );
-  // }, []);
+  useEffect(() => {
+    const lastReset = sessionStorage.getItem("lastReset");
+    if (
+      lastReset &&
+      new Date().toDateString() !== new Date(parseInt(lastReset)).toDateString()
+    ) {
+      sessionStorage.setItem("coursesCreatedToday", "0");
+    }
+    sessionStorage.setItem("lastReset", new Date().getTime().toString());
+    setCoursesCreatedToday(
+      parseInt(sessionStorage.getItem("coursesCreatedToday") || "0")
+    );
+  }, []);
 
   let handleChange = (i, e) => {
     let newFormValues = [...formValues];
@@ -162,54 +161,54 @@ const handleSubtopicChange = (index, e) => {
 
     const prompt = `Generate a structured list of ${selectedValue} topics for the main title "${mainTopic.toLowerCase()}", designed as a course outline. Arrange each topic to cover progressively advanced concepts in a logical order, starting with foundational knowledge and building up to skills suitable for internships or entry-level job roles. For example, if React interview preparation training is the main title and the subtopics include Firebase, React developer training, and JavaScript, structure the outline as JavaScript basics leading to React fundamentals and finally Firebase integration. Ensure the required subtopics ${subtopics
       .join(", ")
-      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", "image", and "aiExplanation" empty. 
+      .toLowerCase()} appear in this basic-to-advanced flow, even if their complexity varies. Leave the fields "theory", "youtube", "image", and "aiExplanation" empty.
 
-Please output the list in the following JSON format strictly in English:
+Please output the list in the following valid JSON format strictly in English, with property names enclosed in double quotes and no comments:
 {
-"${mainTopic.toLowerCase()}": [
-  {
-    "title": "Topic Title",
-    "subtopics": [
-      {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false,
-        "aiExplanation": "", // New field for AI-generated explanation
-      },
-      {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false,
-        "aiExplanation": "", // New field for AI-generated explanation
-      }
-    ]
-  },
-  {
-    "title": "Topic Title",
-    "subtopics": [
-      {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false,
-        "aiExplanation": "", // New field for AI-generated explanation
-      },
-      {
-        "title": "Sub Topic Title",
-        "theory": "",
-        "youtube": "",
-        "image": "",
-        "done": false,
-        "aiExplanation": "", // New field for AI-generated explanation
-      }
-    ]
-  }
-]
+  "${mainTopic.toLowerCase()}": [
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false,
+          "aiExplanation": ""
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false,
+          "aiExplanation": ""
+        }
+      ]
+    },
+    {
+      "title": "Topic Title",
+      "subtopics": [
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false,
+          "aiExplanation": ""
+        },
+        {
+          "title": "Sub Topic Title",
+          "theory": "",
+          "youtube": "",
+          "image": "",
+          "done": false,
+          "aiExplanation": ""
+        }
+      ]
+    }
+  ]
 }`;
 
     // Example of selectedValue: "React", mainTopic: "React Internship Preparation Training", and subtopics: ["JSX", "Hooks", "State management", "Routing", "API integration"]
@@ -271,7 +270,7 @@ Please output the list in the following JSON format strictly in English:
         .replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();
-      console.log(cleanedJsonString);
+      // console.log(cleanedJsonString);
 
       const parsedJson = JSON.parse(cleanedJsonString);
       // setProcessing(false);
@@ -286,8 +285,8 @@ Please output the list in the following JSON format strictly in English:
         },
       });
     } catch (error) {
-      console.error("Error in sendPrompt:", error);
-      setProcessing(false);
+      // console.error("Error in sendPrompt:", error);
+      // setProcessing(false);
 
       if (error.response) {
         const errorMessage = error.response.data.error;
@@ -397,74 +396,75 @@ Please output the list in the following JSON format strictly in English:
 
             <div className="text-start text-xs bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-300 py-4 w-full p-4 relative">
               <span>
-              <p>
-                <strong>Note:</strong> Please keep the main topic simple and to
-                the point. For example, for a React course, write "React", or
-                for topics like MongoDB, Express, React, Node, just use "MERN".
-              </p>
-              <p>Subtopics can be entered separately, for example:</p>
-              <ul className="list-disc list-inside">
-                <li>Main topic - Firebase</li>
-                <li>Sub topic 1 - How to connect with React.js</li>
-                <li>Sub topic 2 - How to update the data</li>
-              </ul>
-              <p>
-                This helps in creating more efficient results.
-              </p>
+                <p>
+                  <strong>Note:</strong> Please keep the main topic simple and
+                  to the point. For example, for a React course, write "React",
+                  or for topics like MongoDB, Express, React, Node, just use
+                  "MERN".
+                </p>
+                <p>Subtopics can be entered separately, for example:</p>
+                <ul className="list-disc list-inside">
+                  <li>Main topic - Firebase</li>
+                  <li>Sub topic 1 - How to connect with React.js</li>
+                  <li>Sub topic 2 - How to update the data</li>
+                </ul>
+                <p>This helps in creating more efficient results.</p>
               </span>
               <div className="h-4 w-4 rounded-full bg-red-600 animate-pulse absolute -left-1 -top-1"></div>
             </div>
 
             <div className="py-6">
-            <div className="mb-6">
-  <div className="mb-2 block">
-    <Label
-      className="font-bold text-black dark:text-white"
-      htmlFor="topic1"
-      value="Topic"
-    />
-  </div>
-  <div className="relative">
-    <input
-      className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
-      id="topic1"
-      type="text"
-      maxLength={maxTopicLength}
-      value={topic}
-      onChange={(e) => handleInputChange(e, setTopic, maxTopicLength)}
-    />
-    <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
-      {maxTopicLength - topic.length} chars left
-    </span>
-  </div>
-</div>
+              <div className="mb-6">
+                <div className="mb-2 block">
+                  <Label
+                    className="font-bold text-black dark:text-white"
+                    htmlFor="topic1"
+                    value="Topic"
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
+                    id="topic1"
+                    type="text"
+                    maxLength={maxTopicLength}
+                    value={topic}
+                    onChange={(e) =>
+                      handleInputChange(e, setTopic, maxTopicLength)
+                    }
+                  />
+                  <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
+                    {maxTopicLength - topic.length} chars left
+                  </span>
+                </div>
+              </div>
 
-<div className="mb-6">
-  <div className="mb-2 block">
-    <Label
-      className="font-bold text-black dark:text-white"
-      htmlFor="subtopic"
-      value="Sub Topic"
-    />
-  </div>
-  {formValues.map((element, index) => (
-    <div key={index} className="relative mb-4">
-      <input
-        className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
-        id="subtopic"
-        type="text"
-        name="subtopic"
-        value={element.subtopic || ""}
-        maxLength={maxSubTopicLength}
-        onChange={(e) => handleSubtopicChange(index, e)}
-      />
-      <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
-        {maxSubTopicLength - (element.subtopic || "").length} chars left
-      </span>
-    </div>
-  ))}
-</div>
-
+              <div className="mb-6">
+                <div className="mb-2 block">
+                  <Label
+                    className="font-bold text-black dark:text-white"
+                    htmlFor="subtopic"
+                    value="Sub Topic"
+                  />
+                </div>
+                {formValues.map((element, index) => (
+                  <div key={index} className="relative mb-4">
+                    <input
+                      className="focus:ring-black focus:border-black border border-black font-normal bg-white rounded-none block w-full dark:bg-black dark:border-white dark:text-white pr-10"
+                      id="subtopic"
+                      type="text"
+                      name="subtopic"
+                      value={element.subtopic || ""}
+                      maxLength={maxSubTopicLength}
+                      onChange={(e) => handleSubtopicChange(index, e)}
+                    />
+                    <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-300">
+                      {maxSubTopicLength - (element.subtopic || "").length}{" "}
+                      chars left
+                    </span>
+                  </div>
+                ))}
+              </div>
 
               <Button
                 type="button"
