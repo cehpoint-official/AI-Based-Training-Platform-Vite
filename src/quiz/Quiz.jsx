@@ -50,86 +50,86 @@ const Quiz = ({ courseTitle, onCompletion, courseId, userId }) => {
 
     setLoading(true);
     try {
-      // const response = await fetch(
-      //   "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       "x-goog-api-key": import.meta.env.VITE_API_KEY, // Use API Key from .env
-      //     },
-      //     body: JSON.stringify({
-      //       contents: [
-      //         {
-      //           parts: [
-      //             {
-      //               text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
-      //                       - A question text.
-      //                       - Four multiple-choice options.
-      //                       - The correct answer labeled at the end.
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": import.meta.env.VITE_API_KEY, // Use API Key from .env
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Generate a quiz for the course: ${courseTitle}. Each question should have:
+                            - A question text.
+                            - Four multiple-choice options.
+                            - The correct answer labeled at the end.
 
-      //                       Format the response as an array of objects, with each object containing:
-      //                       - "question": The question text.
-      //                       - "options": An array of 4 options.
-      //                       - "answer": The correct answer.
+                            Format the response as an array of objects, with each object containing:
+                            - "question": The question text.
+                            - "options": An array of 4 options.
+                            - "answer": The correct answer.
 
-      //                       Example format:
-      //                       [
-      //                           {
-      //                               "question": "What is the syntax to define a function in Python?",
-      //                               "options": [
-      //                                   "def function_name():",
-      //                                   "function_name = def:",
-      //                                   "def function_name",
-      //                                   "define function_name:"
-      //                               ],
-      //                               "answer": "def function_name():"
-      //                           },
-      //                           {
-      //                               "question": "Which data type is used for decimals in Python?",
-      //                               "options": [
-      //                                   "int",
-      //                                   "float",
-      //                                   "complex",
-      //                                   "str"
-      //                               ],
-      //                               "answer": "float"
-      //                           }
-      //                       ]
+                            Example format:
+                            [
+                                {
+                                    "question": "What is the syntax to define a function in Python?",
+                                    "options": [
+                                        "def function_name():",
+                                        "function_name = def:",
+                                        "def function_name",
+                                        "define function_name:"
+                                    ],
+                                    "answer": "def function_name():"
+                                },
+                                {
+                                    "question": "Which data type is used for decimals in Python?",
+                                    "options": [
+                                        "int",
+                                        "float",
+                                        "complex",
+                                        "str"
+                                    ],
+                                    "answer": "float"
+                                }
+                            ]
 
-      //                       Please generate at least 10 questions in this format.`,
-      //             },
-      //           ],
-      //         },
-      //       ],
-      //     }),
-      //   }
-      // );
+                            Please generate at least 10 questions in this format.`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      );
 
-      // if (!response.ok) {
-      //   const errorText = await response.text();
-      //   throw new Error(`Failed to fetch quiz: ${errorText}`);
-      // }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch quiz: ${errorText}`);
+      }
 
-      // const rawResponse = await response.text();
-      // console.log(rawResponse)
-      // const cleanedResponse = cleanResponse(rawResponse);
-      // const parsedQuestions = parseQuizContent(cleanedResponse);
+      const rawResponse = await response.text();
+      console.log(rawResponse)
+      const cleanedResponse = cleanResponse(rawResponse);
+      const parsedQuestions = parseQuizContent(cleanedResponse);
 
       // // --------------------------------------------------------------------------- // //
       // //       Use this for testing -> do not use main api key method                // //
       // // --------------------------------------------------------------------------- // //
-      let parsedQuestions;
-      const mockData = await fetchMockQuiz("General Knowledge");
-      parsedQuestions = mockData.map((item) => ({
-        question: item.question,
-        options: item.options,
-        answer: {
-          optionNo:
-            item.options.findIndex((option) => option === item.answer) + 1,
-          optionAns: item.answer,
-        },
-      }));
+      // let parsedQuestions;
+      // const mockData = await fetchMockQuiz("General Knowledge");
+      // parsedQuestions = mockData.map((item) => ({
+      //   question: item.question,
+      //   options: item.options,
+      //   answer: {
+      //     optionNo:
+      //       item.options.findIndex((option) => option === item.answer) + 1,
+      //     optionAns: item.answer,
+      //   },
+      // }));
       // // --------------------------------------------------------------------------- // //
 
       setQuestions(parsedQuestions);
