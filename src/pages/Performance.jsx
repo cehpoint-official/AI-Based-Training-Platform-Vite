@@ -12,7 +12,242 @@ import { FaCheckCircle } from "react-icons/fa";
 import Header from "../components/header";
 import Footers from "../components/footers";
 import axiosInstance from "../axios";
+import CalendarHeatmap from "react-calendar-heatmap";import React, { useEffect, useState } from "react";
+import {
+  CircularProgress,
+  Box,
+  LinearProgress,
+  Typography,
+  Card,
+  CardContent,
+  Snackbar,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
+import Header from "../components/header";
+import Footers from "../components/footers";
+import axiosInstance from "../axios";
 import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
+import moment from "moment";
+
+const Performance = () => {
+  const [userUID, setUserUID] = useState(sessionStorage.getItem("uid"));
+  const [data, setData] = useState(null);
+  const [performanceScore, setPerformanceScore] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [globalUpdateDone, setGlobalUpdateDone] = useState(false);
+  const [courseCompletionData, setCourseCompletionData] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(moment().year());
+  const [selectedMonth, setSelectedMonth] = useState(moment().month() + 1);
+
+  const fetchPerformanceAll = async () => {
+    try {
+      await axiosInstance.get(`/api/performance/all`);
+      await axiosInstance.post("/api/updateCountsForAllUsers");
+      setGlobalUpdateDone(true);
+    } catch (error) {
+      console.error("Error updating all user performance data:", error);
+    }
+  };
+
+  const fetchPerformance = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/performance/${userUID}`);
+      const performanceData = response?.data?.data;
+
+      if (response?.data?.success && performanceData) {
+        setData({ success: true, ...performanceData });
+        setPerformanceScore(performanceData?.performanceScore);
+
+        const dailyPerformance = performanceData?.dailyPerformance || [];
+        dailyPerformance.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const updatedCourseCompletionData = dailyPerformance.map((entry) => ({
+          date: moment(entry.date).format("YYYY-MM-DD"),
+          count: entry.count || 0,
+        }));
+
+        setCourseCompletionData(updatedCourseCompletionData);
+      } else {
+        setData({ success: false, data: [] });
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching user performance data:", error);
+      setLoading(false);
+      setOpenSnackbar(true);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!userUID) {
+        console.error("User ID not found in session storage.");
+        setLoading(false);
+        return;
+      }
+
+      if (!globalUpdateDone) {
+        await fetchPerformanceAll();
+      }
+
+      await fetchPerformance();
+    };
+
+    fetchData();
+  }, [userUID, globalUpdateDone]);
+
+  const generateMonthData = () => {
+    const startOfMonth = moment(`${selectedYear}-${selectedMonth}-01`);
+    const endOfMonth = startOfMonth.clone().endOf("month");
+
+    const monthData = [];
+    for (
+      let date = startOfMonth.clone();
+      date.isBefore(endOfMonth);
+      date.add(1, "days")
+    ) {
+      const foundEntry = courseCompletionData.find(
+        (entry) => entry.date === date.format("YYYY-MM-DD")
+      );
+      monthData.push(
+        foundEntry || { date: date.format("YYYY-MM-DD"), count: 0 }
+      );
+    }
+    return monthData;
+  };
+
+  const heatmapData = generateMonthData();
+
+  return (
+    <div className="h-screen flex flex-col overflow-x-hidden">
+      <Header isHome={true} className="sticky top-0 z-50" />
+      <div className="flex-1 dark:bg-gray-900 bg-gray-800 dark:text-white text-white p-4 flex flex-col items-center">
+        <h2 className="text-lg font-bold mb-4">Performance Overview</h2>
+        <FormControl
+          style={{
+            minWidth: 120,
+            marginBottom: 20,
+            width: "100%",
+            maxWidth: 300,
+          }}
+        >
+          <InputLabel id="year-select-label">Year</InputLabel>
+          <Select
+            labelId="year-select-label"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            {[...Array(5)].map((_, i) => {
+              const year = moment().year() - i;
+              return (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+        <FormControl
+          style={{
+            minWidth: 120,
+            marginBottom: 20,
+            width: "100%",
+            maxWidth: 300,
+          }}
+        >
+          <InputLabel id="month-select-label">Month</InputLabel>
+          <Select
+            labelId="month-select-label"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+          >
+            {moment.months().map((month, index) => (
+              <MenuItem key={month} value={index + 1}>
+                {month}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        {loading ? (
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            height="100%"
+          >
+            <CircularProgress />
+            <Typography variant="body1" className="ml-2">
+              Loading data...
+            </Typography>
+          </Box>
+        ) : (
+          <Card
+            className="w-full mb-4 flex items-center justify-center"
+            style={{
+              backgroundColor: "transparent",
+              maxWidth: "600px",
+              margin: "0 auto",
+            }}
+          >
+            <CardContent>
+              <Typography variant="h6" align="center">
+                Performance Metrics
+              </Typography>
+              <Box display="flex" flexDirection="column" gap={2}>
+                {/* Add any other metrics as necessary */}
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+        <div
+          className="flex items-center justify-center w-full"
+          style={{ maxWidth: "600px", margin: "0 auto" }}
+        >
+          <CalendarHeatmap
+            startDate={moment(`${selectedYear}-${selectedMonth}-01`).toDate()}
+            endDate={moment(`${selectedYear}-${selectedMonth}-01`)
+              .endOf("month")
+              .toDate()}
+            values={heatmapData}
+            gutterSize={2}
+            showWeekdayLabels
+            classForValue={(value) => {
+              if (!value) return "fill-gray-300";
+              return value.count > 0 ? "fill-green-500" : "fill-gray-300";
+            }}
+            tooltipDataAttrs={(value) => ({
+              "data-tip": value
+                ? `Date: ${value.date} | Count: ${value.count}`
+                : "No data",
+            })}
+            style={{
+              width: "100%",
+              maxWidth: "300px",
+              margin: "0 auto",
+              fontSize: "0.7rem",
+            }}
+          />
+        </div>
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={() => setOpenSnackbar(false)}
+          message="Error fetching performance data"
+        />
+      </div>
+      <Footers />
+    </div>
+  );
+};
+
+export default Performance;
+
 import "react-calendar-heatmap/dist/styles.css";
 import moment from "moment";
 
